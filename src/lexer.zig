@@ -14,7 +14,7 @@ pub const BufferPosition = struct {
 
 pub const TokenValue = union(TokenType) {
     integer: i32,
-    symbol: []const u8,
+    symbol: u8,
     lparen: void,
     rparen: void,
 };
@@ -36,9 +36,10 @@ pub const Lexer = struct {
             self.token[0] = char;
 
             const token = try switch (char) {
-                '(' => Token{ .value = TokenValue{ .lparen = {} }, .position = self.position },
-                ')' => Token{ .value = TokenValue{ .rparen = {} }, .position = self.position },
-                '0'...'9' => Token{ .value = TokenValue{ .integer = char - '0' }, .position = self.position },
+                '(' => Token{ .value = .{ .lparen = {} }, .position = self.position },
+                ')' => Token{ .value = .{ .rparen = {} }, .position = self.position },
+                '0'...'9' => Token{ .value = .{ .integer = char - '0' }, .position = self.position },
+                '+', '-', '/', '*' => Token{ .value = .{ .symbol = char }, .position = self.position },
                 ' ', '\t', '\r', std.ascii.control_code.vt, std.ascii.control_code.ff => continue,
                 '\n' => {
                     self.position.line += 1;
@@ -61,29 +62,35 @@ test "atoms" {
         expected: []const Token,
     };
 
+    const position: BufferPosition = .{ .line = 1, .column = 1 };
+
     const tests = [_]TestCase{
         .{
             .input = "1",
             .expected = &.{
-                Token{ .value = .{ .integer = 1 }, .position = .{ .line = 1, .column = 1 } },
+                Token{ .value = .{ .integer = 1 }, .position = position },
             },
         },
         .{
             .input = "(",
             .expected = &.{
-                Token{ .value = .{ .lparen = {} }, .position = .{ .line = 1, .column = 1 } },
+                Token{ .value = .{ .lparen = {} }, .position = position },
             },
         },
         .{
             .input = ")",
             .expected = &.{
-                Token{ .value = .{ .rparen = {} }, .position = .{ .line = 1, .column = 1 } },
+                Token{ .value = .{ .rparen = {} }, .position = position },
             },
         },
+        .{ .input = "+", .expected = &.{Token{ .value = .{ .symbol = '+' }, .position = position }} },
+        .{ .input = "*", .expected = &.{Token{ .value = .{ .symbol = '*' }, .position = position }} },
+        .{ .input = "/", .expected = &.{Token{ .value = .{ .symbol = '/' }, .position = position }} },
+        .{ .input = "-", .expected = &.{Token{ .value = .{ .symbol = '-' }, .position = position }} },
         .{
             .input = "13",
             .expected = &.{
-                Token{ .value = .{ .integer = 1 }, .position = .{ .line = 1, .column = 1 } },
+                Token{ .value = .{ .integer = 1 }, .position = position },
                 Token{ .value = .{ .integer = 3 }, .position = .{ .line = 1, .column = 2 } },
             },
         },
@@ -93,7 +100,7 @@ test "atoms" {
     for (tests) |case| {
         const result = try lexer.tokenize(case.input);
         defer result.deinit();
-        try std.testing.expectEqualDeep(result.items, case.expected);
+        try std.testing.expectEqualDeep(case.expected, result.items);
     }
 }
 
