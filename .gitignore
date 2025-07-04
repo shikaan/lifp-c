@@ -1,3 +1,8 @@
 .idea
 build
 .vscode
+compile_commands.json
+src/*.o
+**/*.dSYM
+main
+cmake-build*

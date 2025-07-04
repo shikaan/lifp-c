@@ -2,13 +2,7 @@
 #include <stdio.h>
 
 int main(void) {
-  Token token = {
-    .type = TOKEN_TYPE_lparen,
-    .value = {
-      .lparen = nullptr,
-    }
-  };
-
-  printf("Token type: %u\n", token.type);
- return 0;
+  const ResultTokenList result = tokenize("hello world");
+	printf("%c\n", result.error.payload.unexpected_token);
+ 	return 1;
 }

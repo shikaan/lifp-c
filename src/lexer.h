@@ -2,6 +2,7 @@
 #define LEXER_H
 
 #include <stdint.h>
+#include "./result.h"
 
 typedef enum {
     TOKEN_TYPE_lparen,
@@ -21,5 +22,9 @@ typedef struct {
     TOKEN_TYPE type;
     TokenValue value;
 } Token;
+
+typedef Result(Token*) ResultTokenList;
+
+ResultTokenList tokenize(const char *source);
 
 #endif //LEXER_H
