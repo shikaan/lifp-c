@@ -3,6 +3,7 @@
 
 #include "./position.h"
 #include "./result.h"
+#include "alloc.h"
 #include <stdint.h>
 
 constexpr char LPAREN = '(';
@@ -40,6 +41,7 @@ typedef struct {
 
 bool tokenListEql(token_list_t *first, token_list_t *second);
 void tokenListFree(token_list_t *ptr);
+result_alloc_t tokenListAlloc(void);
 
 typedef Result(token_list_t *) result_token_list_t;
 

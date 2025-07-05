@@ -132,7 +132,7 @@ void error() {
     test__expectFalse(result.ok, "should fail");
     char msg[128];
     snprintf(msg, 128, "Expected UNEXPECTED_TOKEN got %u\n", result.error.kind);
-    test__expect(result.error.kind == ERROR_UNEXPECTED_TOKEN,
+    test__expect(result.error.kind == EXCEPTION_KIND_UNEXPECTED_TOKEN,
                  "error is ERROR_UNEXPECTED_TOKEN", msg);
     test__expectEqlSize(result.error.payload.unexpected_token.position.column,
                         CASES[i].column, "column matches");

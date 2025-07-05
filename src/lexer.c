@@ -7,27 +7,38 @@
 #include <string.h>
 
 #include "alloc.h"
-#include "debug.h"
 #include "position.h"
 #include "result.h"
 
 constexpr size_t BUFFER_INCREMENT = 32;
 
 result_token_list_t tokenize(const char *source) {
-  // TODO: handle allocation error
-  token_list_t *tokens = malloc(sizeof(token_list_t));
-  tokens->capacity = BUFFER_INCREMENT;
-  tokens->size = 0;
-  // TODO: handle allocation error
-  tokens->data = malloc(sizeof(token_t) * BUFFER_INCREMENT);
+  result_alloc_t tokens_result = tokenListAlloc();
+
+  if (!tokens_result.ok) {
+    return err(result_token_list_t, tokens_result.error.kind,
+               tokens_result.error.payload);
+  }
 
   result_token_list_t result;
+  token_list_t *tokens = tokens_result.value;
   position_t position = {
       .column = 0,
       .line = 1,
   };
 
   for (int i = 0; source[i] != '\0'; i++) {
+    if (tokens->size == tokens->capacity) {
+      tokens->capacity += BUFFER_INCREMENT;
+      result_alloc_t realloc_result =
+          reallocSafe(tokens->data, tokens->capacity * sizeof(token_t));
+      if (!realloc_result.ok) {
+        return err(result_token_list_t, tokens_result.error.kind,
+                   tokens_result.error.payload);
+      }
+      tokens->data = realloc_result.value;
+    }
+
     position.column++;
     const char CURRENT_CHAR = source[i];
 
@@ -57,20 +68,13 @@ result_token_list_t tokenize(const char *source) {
       current_token->value.symbol[0] = CURRENT_CHAR;
       tokens->size++;
     } else {
-      // TODO: use err macro
-      result.ok = false;
-      result.error = (exception_t){.kind = ERROR_UNEXPECTED_TOKEN,
-                                   .payload = {.unexpected_token = {
-                                                   .position = position,
-                                                   .token = CURRENT_CHAR,
-                                               }}};
+      exception_payload_t payload = {.unexpected_token = {
+                                         .position = position,
+                                         .token = CURRENT_CHAR,
+                                     }};
+      result =
+          err(result_token_list_t, EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
       goto error;
-    }
-
-    if (tokens->size == tokens->capacity) {
-      tokens->capacity += BUFFER_INCREMENT;
-      // TODO: handle allocation errors
-      tokens->data = realloc(tokens->data, tokens->capacity * sizeof(token_t));
     }
   }
 
@@ -100,7 +104,7 @@ bool tokenEql(token_t *first, token_t *second) {
   }
 }
 
-void tokenFree(token_t *ptr) { freeNull(ptr); }
+void tokenFree(token_t *ptr) { deallocSafe(ptr); }
 
 bool tokenListEql(token_list_t *first, token_list_t *second) {
   if (first->size != second->size) {
@@ -108,15 +112,33 @@ bool tokenListEql(token_list_t *first, token_list_t *second) {
   }
 
   for (size_t i = 0; i < first->size; i++) {
-    if (!tokenEql(&first->data[i], &second->data[i])) {
+    if (!tokenEql(&first->data[i], &second->data[i]))
       return false;
-    }
   }
 
   return true;
 }
 
 void tokenListFree(token_list_t *ptr) {
-  freeNull(ptr->data);
-  freeNull(ptr);
+  deallocSafe(ptr->data);
+  deallocSafe(ptr);
+}
+
+result_alloc_t tokenListAlloc(void) {
+  result_alloc_t list_result = allocSafe(sizeof(token_list_t));
+  if (!list_result.ok) {
+    return list_result;
+  }
+
+  token_list_t *tokens = list_result.value;
+  tokens->capacity = BUFFER_INCREMENT;
+  tokens->size = 0;
+
+  result_alloc_t data_result = allocSafe(sizeof(token_t) * tokens->capacity);
+  if (!data_result.ok) {
+    return data_result;
+  }
+
+  tokens->data = data_result.value;
+  return ok(result_alloc_t, tokens);
 }
