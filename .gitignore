@@ -8,3 +8,4 @@ src/*.o
 
 # binaries
 main
+tests/lexer.test
