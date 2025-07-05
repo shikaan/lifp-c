@@ -44,7 +44,6 @@ void tokenListFree(token_list_t *ptr);
 result_alloc_t tokenListAlloc(void);
 
 typedef Result(token_list_t *) result_token_list_t;
-
 result_token_list_t tokenize(const char *source);
 
 #endif // LEXER_H

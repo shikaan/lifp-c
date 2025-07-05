@@ -136,8 +136,6 @@ void test__expectNeqString(const char* a, const char* b, size_t max_size, const 
   test__expect(strncmp(a, b, max_size) != 0, name, msg);
 }
 
-
-
 int test__report(void) {
   printf("\n%d assertions, %d failed\n", total, failed);
   return failed;

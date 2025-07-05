@@ -18,10 +18,10 @@ static inline result_alloc_t allocSafe(size_t size) {
 
   if (ptr == nullptr) {
     exception_payload_t payload = {.allocation = nullptr};
-    return err(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
+    return result__error(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
   }
 
-  return ok(result_alloc_t, ptr);
+  return result__ok(result_alloc_t, ptr);
 }
 
 static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
@@ -29,10 +29,10 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
 
   if (new_ptr == nullptr) {
     exception_payload_t payload = {.allocation = nullptr};
-    return err(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
+    return result__error(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
   }
 
-  return ok(result_alloc_t, new_ptr);
+  return result__ok(result_alloc_t, new_ptr);
 }
 
 #endif // ALLOC_H

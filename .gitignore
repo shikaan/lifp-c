@@ -1,8 +1,10 @@
 .idea
-build
 .vscode
 compile_commands.json
+
+# artifacts
 src/*.o
 **/*.dSYM
+
+# binaries
 main
-cmake-build*

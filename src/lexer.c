@@ -16,7 +16,7 @@ result_token_list_t tokenize(const char *source) {
   result_alloc_t tokens_result = tokenListAlloc();
 
   if (!tokens_result.ok) {
-    return err(result_token_list_t, tokens_result.error.kind,
+    return result__error(result_token_list_t, tokens_result.error.kind,
                tokens_result.error.payload);
   }
 
@@ -33,7 +33,7 @@ result_token_list_t tokenize(const char *source) {
       result_alloc_t realloc_result =
           reallocSafe(tokens->data, tokens->capacity * sizeof(token_t));
       if (!realloc_result.ok) {
-        return err(result_token_list_t, tokens_result.error.kind,
+        return result__error(result_token_list_t, tokens_result.error.kind,
                    tokens_result.error.payload);
       }
       tokens->data = realloc_result.value;
@@ -73,12 +73,12 @@ result_token_list_t tokenize(const char *source) {
                                          .token = CURRENT_CHAR,
                                      }};
       result =
-          err(result_token_list_t, EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
+          result__error(result_token_list_t, EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
       goto error;
     }
   }
 
-  result = ok(result_token_list_t, tokens);
+  result = result__ok(result_token_list_t, tokens);
   return result;
 error:
   tokenListFree(tokens);
@@ -140,5 +140,5 @@ result_alloc_t tokenListAlloc(void) {
   }
 
   tokens->data = data_result.value;
-  return ok(result_alloc_t, tokens);
+  return result__ok(result_alloc_t, tokens);
 }
