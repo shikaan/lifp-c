@@ -1,6 +1,7 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <stddef.h>
 #include <stdio.h>  // printf, snprintf
 #include <math.h>   // fabs
 #include <string.h> // strncmp
@@ -90,6 +91,12 @@ void test__expectNeqInt(const int a, const int b, const char* name) {
 void test__expectEqlUint(const unsigned int a, const unsigned int b, const char* name) {
   char msg[256];
   snprintf(msg, 256, "Expected %d to equal %d", a, b);
+  test__expect(a == b, name, msg);
+}
+
+void test__expectEqlSize(const size_t a, const size_t b, const char* name) {
+  char msg[256];
+  snprintf(msg, 256, "Expected %lu to equal %lu", a, b);
   test__expect(a == b, name, msg);
 }
 

@@ -41,9 +41,11 @@ result_token_list_t tokenize(const char *source) {
       current_token->type = TOKEN_TYPE_RPAREN;
       current_token->value.rparen = nullptr;
       tokens->size++;
-    } else if (isblank(CURRENT_CHAR)) {
-      if (CURRENT_CHAR == '\n')
+    } else if (isspace(CURRENT_CHAR)) {
+      if (CURRENT_CHAR == '\n') {
         position.line++;
+        position.column = 0;
+      }
       continue;
     } else if (isnumber(CURRENT_CHAR)) {
       current_token->type = TOKEN_TYPE_INTEGER;
