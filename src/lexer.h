@@ -30,8 +30,8 @@ typedef struct {
   token_type_t type;
 } token_t;
 
-bool tokenEql(token_t *first, token_t *second);
-void tokenFree(token_t *ptr);
+bool tokenEql(token_t *self, token_t *other);
+void tokenDealloc(token_t *self);
 
 typedef struct {
   size_t capacity;
@@ -39,9 +39,9 @@ typedef struct {
   token_t *data;
 } token_list_t;
 
-bool tokenListEql(token_list_t *first, token_list_t *second);
-void tokenListFree(token_list_t *ptr);
-result_alloc_t tokenListAlloc(void);
+bool tokenListEql(token_list_t *self, token_list_t *other);
+void tokenListDealloc(token_list_t *self);
+result_alloc_t tokenListAlloc(size_t capacity);
 
 typedef Result(token_list_t *) result_token_list_t;
 result_token_list_t tokenize(const char *source);

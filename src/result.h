@@ -23,13 +23,19 @@ typedef struct {
   exception_payload_t payload;
 } exception_t;
 
-#define Result(T)                                                              \
+#define Result(ValueType)                                                      \
   struct {                                                                     \
     bool ok;                                                                   \
     union {                                                                    \
-      T value;                                                                 \
+      ValueType value;                                                         \
       exception_t error;                                                       \
     };                                                                         \
+  }
+
+#define ResultVoid()                                                           \
+  struct {                                                                     \
+    bool ok;                                                                   \
+    exception_t error;                                                         \
   }
 
 // Helper functions for creating results

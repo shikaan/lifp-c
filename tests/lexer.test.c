@@ -69,8 +69,8 @@ void atoms() {
     test__expect(tokenListEql(CASES[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    tokenListFree(CASES[i].expected);
-    tokenListFree(list_result.value);
+    tokenListDealloc(CASES[i].expected);
+    tokenListDealloc(list_result.value);
   }
 }
 
@@ -109,8 +109,8 @@ void whitespaces() {
     test__expect(tokenListEql(CASES[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    tokenListFree(CASES[i].expected);
-    tokenListFree(list_result.value);
+    tokenListDealloc(CASES[i].expected);
+    tokenListDealloc(list_result.value);
   }
 }
 
