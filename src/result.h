@@ -1,30 +1,41 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-typedef enum {
-    ERROR_UnexpectedToken,
-} EXCEPTION_KIND;
+#include "./position.h"
 
-typedef union {
-    char unexpected_token;
-} ExceptionPayload;
+typedef enum {
+  ERROR_UNEXPECTED_TOKEN,
+} exception_kind_t;
 
 typedef struct {
-    EXCEPTION_KIND kind;
-    ExceptionPayload payload;
-} Exception;
+  char token;
+  position_t position;
+} unexpected_token_payload_t;
 
-#define Result(T) \
-	struct { \
-		bool ok; \
-		union { \
-			T value; \
-			Exception error; \
-		}; \
-	}
+typedef union {
+  unexpected_token_payload_t unexpected_token;
+} exception_payload_t;
+
+typedef struct {
+  exception_kind_t kind;
+  exception_payload_t payload;
+} exception_t;
+
+#define Result(T)                                                              \
+  struct {                                                                     \
+    bool ok;                                                                   \
+    union {                                                                    \
+      T value;                                                                 \
+      exception_t error;                                                       \
+    };                                                                         \
+  }
 
 // Helper functions for creating results
-#define ok(T, Value) (T){.ok = true, .value = (Value)}
-#define err(T, Kind, Payload) (T){.ok = false, .error = (Exception){.kind = (Kind), .payload = Payload}}
+#define ok(T, Value)                                                           \
+  (T) { .ok = true, .value = (Value) }
+#define err(T, Kind, Payload)                                                  \
+  (T) {                                                                        \
+    .ok = false, .error = (Exception) { .kind = (Kind), .payload = (Payload) } \
+  }
 
 #endif // RESULT_H

@@ -53,10 +53,10 @@ void test__expect(bool condition, const char* name, const char* message) {
   total++;
   if (!condition) {
     failed++;
-    printf("  fail - %s: %s\n", name, message);
+    printf("    fail - %s: %s\n", name, message);
     return;
   }
-  printf("   ok  - %s\n", name);
+  printf("     ok  - %s\n", name);
 }
 
 void test__expectTrue(bool condition, const char* name) {
@@ -85,6 +85,12 @@ void test__expectNeqInt(const int a, const int b, const char* name) {
   char msg[256];
   snprintf(msg, 256, "Expected %d not to equal %d", a, b);
   test__expect(a != b, name, msg);
+}
+
+void test__expectEqlUint(const unsigned int a, const unsigned int b, const char* name) {
+  char msg[256];
+  snprintf(msg, 256, "Expected %d to equal %d", a, b);
+  test__expect(a == b, name, msg);
 }
 
 void test__expectEqlFloat(const float a, const float b, const char* name) {
@@ -122,6 +128,8 @@ void test__expectNeqString(const char* a, const char* b, size_t max_size, const 
   snprintf(msg, 256, "Expected '%s' not to equal '%s'", a, b);
   test__expect(strncmp(a, b, max_size) != 0, name, msg);
 }
+
+
 
 int test__report(void) {
   printf("\n%d assertions, %d failed\n", total, failed);

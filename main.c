@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 int main(void) {
-  const ResultTokenList result = tokenize("hello world");
-	printf("%c\n", result.error.payload.unexpected_token);
+  // result_token_list_t result = tokenize("hello world");
+	// printf("%c\n", result.va);
  	return 1;
 }
