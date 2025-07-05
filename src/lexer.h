@@ -1,5 +1,4 @@
-#ifndef LEXER_H
-#define LEXER_H
+#pragma once
 
 #include "./position.h"
 #include "./result.h"
@@ -45,5 +44,3 @@ result_alloc_t tokenListAlloc(size_t capacity);
 
 typedef Result(token_list_t *) result_token_list_t;
 result_token_list_t tokenize(const char *source);
-
-#endif // LEXER_H

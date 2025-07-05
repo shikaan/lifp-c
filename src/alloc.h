@@ -1,5 +1,4 @@
-#ifndef ALLOC_H
-#define ALLOC_H
+#pragma once
 
 #include "result.h"
 #include <stddef.h>
@@ -34,5 +33,3 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
 
   return result__ok(result_alloc_t, new_ptr);
 }
-
-#endif // ALLOC_H

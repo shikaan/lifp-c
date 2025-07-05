@@ -1,6 +1,4 @@
-#ifndef POSITION_H
-#define POSITION_H
-
+#pragma once
 #include <stddef.h>
 
 typedef struct {
@@ -9,5 +7,3 @@ typedef struct {
 } position_t;
 
 bool positionEql(position_t first, position_t second);
-
-#endif //POSITION_H

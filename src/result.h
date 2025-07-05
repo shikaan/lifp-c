@@ -1,5 +1,4 @@
-#ifndef RESULT_H
-#define RESULT_H
+#pragma once
 
 #include "./position.h"
 
@@ -47,5 +46,3 @@ typedef struct {
       .kind = (Kind), .payload = (Payload)                                     \
     }                                                                          \
   }
-
-#endif // RESULT_H
