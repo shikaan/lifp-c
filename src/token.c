@@ -1,6 +1,6 @@
 #include "token.h"
-#include <string.h>
 #include <stddef.h>
+#include <string.h>
 
 bool tokenEql(const token_t *self, const token_t *other) {
   if (self->type != other->type ||
