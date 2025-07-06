@@ -2,10 +2,10 @@
 .vscode
 compile_commands.json
 
-# artifacts
+# build artifacts
 src/*.o
 **/*.dSYM
 
 # binaries
 main
-tests/lexer.test
+tests/*.test

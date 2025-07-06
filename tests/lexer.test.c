@@ -1,16 +1,18 @@
 #include "../src/lexer.h"
 #include "./test.h"
+#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 #define array_len(array) (sizeof(array) / sizeof((array)[0]))
 
 static token_list_t *makeTokenList(const token_t *elements, size_t size) {
-  token_list_t *list = malloc(sizeof(token_list_t));
-  list->size = size;
-  list->capacity = size;
-  list->data = malloc(size * sizeof(token_t));
-  memcpy(list->data, elements, size * sizeof(token_t));
+  result_alloc_t allocation = tokenListAlloc(size);
+  assert(allocation.ok);
+  token_list_t *list = allocation.value;
+  for (size_t i = 0; i < size; i++) {
+    tokenListPush(list, elements[i]);
+  }
   return list;
 }
 
