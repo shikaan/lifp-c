@@ -47,9 +47,9 @@ void atoms() {
   for (size_t i = 0; i < array_len(cases); i++) {
     auto list_result = tokenize(cases[i].input);
 
-    test__case(cases[i].name);
-    test__expectTrue(list_result.ok, "doesn't fail");
-    test__expect(tokenListEql(cases[i].expected, list_result.value),
+    case(cases[i].name);
+    expectTrue(list_result.ok, "doesn't fail");
+    expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
     tokenListDealloc(cases[i].expected);
@@ -87,9 +87,9 @@ void whitespaces() {
   for (size_t i = 0; i < array_len(cases); i++) {
     auto list_result = tokenize(cases[i].input);
 
-    test__case(cases[i].name);
-    test__expectTrue(list_result.ok, "doesn't fail");
-    test__expect(tokenListEql(cases[i].expected, list_result.value),
+    case(cases[i].name);
+    expectTrue(list_result.ok, "doesn't fail");
+    expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
     tokenListDealloc(cases[i].expected);
@@ -111,26 +111,26 @@ void errors() {
 
   for (size_t i = 0; i < array_len(cases); i++) {
     auto result = tokenize(cases[i].input);
-    test__case(cases[i].name);
-    test__expectFalse(result.ok, "should fail");
+    case(cases[i].name);
+    expectFalse(result.ok, "should fail");
     char msg[128];
     snprintf(msg, 128, "Expected UNEXPECTED_TOKEN got %u\n", result.error.kind);
-    test__expect(result.error.kind == EXCEPTION_KIND_UNEXPECTED_TOKEN,
+    expect(result.error.kind == EXCEPTION_KIND_UNEXPECTED_TOKEN,
                  "error is ERROR_UNEXPECTED_TOKEN", msg);
-    test__expectEqlSize(result.error.payload.unexpected_token.position.column,
+    expectEqlSize(result.error.payload.unexpected_token.position.column,
                         cases[i].column, "column matches");
-    test__expectEqlSize(result.error.payload.unexpected_token.position.line,
+    expectEqlSize(result.error.payload.unexpected_token.position.line,
                         cases[i].line, "line matches");
     snprintf(msg, 128, "Expected '%c' got '%c'\n", cases[i].token,
              result.error.payload.unexpected_token.token);
-    test__expect(result.error.payload.unexpected_token.token == cases[i].token,
+    expect(result.error.payload.unexpected_token.token == cases[i].token,
                  "token matches", msg);
   }
 }
 
 int main(void) {
-  test__suite(atoms);
-  test__suite(whitespaces);
-  test__suite(errors);
-  return test__report();
+  suite(atoms);
+  suite(whitespaces);
+  suite(errors);
+  return report();
 }

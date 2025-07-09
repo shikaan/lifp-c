@@ -30,25 +30,25 @@ static void tokenToString(const token_t *token, size_t n, char dst[static n]) {
   }
 }
 
-static void test__expectEqlToken(const token_t *a, const token_t *b,
-                                 const char *name) {
+static void expectEqlToken(const token_t *a, const token_t *b,
+                           const char *name) {
   char msg[256];
   char bufa[64];
   char bufb[64];
   tokenToString(a, 64, bufa);
   tokenToString(b, 64, bufb);
   snprintf(msg, 256, "Expected %s to equal '%s'", bufa, bufb);
-  test__expect(tokenEql(a, b), name, msg);
+  expect(tokenEql(a, b), name, msg);
 }
-static void test__expectNeqToken(const token_t *a, const token_t *b,
-                                 const char *name) {
+static void expectNeqToken(const token_t *a, const token_t *b,
+                           const char *name) {
   char msg[256];
   char bufa[64];
   char bufb[64];
   tokenToString(a, 64, bufa);
   tokenToString(b, 64, bufb);
   snprintf(msg, 256, "Expected %s not to equal '%s'", bufa, bufb);
-  test__expect(!tokenEql(a, b), name, msg);
+  expect(!tokenEql(a, b), name, msg);
 }
 
 void equality() {
@@ -72,10 +72,10 @@ void equality() {
                   .value = {.symbol = {'b'}},
                   .position = position};
 
-  test__expectEqlToken(&tok1, &tok2, "integers");
-  test__expectNeqToken(&tok1, &tok3, "different integers");
-  test__expectEqlToken(&tok4, &tok5, "symbols");
-  test__expectNeqToken(&tok4, &tok6, "different symbols");
+  expectEqlToken(&tok1, &tok2, "integers");
+  expectNeqToken(&tok1, &tok3, "different integers");
+  expectEqlToken(&tok4, &tok5, "symbols");
+  expectNeqToken(&tok4, &tok6, "different symbols");
 }
 
 void listEquality() {
@@ -102,10 +102,9 @@ void listEquality() {
   token_list_t *list2 = makeTokenList(arr2, 2);
   token_list_t *list3 = makeTokenList(arr3, 2);
 
-  test__expect(tokenListEql(list1, list2), "lists",
-               "Expected lists to be equal");
-  test__expect(!tokenListEql(list1, list3), "different lists",
-               "Expected lists to be equal");
+  expect(tokenListEql(list1, list2), "lists", "Expected lists to be equal");
+  expect(!tokenListEql(list1, list3), "different lists",
+         "Expected lists to be equal");
 
   tokenListDealloc(list1);
   tokenListDealloc(list2);
@@ -116,8 +115,8 @@ void listAllocations() {
   result_alloc_t result = tokenListAlloc(4);
   assert(result.ok);
   token_list_t *list = result.value;
-  test__expectEqlSize(list->capacity, 4, "correct capacity");
-  test__expectEqlSize(list->size, 0, "correct size");
+  expectEqlSize(list->capacity, 4, "correct capacity");
+  expectEqlSize(list->size, 0, "correct size");
   tokenListDealloc(list);
 }
 
@@ -127,13 +126,13 @@ void listPush() {
   token_list_t *list = result.value;
   token_t token = tInt(1);
   result_token_list_push_t push_result = tokenListPush(list, &token);
-  test__expectTrue(push_result.ok, "pushes");
-  test__expectEqlSize(list->size, 1, "increases size");
-  test__expectEqlSize(list->capacity, 1, "doesn't change capacity");
-  test__expectEqlToken(&list->data[0], &token, "value is correct");
+  expectTrue(push_result.ok, "pushes");
+  expectEqlSize(list->size, 1, "increases size");
+  expectEqlSize(list->capacity, 1, "doesn't change capacity");
+  expectEqlToken(&list->data[0], &token, "value is correct");
 
   result = tokenListAlloc(1);
-  test__case("with resize");
+  case("with resize");
   assert(result.ok);
   list = result.value;
   for (int i = 0; i < 5; i++) {
@@ -141,19 +140,19 @@ void listPush() {
     push_result = tokenListPush(list, &result_token);
     assert(push_result.ok);
   }
-  test__expectEqlSize(list->size, 5, "updates size");
-  test__expectEqlSize(list->capacity, TOKEN_LIST_STRIDE + 1,
+  expectEqlSize(list->size, 5, "updates size");
+  expectEqlSize(list->capacity, TOKEN_LIST_STRIDE + 1,
                       "updates capacity");
   for (int i = 0; i < 5; i++) {
-    test__expectEqlInt(list->data[i].value.integer, i, "value is correct");
+    expectEqlInt(list->data[i].value.integer, i, "value is correct");
   }
   tokenListDealloc(list);
 }
 
 int main(void) {
-  test__suite(equality);
-  test__suite(listEquality);
-  test__suite(listAllocations);
-  test__suite(listPush);
-  return test__report();
+  suite(equality);
+  suite(listEquality);
+  suite(listAllocations);
+  suite(listPush);
+  return report();
 }

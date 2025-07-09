@@ -77,8 +77,8 @@ void atoms(void) {
     size_t offset = 0;
     auto result = parse(list, &offset, &depth);
     assert(result.ok);
-    test__expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
-                 "Expected equal nodes");
+    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+           "Expected equal nodes");
     tokenListDealloc(list);
     // TODO: nodeDealloc(result.value);
   }
@@ -126,8 +126,8 @@ void unary(void) {
     size_t offset = 0;
     auto result = parse(list, &offset, &depth);
     assert(result.ok);
-    test__expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
-                 "Expected equal nodes");
+    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+           "Expected equal nodes");
     // TODO: nodeDealloc(result.value);
   }
 }
@@ -165,8 +165,8 @@ void complex(void) {
     size_t offset = 0;
     auto result = parse(list, &offset, &depth);
     assert(result.ok);
-    test__expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
-                 "Expected equal nodes");
+    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+           "Expected equal nodes");
     // TODO: nodeDealloc(result.value);
   }
 }
@@ -198,16 +198,16 @@ void errors() {
     size_t offset = 0;
     auto result = parse(list, &offset, &depth);
     assert(!result.ok);
-    test__expectEqlUint(result.error.kind, cases[i].expected,
-                        "returns correct exception");
+    expectEqlUint(result.error.kind, cases[i].expected,
+                  "returns correct exception");
     // TODO: nodeDealloc(result.value);
   }
 }
 
 int main(void) {
-  test__suite(atoms);
-  test__suite(unary);
-  test__suite(complex);
-  test__suite(errors);
-  return test__report();
+  suite(atoms);
+  suite(unary);
+  suite(complex);
+  suite(errors);
+  return report();
 }
