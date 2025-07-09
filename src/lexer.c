@@ -15,8 +15,8 @@ result_token_list_t tokenize(const char *source) {
   result_alloc_t tokens_result = tokenListAlloc(TOKEN_LIST_STRIDE);
 
   if (!tokens_result.ok) {
-    return result__error(result_token_list_t, tokens_result.error.kind,
-                         tokens_result.error.payload);
+    return error(result_token_list_t, tokens_result.error.kind,
+                 tokens_result.error.payload);
   }
 
   result_token_list_t result;
@@ -64,19 +64,19 @@ result_token_list_t tokenize(const char *source) {
                                          .position = position,
                                          .token = current_char,
                                      }};
-      result = result__error(result_token_list_t,
-                             EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
+      result =
+          error(result_token_list_t, EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
       goto error;
     }
 
     if (!token_push_result.ok) {
-      result = result__error(result_token_list_t, tokens_result.error.kind,
-                             token_push_result.error.payload);
+      result = error(result_token_list_t, tokens_result.error.kind,
+                     token_push_result.error.payload);
       goto error;
     }
   }
 
-  result = result__ok(result_token_list_t, tokens);
+  result = ok(result_token_list_t, tokens);
   return result;
 error:
   tokenListDealloc(tokens);

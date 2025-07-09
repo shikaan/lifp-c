@@ -42,9 +42,9 @@ typedef struct {
   }
 
 // Helper functions for creating results
-#define result__ok(T, Value)                                                   \
+#define ok(T, Value)                                                           \
   (T) { .ok = true, .value = (Value) }
-#define result__error(T, Kind, Payload)                                        \
+#define error(T, Kind, Payload)                                                \
   (T) {                                                                        \
     .ok = false, .error = (exception_t) {                                      \
       .kind = (Kind), .payload = (Payload)                                     \

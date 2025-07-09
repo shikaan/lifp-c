@@ -40,8 +40,8 @@ result_node_t parseAtom(token_t token) {
   result_alloc_t node_result = nodeAtomAlloc();
 
   if (!node_result.ok) {
-    return result__error(result_node_t, node_result.error.kind,
-                         node_result.error.payload);
+    return error(result_node_t, node_result.error.kind,
+                 node_result.error.payload);
   }
 
   node_t *node = node_result.value;
@@ -51,29 +51,29 @@ result_node_t parseAtom(token_t token) {
   case TOKEN_TYPE_INTEGER:
     node->type = NODE_TYPE_INTEGER;
     node->value.integer = token.value.integer;
-    return result__ok(result_node_t, node);
+    return ok(result_node_t, node);
   case TOKEN_TYPE_SYMBOL:
     if (strncmp(token.value.symbol, TRUE, 4) == 0) {
       node->type = NODE_TYPE_BOOLEAN;
       node->value.boolean = true;
-      return result__ok(result_node_t, node);
+      return ok(result_node_t, node);
     }
 
     if (strncmp(token.value.symbol, FALSE, 5) == 0) {
       node->type = NODE_TYPE_BOOLEAN;
       node->value.boolean = false;
-      return result__ok(result_node_t, node);
+      return ok(result_node_t, node);
     }
 
     if (strncmp(token.value.symbol, NIL, 3) == 0) {
       node->type = NODE_TYPE_NIL;
       node->value.nil = nullptr;
-      return result__ok(result_node_t, node);
+      return ok(result_node_t, node);
     }
 
     node->type = NODE_TYPE_SYMBOL;
     memcpy(node->value.symbol, token.value.symbol, SYMBOL_SIZE);
-    return result__ok(result_node_t, node);
+    return ok(result_node_t, node);
   case TOKEN_TYPE_LPAREN:
   case TOKEN_TYPE_RPAREN:
   default:
@@ -85,8 +85,8 @@ result_node_t parseAtom(token_t token) {
 result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
   result_alloc_t node_result = nodeListAlloc();
   if (!node_result.ok) {
-    return result__error(result_node_t, node_result.error.kind,
-                         node_result.error.payload);
+    return error(result_node_t, node_result.error.kind,
+                 node_result.error.payload);
   }
 
   node_t *node = node_result.value;
@@ -109,8 +109,8 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
           (node->value.list.count + NODE_LIST_STRIDE) * (sizeof(node_t)));
       if (!realloc_result.ok) {
         nodeDealloc(node);
-        return result__error(result_node_t, realloc_result.error.kind,
-                             realloc_result.error.payload);
+        return error(result_node_t, realloc_result.error.kind,
+                     realloc_result.error.payload);
       }
       node->value.list.items = realloc_result.value;
     }
@@ -126,13 +126,13 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
     node->value.list.count++;
   }
 
-  return result__ok(result_node_t, node);
+  return ok(result_node_t, node);
 }
 
 result_node_t parse(token_list_t *tokens, size_t *offset, size_t *depth) {
   if (tokens->size == 0) {
     exception_payload_t payload = {.invalid_expression = nullptr};
-    return result__error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
+    return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
   }
 
   const token_t first_token = tokens->data[*offset];
@@ -144,15 +144,13 @@ result_node_t parse(token_list_t *tokens, size_t *offset, size_t *depth) {
     // There are left parens that don't match right parens
     if (*depth != initial_depth) {
       exception_payload_t payload = {.unbalanced_parentheses = nullptr};
-      return result__error(result_node_t, EXCEPTION_UNBALANCED_PARENTHESES,
-                           payload);
+      return error(result_node_t, EXCEPTION_UNBALANCED_PARENTHESES, payload);
     }
 
     // There are dangling chars after top level list
     if (initial_depth == 0 && *offset != (tokens->size - 1)) {
       exception_payload_t payload = {.invalid_expression = nullptr};
-      return result__error(result_node_t, EXCEPTION_INVALID_EXPRESSION,
-                           payload);
+      return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
     }
 
     return parse_list_result;

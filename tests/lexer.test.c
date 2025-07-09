@@ -97,7 +97,7 @@ void whitespaces() {
   }
 }
 
-void error() {
+void errors() {
   const struct {
     const char *input;
     size_t column;
@@ -131,6 +131,6 @@ void error() {
 int main(void) {
   test__suite(atoms);
   test__suite(whitespaces);
-  test__suite(error);
+  test__suite(errors);
   return test__report();
 }

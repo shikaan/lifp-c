@@ -50,7 +50,7 @@ result_alloc_t tokenListAlloc(size_t initial_capacity) {
     return data_result;
   }
   tokens->data = data_result.value;
-  return result__ok(result_alloc_t, tokens);
+  return ok(result_alloc_t, tokens);
 }
 
 result_token_list_push_t tokenListPush(token_list_t *self,
@@ -60,8 +60,8 @@ result_token_list_push_t tokenListPush(token_list_t *self,
     result_alloc_t realloc_result =
         reallocSafe(self->data, self->capacity * sizeof(token_t));
     if (!realloc_result.ok) {
-      return result__error(result_token_list_push_t, realloc_result.error.kind,
-                           realloc_result.error.payload);
+      return error(result_token_list_push_t, realloc_result.error.kind,
+                   realloc_result.error.payload);
     }
     self->data = realloc_result.value;
   }
