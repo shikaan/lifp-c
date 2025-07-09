@@ -5,6 +5,8 @@
 typedef enum {
   EXCEPTION_KIND_UNEXPECTED_TOKEN,
   EXCEPTION_KIND_ALLOCATION,
+  EXCEPTION_INVALID_EXPRESSION,
+  EXCEPTION_UNBALANCED_PARENTHESES,
 } exception_kind_t;
 
 typedef struct {
@@ -15,6 +17,8 @@ typedef struct {
 typedef union {
   unexpected_token_payload_t unexpected_token;
   nullptr_t allocation;
+  nullptr_t invalid_expression;
+  nullptr_t unbalanced_parentheses;
 } exception_payload_t;
 
 typedef struct {

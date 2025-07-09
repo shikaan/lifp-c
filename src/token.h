@@ -16,15 +16,15 @@ typedef enum {
 
 typedef union {
   char symbol[SYMBOL_SIZE];
+  int32_t integer;
   nullptr_t lparen;
   nullptr_t rparen;
-  int32_t integer;
 } token_value_t;
 
 typedef struct {
-  token_value_t value;
-  position_t position;
-  token_type_t type;
+  const token_value_t value;
+  const position_t position;
+  const token_type_t type;
 } token_t;
 
 bool tokenEql(const token_t *self, const token_t *other);
@@ -40,4 +40,5 @@ void tokenListDealloc(token_list_t *self);
 result_alloc_t tokenListAlloc(size_t capacity);
 
 typedef ResultVoid() result_token_list_push_t;
-result_token_list_push_t tokenListPush(token_list_t *self, token_t token);
+result_token_list_push_t tokenListPush(token_list_t *self,
+                                       const token_t *token);

@@ -6,12 +6,14 @@ Diagnostics:
     Add: [modernize-*, bugprone-*, llvm-*, performance-*, readability-*]
     Remove: [readability-magic-numbers]
     CheckOptions:
+      readability-identifier-naming.LocalVariableCase: lower_case
+      readability-identifier-naming.LocalConstantCase: lower_case
+      readability-identifier-naming.ConstantMemberCase: lower_case
       readability-identifier-naming.ConstantCase: UPPER_CASE
       readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
       readability-identifier-naming.EnumConstantCase: UPPER_CASE
       readability-identifier-naming.GlobalConstantCase: UPPER_CASE
       readability-identifier-naming.StaticConstantCase: UPPER_CASE
-      readability-identifier-naming.LocalVariableCase: lower_case
       readability-identifier-naming.EnumCase: lower_case
       readability-identifier-naming.StructCase: lower_case
       readability-identifier-naming.TypeAliasCase: lower_case

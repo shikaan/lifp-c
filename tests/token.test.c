@@ -1,12 +1,11 @@
 #include "../src/token.h"
 #include "./test.h"
+#include "./utils.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define array_len(array) (sizeof(array) / sizeof((array)[0]))
 
 static void tokenToString(const token_t *token, size_t n, char dst[static n]) {
   switch (token->type) {
@@ -52,36 +51,26 @@ static void test__expectNeqToken(const token_t *a, const token_t *b,
   test__expect(!tokenEql(a, b), name, msg);
 }
 
-static token_list_t *makeTokenList(const token_t *elements, size_t size) {
-  result_alloc_t allocation = tokenListAlloc(size);
-  assert(allocation.ok);
-  token_list_t *list = allocation.value;
-  for (size_t i = 0; i < size; i++) {
-    tokenListPush(list, elements[i]);
-  }
-  return list;
-}
-
 void equality() {
-  const position_t POSITION = {.column = 1, .line = 1};
+  const position_t position = {.column = 1, .line = 1};
   token_t tok1 = {.type = TOKEN_TYPE_INTEGER,
                   .value = {.integer = 42},
-                  .position = POSITION};
+                  .position = position};
   token_t tok2 = {.type = TOKEN_TYPE_INTEGER,
                   .value = {.integer = 42},
-                  .position = POSITION};
+                  .position = position};
   token_t tok3 = {.type = TOKEN_TYPE_INTEGER,
                   .value = {.integer = 43},
-                  .position = POSITION};
+                  .position = position};
   token_t tok4 = {.type = TOKEN_TYPE_SYMBOL,
                   .value = {.symbol = {'a'}},
-                  .position = POSITION};
+                  .position = position};
   token_t tok5 = {.type = TOKEN_TYPE_SYMBOL,
                   .value = {.symbol = {'a'}},
-                  .position = POSITION};
+                  .position = position};
   token_t tok6 = {.type = TOKEN_TYPE_SYMBOL,
                   .value = {.symbol = {'b'}},
-                  .position = POSITION};
+                  .position = position};
 
   test__expectEqlToken(&tok1, &tok2, "integers");
   test__expectNeqToken(&tok1, &tok3, "different integers");
@@ -90,25 +79,25 @@ void equality() {
 }
 
 void listEquality() {
-  const position_t POSITION = {.column = 1, .line = 1};
+  const position_t position = {.column = 1, .line = 1};
   token_t arr1[2] = {{.type = TOKEN_TYPE_INTEGER,
                       .value = {.integer = 1},
-                      .position = POSITION},
+                      .position = position},
                      {.type = TOKEN_TYPE_SYMBOL,
                       .value = {.symbol = {'a'}},
-                      .position = POSITION}};
+                      .position = position}};
   token_t arr2[2] = {{.type = TOKEN_TYPE_INTEGER,
                       .value = {.integer = 1},
-                      .position = POSITION},
+                      .position = position},
                      {.type = TOKEN_TYPE_SYMBOL,
                       .value = {.symbol = {'a'}},
-                      .position = POSITION}};
+                      .position = position}};
   token_t arr3[2] = {{.type = TOKEN_TYPE_INTEGER,
                       .value = {.integer = 2},
-                      .position = POSITION},
+                      .position = position},
                      {.type = TOKEN_TYPE_SYMBOL,
                       .value = {.symbol = {'a'}},
-                      .position = POSITION}};
+                      .position = position}};
   token_list_t *list1 = makeTokenList(arr1, 2);
   token_list_t *list2 = makeTokenList(arr2, 2);
   token_list_t *list3 = makeTokenList(arr3, 2);
@@ -136,10 +125,8 @@ void listPush() {
   result_alloc_t result = tokenListAlloc(1);
   assert(result.ok);
   token_list_t *list = result.value;
-  token_t token = {.type = TOKEN_TYPE_INTEGER,
-                   .value = {.integer = 1},
-                   .position = {.column = 1, .line = 1}};
-  result_token_list_push_t push_result = tokenListPush(list, token);
+  token_t token = tInt(1);
+  result_token_list_push_t push_result = tokenListPush(list, &token);
   test__expectTrue(push_result.ok, "pushes");
   test__expectEqlSize(list->size, 1, "increases size");
   test__expectEqlSize(list->capacity, 1, "doesn't change capacity");
@@ -149,9 +136,9 @@ void listPush() {
   test__case("with resize");
   assert(result.ok);
   list = result.value;
-  for (size_t i = 0; i < 5; i++) {
-    token.value.integer = (int)i;
-    push_result = tokenListPush(list, token);
+  for (int i = 0; i < 5; i++) {
+    const token_t result_token = tInt(i);
+    push_result = tokenListPush(list, &result_token);
     assert(push_result.ok);
   }
   test__expectEqlSize(list->size, 5, "updates size");

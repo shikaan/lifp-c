@@ -53,7 +53,8 @@ result_alloc_t tokenListAlloc(size_t initial_capacity) {
   return result__ok(result_alloc_t, tokens);
 }
 
-result_token_list_push_t tokenListPush(token_list_t *self, token_t token) {
+result_token_list_push_t tokenListPush(token_list_t *self,
+                                       const token_t *token) {
   if (self->size == self->capacity) {
     self->capacity += TOKEN_LIST_STRIDE;
     result_alloc_t realloc_result =
@@ -64,7 +65,7 @@ result_token_list_push_t tokenListPush(token_list_t *self, token_t token) {
     }
     self->data = realloc_result.value;
   }
-  self->data[self->size] = token;
+  memcpy(&self->data[self->size], token, sizeof(token_t));
   self->size++;
   return (result_token_list_push_t){.ok = true};
 }

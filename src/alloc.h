@@ -6,8 +6,10 @@
 
 #define deallocSafe(ptr)                                                       \
   {                                                                            \
-    free(ptr);                                                                 \
-    ptr = nullptr;                                                             \
+    if (ptr != nullptr) {                                                      \
+      free(ptr);                                                               \
+      ptr = nullptr;                                                           \
+    }                                                                          \
   }
 
 typedef Result(void *) result_alloc_t;
