@@ -1,4 +1,6 @@
 #include "token.h"
+#include "alloc.h"
+#include "list.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -21,10 +23,10 @@ bool tokenEql(const token_t *self, const token_t *other) {
 }
 
 bool tokenListEql(const token_list_t *self, const token_list_t *other) {
-  if (self->size != other->size) {
+  if (self->count != other->count) {
     return false;
   }
-  for (size_t i = 0; i < self->size; i++) {
+  for (size_t i = 0; i < self->count; i++) {
     if (!tokenEql(&self->data[i], &other->data[i]))
       return false;
   }
@@ -32,40 +34,13 @@ bool tokenListEql(const token_list_t *self, const token_list_t *other) {
 }
 
 void tokenListDealloc(token_list_t *self) {
-  deallocSafe(self->data);
-  deallocSafe(self);
+  listDealloc((generic_flat_list_t *)self);
 }
 
 result_alloc_t tokenListAlloc(size_t initial_capacity) {
-  result_alloc_t list_result = allocSafe(sizeof(token_list_t));
-  if (!list_result.ok) {
-    return list_result;
-  }
-  token_list_t *tokens = list_result.value;
-  tokens->capacity = initial_capacity;
-  tokens->size = 0;
-  result_alloc_t data_result =
-      allocSafe(sizeof(tokens->data[0]) * tokens->capacity);
-  if (!data_result.ok) {
-    return data_result;
-  }
-  tokens->data = data_result.value;
-  return ok(result_alloc_t, tokens);
+  return listAlloc(initial_capacity, sizeof(token_list_t), sizeof(token_t));
 }
 
-result_token_list_push_t tokenListPush(token_list_t *self,
-                                       const token_t *token) {
-  if (self->size == self->capacity) {
-    self->capacity += TOKEN_LIST_STRIDE;
-    result_alloc_t realloc_result =
-        reallocSafe(self->data, self->capacity * sizeof(token_t));
-    if (!realloc_result.ok) {
-      return error(result_token_list_push_t, realloc_result.error.kind,
-                   realloc_result.error.payload);
-    }
-    self->data = realloc_result.value;
-  }
-  memcpy(&self->data[self->size], token, sizeof(token_t));
-  self->size++;
-  return (result_token_list_push_t){.ok = true};
+result_alloc_t tokenListPush(token_list_t *self, const token_t *token) {
+  return listPush((generic_flat_list_t *)self, sizeof(*token), token);
 }

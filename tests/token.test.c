@@ -26,6 +26,7 @@ static void tokenToString(const token_t *token, size_t n, char dst[static n]) {
              token->position.column, token->position.line);
     return;
   default:
+    snprintf(dst, 8, "<empty>");
     return;
   }
 }
@@ -116,18 +117,18 @@ void listAllocations() {
   assert(result.ok);
   token_list_t *list = result.value;
   expectEqlSize(list->capacity, 4, "correct capacity");
-  expectEqlSize(list->size, 0, "correct size");
+  expectEqlSize(list->count, 0, "correct count");
   tokenListDealloc(list);
 }
 
-void listPush() {
+void testListPush() {
   result_alloc_t result = tokenListAlloc(1);
   assert(result.ok);
   token_list_t *list = result.value;
   token_t token = tInt(1);
-  result_token_list_push_t push_result = tokenListPush(list, &token);
-  expectTrue(push_result.ok, "pushes");
-  expectEqlSize(list->size, 1, "increases size");
+  result_alloc_t push_result = tokenListPush(list, &token);
+  assert(push_result.ok);
+  expectEqlSize(list->count, 1, "increases count");
   expectEqlSize(list->capacity, 1, "doesn't change capacity");
   expectEqlToken(&list->data[0], &token, "value is correct");
 
@@ -140,8 +141,8 @@ void listPush() {
     push_result = tokenListPush(list, &result_token);
     assert(push_result.ok);
   }
-  expectEqlSize(list->size, 5, "updates size");
-  expectEqlSize(list->capacity, TOKEN_LIST_STRIDE + 1,
+  expectEqlSize(list->count, 5, "updates count");
+  expectEqlSize(list->capacity, LIST_STRIDE + 1,
                       "updates capacity");
   for (int i = 0; i < 5; i++) {
     expectEqlInt(list->data[i].value.integer, i, "value is correct");
@@ -153,6 +154,6 @@ int main(void) {
   suite(equality);
   suite(listEquality);
   suite(listAllocations);
-  suite(listPush);
+  suite(testListPush);
   return report();
 }

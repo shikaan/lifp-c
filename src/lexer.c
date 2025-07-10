@@ -7,12 +7,12 @@
 #include <string.h>
 
 #include "alloc.h"
+#include "list.h"
 #include "position.h"
 #include "result.h"
-#include "token.h"
 
 result_token_list_t tokenize(const char *source) {
-  result_alloc_t tokens_result = tokenListAlloc(TOKEN_LIST_STRIDE);
+  result_alloc_t tokens_result = tokenListAlloc(LIST_STRIDE);
 
   if (!tokens_result.ok) {
     return error(result_token_list_t, tokens_result.error.kind,
@@ -30,7 +30,7 @@ result_token_list_t tokenize(const char *source) {
     position.column++;
     const char current_char = source[i];
 
-    result_token_list_push_t token_push_result;
+    result_alloc_t token_push_result;
     if (current_char == LPAREN) {
       const token_t tok = {.type = TOKEN_TYPE_LPAREN,
                            .value = {.lparen = nullptr},

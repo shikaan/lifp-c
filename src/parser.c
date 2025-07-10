@@ -95,7 +95,7 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
   (*depth)++;
   (*offset)++;
 
-  for (; *offset < tokens->size; (*offset)++) {
+  for (; *offset < tokens->capacity; (*offset)++) {
     const token_t tok = tokens->data[*offset];
     if (tok.type == TOKEN_TYPE_RPAREN) {
       (*depth)--;
@@ -103,7 +103,7 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
     }
 
     // Expand the array by NODE_LIST_STRIDE spots if needed
-    if (node->value.list.count == NODE_LIST_STRIDE) {
+    if (node->value.list.count % NODE_LIST_STRIDE == 0) {
       auto realloc_result = reallocSafe(
           node->value.list.items,
           (node->value.list.count + NODE_LIST_STRIDE) * (sizeof(node_t)));
@@ -130,7 +130,7 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
 }
 
 result_node_t parse(token_list_t *tokens, size_t *offset, size_t *depth) {
-  if (tokens->size == 0) {
+  if (tokens->capacity == 0) {
     exception_payload_t payload = {.invalid_expression = nullptr};
     return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
   }
@@ -148,7 +148,7 @@ result_node_t parse(token_list_t *tokens, size_t *offset, size_t *depth) {
     }
 
     // There are dangling chars after top level list
-    if (initial_depth == 0 && *offset != (tokens->size - 1)) {
+    if (initial_depth == 0 && *offset != (tokens->capacity - 1)) {
       exception_payload_t payload = {.invalid_expression = nullptr};
       return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
     }

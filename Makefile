@@ -1,12 +1,12 @@
 include flags.mk
 
 src/token.o: src/position.o
-src/lexer.o: src/token.o src/position.o
+src/lexer.o: src/token.o src/position.o src/list.o
 src/parser.o: src/lexer.o src/position.o
 
-tests/lexer.test: src/lexer.o src/token.o src/position.o
-tests/token.test: src/token.o src/position.o
-tests/parser.test: src/token.o src/parser.o src/lexer.o src/position.o
+tests/lexer.test: src/lexer.o src/token.o src/position.o src/list.o
+tests/token.test: src/token.o src/position.o src/list.o
+tests/parser.test: src/token.o src/parser.o src/lexer.o src/position.o src/list.o
 
 .PHONY: clean
 clean:

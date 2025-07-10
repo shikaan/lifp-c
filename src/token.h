@@ -2,10 +2,10 @@
 
 #include "./alloc.h"
 #include "./position.h"
+#include "list.h"
 #include <stdint.h>
 
 constexpr size_t SYMBOL_SIZE = 16;
-constexpr size_t TOKEN_LIST_STRIDE = 32;
 
 typedef enum {
   TOKEN_TYPE_LPAREN,
@@ -29,16 +29,10 @@ typedef struct {
 
 bool tokenEql(const token_t *self, const token_t *other);
 
-typedef struct {
-  size_t capacity;
-  size_t size;
-  token_t *data;
-} token_list_t;
+typedef FlatList(token_t) token_list_t;
 
 bool tokenListEql(const token_list_t *self, const token_list_t *other);
 void tokenListDealloc(token_list_t *self);
 result_alloc_t tokenListAlloc(size_t capacity);
 
-typedef ResultVoid() result_token_list_push_t;
-result_token_list_push_t tokenListPush(token_list_t *self,
-                                       const token_t *token);
+result_alloc_t tokenListPush(token_list_t *self, const token_t *token);
