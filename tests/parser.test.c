@@ -30,7 +30,7 @@ static bool eqlNode(node_t *self, node_t *other) {
     }
 
     for (size_t i = 0; i < self->value.list.count; i++) {
-      if (!eqlNode(&self->value.list.items[i], &other->value.list.items[i])) {
+      if (!eqlNode(&self->value.list.data[i], &other->value.list.data[i])) {
         debuglu(i);
         logs("differnt node");
         return false;
@@ -71,7 +71,7 @@ void atoms(void) {
                    (node_t){.type = NODE_TYPE_NIL, .value.nil = nullptr},
                }};
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     token_list_t *list = makeTokenList(&cases[i].input, 1);
     size_t depth = 0;
     size_t offset = 0;
@@ -79,7 +79,7 @@ void atoms(void) {
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
-    tokenListDealloc(list);
+    listDealloc(list);
     // TODO: nodeDealloc(result.value);
   }
 }
@@ -120,7 +120,7 @@ void unary(void) {
                {"false", 3, false_tokens, nList(1, (node_t *){&boolean_false})},
                {"nil", 3, nil_tokens, nList(1, (node_t *){&nil})}};
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
@@ -159,7 +159,7 @@ void complex(void) {
                {"mixed", 5, mixed, nList(3, mixed_nodes)},
                {"nested", 9, nested, nList(3, nested_nodes)}};
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
@@ -192,7 +192,7 @@ void errors() {
        EXCEPTION_INVALID_EXPRESSION},
   };
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;

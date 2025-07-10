@@ -1,7 +1,7 @@
 #include "parser.h"
 #include "alloc.h"
+#include "list.h"
 #include "result.h"
-#include "token.h"
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>
@@ -10,7 +10,8 @@
 // TODO: under which conditions can this be removed?
 #define __need_unreachable 1
 
-static const size_t NODE_LIST_STRIDE = 16;
+static result_alloc_t nodeAtomAlloc() { return allocSafe(sizeof(node_t)); }
+
 static result_alloc_t nodeListAlloc() {
   result_alloc_t node_allocation = allocSafe(sizeof(node_t));
   if (!node_allocation.ok) {
@@ -18,21 +19,18 @@ static result_alloc_t nodeListAlloc() {
   }
 
   node_t *node = node_allocation.value;
-  result_alloc_t list_allocation = allocSafe(sizeof(node_t) * NODE_LIST_STRIDE);
 
+  result_alloc_t list_allocation = listAlloc(node_t, LIST_STRIDE);
   if (!list_allocation.ok) {
     deallocSafe(node);
     return list_allocation;
   }
 
-  node_t *list = list_allocation.value;
-  node->value.list.count = 0;
-  node->value.list.items = list;
+  node->value.list = *(node_list_t *)list_allocation.value;
 
   return node_allocation;
 }
 
-static result_alloc_t nodeAtomAlloc() { return allocSafe(sizeof(node_t)); }
 static void nodeDealloc(node_t *ptr) { deallocSafe(ptr); }
 
 result_node_t parseAtom(token_t token) {
@@ -102,28 +100,21 @@ result_node_t parseList(token_list_t *tokens, size_t *offset, size_t *depth) {
       break;
     }
 
-    // Expand the array by NODE_LIST_STRIDE spots if needed
-    if (node->value.list.count % NODE_LIST_STRIDE == 0) {
-      auto realloc_result = reallocSafe(
-          node->value.list.items,
-          (node->value.list.count + NODE_LIST_STRIDE) * (sizeof(node_t)));
-      if (!realloc_result.ok) {
-        nodeDealloc(node);
-        return error(result_node_t, realloc_result.error.kind,
-                     realloc_result.error.payload);
-      }
-      node->value.list.items = realloc_result.value;
-    }
-
     result_node_t sub_node_result = parse(tokens, offset, depth);
     if (!sub_node_result.ok) {
       nodeDealloc(node);
       return sub_node_result;
     }
 
-    memcpy(&node->value.list.items[node->value.list.count],
-           sub_node_result.value, sizeof(node_t));
-    node->value.list.count++;
+    node_t *sub_node = sub_node_result.value;
+
+    result_alloc_t push_result = listPush(&node->value.list, sub_node);
+    if (!push_result.ok) {
+      nodeDealloc(node);
+      nodeDealloc(sub_node);
+      return error(result_node_t, push_result.error.kind,
+                   push_result.error.payload);
+    }
   }
 
   return ok(result_node_t, node);

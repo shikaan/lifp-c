@@ -1,6 +1,6 @@
 #include "./list.h"
 
-result_alloc_t listAlloc(size_t capacity, size_t list_size, size_t item_size) {
+result_alloc_t _listAlloc(size_t capacity, size_t list_size, size_t item_size) {
   result_alloc_t list_result = allocSafe(list_size);
   if (!list_result.ok) {
     return list_result;
@@ -17,13 +17,13 @@ result_alloc_t listAlloc(size_t capacity, size_t list_size, size_t item_size) {
   return ok(result_alloc_t, list);
 }
 
-void listDealloc(generic_flat_list_t *self) {
+void _listDealloc(generic_flat_list_t *self) {
   deallocSafe(self->data);
   deallocSafe(self);
 }
 
-result_alloc_t listPush(generic_flat_list_t *self, size_t item_size,
-                        const void *item) {
+result_alloc_t _listPush(generic_flat_list_t *self, size_t item_size,
+                         const void *item) {
   if (self->count >= self->capacity) {
     size_t new_capacity = self->capacity + LIST_STRIDE;
 

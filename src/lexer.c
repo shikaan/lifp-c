@@ -12,7 +12,7 @@
 #include "result.h"
 
 result_token_list_t tokenize(const char *source) {
-  result_alloc_t tokens_result = tokenListAlloc(LIST_STRIDE);
+  result_alloc_t tokens_result = listAlloc(token_t, 32);
 
   if (!tokens_result.ok) {
     return error(result_token_list_t, tokens_result.error.kind,
@@ -21,10 +21,7 @@ result_token_list_t tokenize(const char *source) {
 
   result_token_list_t result;
   token_list_t *tokens = tokens_result.value;
-  position_t position = {
-      .column = 0,
-      .line = 1,
-  };
+  position_t position = {.column = 0, .line = 1};
 
   for (int i = 0; source[i] != '\0'; i++) {
     position.column++;
@@ -35,12 +32,12 @@ result_token_list_t tokenize(const char *source) {
       const token_t tok = {.type = TOKEN_TYPE_LPAREN,
                            .value = {.lparen = nullptr},
                            .position = position};
-      token_push_result = tokenListPush(tokens, &tok);
+      token_push_result = listPush(tokens, &tok);
     } else if (current_char == RPAREN) {
       const token_t tok = {.type = TOKEN_TYPE_RPAREN,
                            .value = {.rparen = nullptr},
                            .position = position};
-      token_push_result = tokenListPush(tokens, &tok);
+      token_push_result = listPush(tokens, &tok);
     } else if (isspace(current_char)) {
       token_push_result.ok = true;
       if (current_char == '\n') {
@@ -52,13 +49,13 @@ result_token_list_t tokenize(const char *source) {
       const token_t tok = {.type = TOKEN_TYPE_INTEGER,
                            .value = {.integer = current_char - '0'},
                            .position = position};
-      token_push_result = tokenListPush(tokens, &tok);
+      token_push_result = listPush(tokens, &tok);
     } else if (isalnum(current_char)) {
       const token_t tok = {.type = TOKEN_TYPE_SYMBOL,
                            .position = position,
                            .value = {.symbol = {current_char, 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
-      token_push_result = tokenListPush(tokens, &tok);
+      token_push_result = listPush(tokens, &tok);
     } else {
       exception_payload_t payload = {.unexpected_token = {
                                          .position = position,
@@ -79,6 +76,6 @@ result_token_list_t tokenize(const char *source) {
   result = ok(result_token_list_t, tokens);
   return result;
 error:
-  tokenListDealloc(tokens);
+  listDealloc((generic_flat_list_t *)tokens);
   return result;
 }

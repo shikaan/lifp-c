@@ -1,8 +1,8 @@
 #pragma once
 
+#include "lexer.h"
 #include "position.h"
 #include "result.h"
-#include "token.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -14,6 +14,8 @@ constexpr char NIL[] = "nil";
 typedef struct node_t node_t;
 typedef union node_value_t node_value_t;
 
+typedef List(node_t) node_list_t;
+
 typedef enum {
   NODE_TYPE_LIST,
   NODE_TYPE_INTEGER,
@@ -23,10 +25,7 @@ typedef enum {
 } node_type_t;
 
 typedef union node_value_t {
-  struct {
-    size_t count;
-    node_t *items;
-  } list;
+  node_list_t list;
   int32_t integer;
   char symbol[SYMBOL_SIZE];
   bool boolean;

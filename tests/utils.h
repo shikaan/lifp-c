@@ -1,21 +1,20 @@
 #pragma once
 
 #include "../src/parser.h"
-#include "../src/token.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-#define array_len(array) (sizeof(array) / sizeof((array)[0]))
+#define arraySize(array) (sizeof(array) / sizeof((array)[0]))
 
 static inline token_list_t *makeTokenList(const token_t *elements,
                                           size_t size) {
-  result_alloc_t allocation = tokenListAlloc(size);
+  result_alloc_t allocation = listAlloc(token_t, size);
   assert(allocation.ok);
   token_list_t *list = allocation.value;
   for (size_t i = 0; i < size; i++) {
-    tokenListPush(list, &elements[i]);
+    listPush(list, &elements[i]);
   }
   return list;
 }
@@ -107,11 +106,12 @@ static inline node_t nSym(const char symbol[]) {
                   .value.symbol[15] = (char)(len > 15 ? symbol[15] : '\0')};
 }
 
-#define nList(c, i)                                                            \
+#define nList(Count, Data)                                                     \
   {                                                                            \
       .type = NODE_TYPE_LIST,                                                  \
       .position.column = 1,                                                    \
       .position.line = 1,                                                      \
-      .value.list.count = (c),                                                 \
-      .value.list.items = (i),                                                 \
+      .value.list.count = (Count),                                             \
+      .value.list.capacity = (Count),                                          \
+      .value.list.data = (Data),                                               \
   }

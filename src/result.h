@@ -35,12 +35,6 @@ typedef struct {
     };                                                                         \
   }
 
-#define ResultVoid()                                                           \
-  struct {                                                                     \
-    bool ok;                                                                   \
-    exception_t error;                                                         \
-  }
-
 // Helper functions for creating results
 #define ok(T, Value)                                                           \
   (T) { .ok = true, .value = (Value) }

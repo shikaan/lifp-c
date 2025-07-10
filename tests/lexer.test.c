@@ -5,6 +5,35 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+bool tokenEql(const token_t *self, const token_t *other) {
+  if (self->type != other->type ||
+      !positionEql(self->position, other->position)) {
+    return false;
+  }
+  switch (self->type) {
+  case TOKEN_TYPE_LPAREN:
+  case TOKEN_TYPE_RPAREN:
+    return true;
+  case TOKEN_TYPE_INTEGER:
+    return self->value.integer == other->value.integer;
+  case TOKEN_TYPE_SYMBOL:
+    return strncmp(self->value.symbol, other->value.symbol, SYMBOL_SIZE) == 0;
+  default:
+    return false;
+  }
+}
+
+bool tokenListEql(const token_list_t *self, const token_list_t *other) {
+  if (self->count != other->count) {
+    return false;
+  }
+  for (size_t i = 0; i < self->count; i++) {
+    if (!tokenEql(&self->data[i], &other->data[i]))
+      return false;
+  }
+  return true;
+}
+
 void atoms() {
   // Single token cases
   token_t lparen_token = tParen('(');
@@ -44,7 +73,7 @@ void atoms() {
        .name = "only single chars"},
   };
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     auto list_result = tokenize(cases[i].input);
 
     case(cases[i].name);
@@ -52,8 +81,8 @@ void atoms() {
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    tokenListDealloc(cases[i].expected);
-    tokenListDealloc(list_result.value);
+    listDealloc((generic_flat_list_t*)cases[i].expected);
+    listDealloc((generic_flat_list_t*)list_result.value);
   }
 }
 
@@ -84,7 +113,7 @@ void whitespaces() {
        .name = "new line"},
   };
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     auto list_result = tokenize(cases[i].input);
 
     case(cases[i].name);
@@ -92,8 +121,8 @@ void whitespaces() {
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    tokenListDealloc(cases[i].expected);
-    tokenListDealloc(list_result.value);
+    listDealloc((generic_flat_list_t*)cases[i].expected);
+    listDealloc((generic_flat_list_t*)list_result.value);
   }
 }
 
@@ -109,7 +138,7 @@ void errors() {
                {"1#", 2, 1, '#', "unexpected character with integer"},
                {"(\x01)", 2, 1, '\x01', "unexpected control char"}};
 
-  for (size_t i = 0; i < array_len(cases); i++) {
+  for (size_t i = 0; i < arraySize(cases); i++) {
     auto result = tokenize(cases[i].input);
     case(cases[i].name);
     expectFalse(result.ok, "should fail");
