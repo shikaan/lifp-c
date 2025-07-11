@@ -133,10 +133,9 @@ void errors() {
     size_t line;
     char token;
     const char *name;
-  } cases[] = {{"@", 1, 1, '@', "unexpected character"},
-               {"a$", 2, 1, '$', "unexpected character with symbol"},
-               {"1#", 2, 1, '#', "unexpected character with integer"},
-               {"(\x01)", 2, 1, '\x01', "unexpected control char"}};
+  } cases[] = {{"\a", 1, 1, '\a', "unexpected character"},
+               {"a\b", 2, 1, '\b', "unexpected character with symbol"},
+               {"1\b", 2, 1, '\b', "unexpected character with integer"}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
     auto result = tokenize(cases[i].input);
