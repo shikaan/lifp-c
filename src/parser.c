@@ -26,7 +26,7 @@ static result_alloc_t nodeListAlloc() {
     return list_allocation;
   }
 
-  node->value.list = *(node_list_t *)list_allocation.value;
+  memcpy(&node->value.list, list_allocation.value, sizeof(node->value.list));
 
   return node_allocation;
 }

@@ -1,10 +1,11 @@
 
+#include "src/alloc.h"
 #include "src/debug.h"
 #include "src/evaluate.h"
 #include "src/lexer.h"
 #include "src/parser.h"
 #include "src/print.h"
-#include <readline/readline.h> //TODO this is platform dependent
+#include <readline/readline.h> //TODO this is not platform dependent
 #include <stddef.h>
 #include <stdio.h>
 
@@ -41,9 +42,14 @@ int main(void) {
     }
 
     int buffer_offset = 0;
-    print(nodes_result.value, BUFFER_SIZE, buffer, &buffer_offset);
+    print(reduce_result.value, BUFFER_SIZE, buffer, &buffer_offset);
 
     printf("~> %s\n", buffer);
     buffer[0] = 0;
+    // TODO: breaks when deallocating an atom
+    deallocSafe(reduce_result.value);
+    // TODO: breaks when deallocating a list
+    listDealloc(nodes_result.value);
+    listDealloc(tokens_result.value);
   }
 }
