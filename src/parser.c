@@ -139,7 +139,7 @@ result_node_t parse(token_list_t *tokens, size_t *offset, size_t *depth) {
     }
 
     // There are dangling chars after top level list
-    if (initial_depth == 0 && *offset != (tokens->capacity - 1)) {
+    if (initial_depth == 0 && *offset != (tokens->count - 1)) {
       exception_payload_t payload = {.invalid_expression = nullptr};
       return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
     }

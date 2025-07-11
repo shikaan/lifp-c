@@ -50,7 +50,7 @@ result_token_list_t tokenize(const char *source) {
                            .value = {.integer = current_char - '0'},
                            .position = position};
       token_push_result = listPush(tokens, &tok);
-    } else if (isalnum(current_char)) {
+    } else if (isprint(current_char)) {
       const token_t tok = {.type = TOKEN_TYPE_SYMBOL,
                            .position = position,
                            .value = {.symbol = {current_char, 0, 0, 0, 0, 0, 0,
