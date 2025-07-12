@@ -16,24 +16,24 @@ int main(void) {
 
   case("after push");
   int item = 12;
-  listPush(list, &item);
+  listAppend(list, &item);
   expectEqlSize(list->count, 1, "is not empty");
   expectEqlSize(list->capacity, 1, "has same capacity");
   expectEqlInt(list->data[list->count - 1], item, "has correct item");
 
   case("with resize");
   int item_2 = 2;
-  listPush(list, &item_2);
+  listAppend(list, &item_2);
   expectEqlSize(list->count, 2, "has correct count");
   expectEqlSize(list->capacity, LIST_STRIDE + 1, "has updated capacity");
 
   case("with another resize");
   for (size_t i = 0; i < LIST_STRIDE; i++) {
-    listPush(list, &item_2);
+    listAppend(list, &item_2);
   }
   expectEqlSize(list->capacity, (LIST_STRIDE*2) + 1, "has updated capacity again");
 
-  listDealloc(list);
+  listDealloc(&list);
 
   return report();
 }

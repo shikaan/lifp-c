@@ -1,13 +1,14 @@
 
 #include "src/alloc.h"
-#include "src/debug.h"
 #include "src/evaluate.h"
 #include "src/lexer.h"
+#include "src/node.h"
 #include "src/parser.h"
 #include "src/print.h"
 #include <readline/readline.h> //TODO this is not platform dependent
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 constexpr size_t BUFFER_SIZE = 4096;
 
@@ -20,36 +21,37 @@ int main(void) {
   char buffer[BUFFER_SIZE];
   while (!exit) {
     char *input = readline("> ");
-    result_token_list_t tokens_result = tokenize(input);
-    if (!tokens_result.ok) {
+    result_token_list_t tokenization = tokenize(input);
+    if (!tokenization.ok) {
       printError("tokenization");
       continue;
     }
+    token_list_t *tokens = tokenization.value;
 
     size_t offset = 0;
     size_t depth = 0;
-    result_node_t nodes_result = parse(tokens_result.value, &offset, &depth);
-    if (!nodes_result.ok) {
-      debugu(nodes_result.error.kind);
+    result_node_t parsing = parse(tokens, &offset, &depth);
+    if (!parsing.ok) {
       printError("parsing");
       continue;
     }
+    node_t *syntax_tree = parsing.value;
 
-    result_reduce_t reduce_result = reduce(nodes_result.value);
-    if (!reduce_result.ok) {
+    result_reduce_t reduction = reduce(syntax_tree);
+    if (!reduction.ok) {
       printError("reduction");
       continue;
     }
+    node_t *reduced = reduction.value;
 
     int buffer_offset = 0;
-    print(reduce_result.value, BUFFER_SIZE, buffer, &buffer_offset);
+    print(reduced, BUFFER_SIZE, buffer, &buffer_offset);
 
     printf("~> %s\n", buffer);
-    buffer[0] = 0;
-    // TODO: breaks when deallocating an atom
-    deallocSafe(reduce_result.value);
-    // TODO: breaks when deallocating a list
-    listDealloc(nodes_result.value);
-    listDealloc(tokens_result.value);
+
+    memset(buffer, 0, BUFFER_SIZE);
+    nodeDealloc(&reduced);
+    nodeDealloc(&syntax_tree);
+    listDealloc(&tokens);
   }
 }

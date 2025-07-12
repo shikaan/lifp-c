@@ -11,7 +11,6 @@
 static bool eqlNode(node_t *self, node_t *other) {
   // Purposefully leaving out the position check
   if (self->type != other->type) {
-    logs("sidderent types");
     return false;
   }
 
@@ -31,8 +30,6 @@ static bool eqlNode(node_t *self, node_t *other) {
 
     for (size_t i = 0; i < self->value.list.count; i++) {
       if (!eqlNode(&self->value.list.data[i], &other->value.list.data[i])) {
-        debuglu(i);
-        logs("differnt node");
         return false;
       }
     }
@@ -79,7 +76,7 @@ void atoms(void) {
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
-    listDealloc(list);
+    listDealloc(&list);
     // TODO: nodeDealloc(result.value);
   }
 }

@@ -39,11 +39,7 @@ void atoms() {
   token_t lparen_token = tParen('(');
   token_t rparen_token = tParen(')');
   token_t integer_token = tInt(1);
-  // token_t symbol_token = tSym("a");
-  token_t symbol_token = {.type = TOKEN_TYPE_SYMBOL,
-                          .value.symbol = {'a'},
-                          .position.column = 1,
-                          .position.line = 1};
+  token_t symbol_token = tSym("a");
 
   // Multi-token
   token_t single_chars_tokens[2] = {tInt(1),
@@ -51,7 +47,7 @@ void atoms() {
                                      .value = {.integer = 2},
                                      .position = {.column = 2, .line = 1}}};
 
-  const struct {
+  struct {
     const char *input;
     token_list_t *expected;
     const char *name;
@@ -74,15 +70,15 @@ void atoms() {
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    auto list_result = tokenize(cases[i].input);
+    result_token_list_t list_result = tokenize(cases[i].input);
 
     case(cases[i].name);
     expectTrue(list_result.ok, "doesn't fail");
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    listDealloc((generic_flat_list_t*)cases[i].expected);
-    listDealloc((generic_flat_list_t*)list_result.value);
+    listDealloc(&cases[i].expected);
+    listDealloc(&list_result.value);
   }
 }
 
@@ -94,7 +90,7 @@ void whitespaces() {
                          .value = {.symbol = {'b'}},
                          .position = {.column = 1, .line = 2}};
 
-  const struct {
+  struct {
     const char *input;
     token_list_t *expected;
     const char *name;
@@ -121,13 +117,13 @@ void whitespaces() {
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
 
-    listDealloc((generic_flat_list_t*)cases[i].expected);
-    listDealloc((generic_flat_list_t*)list_result.value);
+    listDealloc(&cases[i].expected);
+    listDealloc(&list_result.value);
   }
 }
 
 void errors() {
-  const struct {
+  struct {
     const char *input;
     size_t column;
     size_t line;

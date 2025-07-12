@@ -2,6 +2,8 @@
 .vscode
 compile_commands.json
 
+.todo
+
 # build artifacts
 src/*.o
 **/*.dSYM

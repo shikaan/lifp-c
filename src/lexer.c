@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "alloc.h"
 #include "list.h"
@@ -32,12 +31,12 @@ result_token_list_t tokenize(const char *source) {
       const token_t tok = {.type = TOKEN_TYPE_LPAREN,
                            .value = {.lparen = nullptr},
                            .position = position};
-      token_push_result = listPush(tokens, &tok);
+      token_push_result = listAppend(tokens, &tok);
     } else if (current_char == RPAREN) {
       const token_t tok = {.type = TOKEN_TYPE_RPAREN,
                            .value = {.rparen = nullptr},
                            .position = position};
-      token_push_result = listPush(tokens, &tok);
+      token_push_result = listAppend(tokens, &tok);
     } else if (isspace(current_char)) {
       token_push_result.ok = true;
       if (current_char == '\n') {
@@ -49,13 +48,13 @@ result_token_list_t tokenize(const char *source) {
       const token_t tok = {.type = TOKEN_TYPE_INTEGER,
                            .value = {.integer = current_char - '0'},
                            .position = position};
-      token_push_result = listPush(tokens, &tok);
+      token_push_result = listAppend(tokens, &tok);
     } else if (isprint(current_char)) {
       const token_t tok = {.type = TOKEN_TYPE_SYMBOL,
                            .position = position,
                            .value = {.symbol = {current_char, 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
-      token_push_result = listPush(tokens, &tok);
+      token_push_result = listAppend(tokens, &tok);
     } else {
       exception_payload_t payload = {.unexpected_token = {
                                          .position = position,
@@ -76,6 +75,6 @@ result_token_list_t tokenize(const char *source) {
   result = ok(result_token_list_t, tokens);
   return result;
 error:
-  listDealloc((generic_flat_list_t *)tokens);
+  listDealloc(&tokens);
   return result;
 }

@@ -1,35 +1,34 @@
 #include "./list.h"
-#include <string.h>
+#include "alloc.h"
+#include "debug.h"
 
 result_alloc_t _listAlloc(size_t capacity, size_t list_size, size_t item_size) {
-  result_alloc_t list_result = allocSafe(list_size);
-  if (!list_result.ok) {
-    return list_result;
+  result_alloc_t allocation = allocSafe(list_size);
+  if (!allocation.ok) {
+    return allocation;
   }
-  // The following dance is required to keep the item_size a const
-  const generic_flat_list_t local_list = (const generic_flat_list_t){
-      .capacity = capacity,
-      .count = 0,
-      .item_size = item_size,
-  };
-  memcpy(list_result.value, &local_list, list_size);
+  generic_list_t *list = allocation.value;
+  list->capacity = capacity;
+  list->count = 0;
+  list->item_size = item_size;
 
-  generic_flat_list_t *list = list_result.value;
-  result_alloc_t data_result = allocSafe(item_size * list->capacity);
-  if (!data_result.ok) {
-    deallocSafe(list);
-    return data_result;
+  allocation = allocSafe(item_size * list->capacity);
+  if (!allocation.ok) {
+    deallocSafe(&list);
+    return allocation;
   }
-  list->data = data_result.value;
+  list->data = allocation.value;
   return ok(result_alloc_t, list);
 }
 
-void _listDealloc(generic_flat_list_t *self) {
-  deallocSafe(self->data);
-  deallocSafe(self);
+void _listDealloc(generic_list_t **self) {
+  if (self && *self) {
+    deallocSafe(&(*self)->data);
+    deallocSafe(self);
+  }
 }
 
-result_alloc_t _listPush(generic_flat_list_t *self, const void *item) {
+result_alloc_t _listAppend(generic_list_t *self, const void *item) {
   if (self->count >= self->capacity) {
     size_t new_capacity = self->capacity + LIST_STRIDE;
 
@@ -39,17 +38,23 @@ result_alloc_t _listPush(generic_flat_list_t *self, const void *item) {
     }
 
     void *new_data = realloc_result.value;
-    memcpy(new_data, self->data, self->item_size * self->count);
+    bytewiseCopy(new_data, self->data, self->item_size * self->count);
 
-    deallocSafe(self->data);
+    deallocSafe(&self->data);
     self->data = new_data;
     self->capacity = new_capacity;
   }
 
   // Using char* for byte-wise addressing
-  void *destination = (char *)self->data + (self->item_size * self->count);
-  memcpy(destination, item, self->item_size);
+  void *destination =
+      (unsigned char *)self->data + (self->item_size * self->count);
+  bytewiseCopy(destination, item, self->item_size);
   self->count++;
 
   return (result_alloc_t){.ok = true};
+}
+
+void _listShift(generic_list_t *self) {
+  self->count--;
+  self->data = (char *)self->data + self->item_size;
 }

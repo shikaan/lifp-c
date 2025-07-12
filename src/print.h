@@ -6,7 +6,8 @@
 
 constexpr size_t OUTPUT_BUFFER_SIZE = 4096;
 
-void print(node_t *node, int size, char buffer[static size], int *offset) {
+void print(const node_t *node, int size, char buffer[static size],
+           int *offset) {
   switch (node->type) {
   case NODE_TYPE_BOOLEAN: {
     *offset += snprintf(buffer + *offset, (size_t)(size - *offset), "%s",

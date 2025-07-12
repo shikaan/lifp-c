@@ -14,7 +14,7 @@ static inline token_list_t *makeTokenList(const token_t *elements,
   assert(allocation.ok);
   token_list_t *list = allocation.value;
   for (size_t i = 0; i < size; i++) {
-    listPush(list, &elements[i]);
+    listAppend(list, &elements[i]);
   }
   return list;
 }
