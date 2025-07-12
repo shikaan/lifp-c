@@ -17,8 +17,7 @@ result_node_t parseAtom(token_t token) {
       NODE_TYPE_INTEGER); // FIXME: this sucks, as we don't need integers here
 
   if (!allocation.ok) {
-    return error(result_node_t, allocation.error.kind,
-                 allocation.error.payload);
+    return error(result_node_t, allocation.error);
   }
 
   node_t *node = allocation.value;
@@ -63,8 +62,7 @@ result_node_t parseList(const token_list_t *tokens, size_t *offset,
                         size_t *depth) {
   result_alloc_t node_result = nodeAlloc(NODE_TYPE_LIST);
   if (!node_result.ok) {
-    return error(result_node_t, node_result.error.kind,
-                 node_result.error.payload);
+    return error(result_node_t, node_result.error);
   }
 
   node_t *node = node_result.value;
@@ -94,8 +92,7 @@ result_node_t parseList(const token_list_t *tokens, size_t *offset,
     // the case of lists
     if (!appending.ok) {
       nodeDealloc(&node);
-      return error(result_node_t, appending.error.kind,
-                   appending.error.payload);
+      return error(result_node_t, appending.error);
     }
   }
 
@@ -104,8 +101,8 @@ result_node_t parseList(const token_list_t *tokens, size_t *offset,
 
 result_node_t parse(const token_list_t *tokens, size_t *offset, size_t *depth) {
   if (tokens->capacity == 0) {
-    exception_payload_t payload = {.invalid_expression = nullptr};
-    return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
+    exception_t exception = {.kind = EXCEPTION_INVALID_EXPRESSION};
+    return error(result_node_t, exception);
   }
 
   const token_t first_token = tokens->data[*offset];
@@ -116,14 +113,14 @@ result_node_t parse(const token_list_t *tokens, size_t *offset, size_t *depth) {
 
     // There are left parens that don't match right parens
     if (*depth != initial_depth) {
-      exception_payload_t payload = {.unbalanced_parentheses = nullptr};
-      return error(result_node_t, EXCEPTION_UNBALANCED_PARENTHESES, payload);
+      exception_t exception = {.kind = EXCEPTION_UNBALANCED_PARENTHESES};
+      return error(result_node_t, exception);
     }
 
     // There are dangling chars after top level list
     if (initial_depth == 0 && *offset != (tokens->count - 1)) {
-      exception_payload_t payload = {.invalid_expression = nullptr};
-      return error(result_node_t, EXCEPTION_INVALID_EXPRESSION, payload);
+      exception_t exception = {.kind = EXCEPTION_INVALID_EXPRESSION};
+      return error(result_node_t, exception);
     }
 
     return parse_list_result;

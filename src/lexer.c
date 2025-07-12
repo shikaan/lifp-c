@@ -14,8 +14,7 @@ result_token_list_t tokenize(const char *source) {
   result_alloc_t tokens_result = listAlloc(token_t, 32);
 
   if (!tokens_result.ok) {
-    return error(result_token_list_t, tokens_result.error.kind,
-                 tokens_result.error.payload);
+    return error(result_token_list_t, tokens_result.error);
   }
 
   result_token_list_t result;
@@ -56,18 +55,17 @@ result_token_list_t tokenize(const char *source) {
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
       token_push_result = listAppend(tokens, &tok);
     } else {
-      exception_payload_t payload = {.unexpected_token = {
-                                         .position = position,
-                                         .token = current_char,
-                                     }};
-      result =
-          error(result_token_list_t, EXCEPTION_KIND_UNEXPECTED_TOKEN, payload);
+      exception_t exception = {
+          .kind = EXCEPTION_KIND_UNEXPECTED_TOKEN,
+          .payload.unexpected_token.position = position,
+          .payload.unexpected_token.token = current_char,
+      };
+      result = error(result_token_list_t, exception);
       goto error;
     }
 
     if (!token_push_result.ok) {
-      result = error(result_token_list_t, tokens_result.error.kind,
-                     token_push_result.error.payload);
+      result = error(result_token_list_t, tokens_result.error);
       goto error;
     }
   }

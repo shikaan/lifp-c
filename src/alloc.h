@@ -1,15 +1,14 @@
 #pragma once
 
-#include "debug.h"
 #include "result.h"
 #include <stddef.h>
 #include <stdlib.h>
 
-#define deallocSafe(ptr)                                                       \
+#define deallocSafe(DoublePointer)                                             \
   {                                                                            \
-    if (*(ptr) != nullptr) {                                                   \
-      free((void *)*(ptr));                                                    \
-      *(ptr) = nullptr;                                                        \
+    if (*(DoublePointer) != nullptr) {                                         \
+      free((void *)*(DoublePointer));                                          \
+      *(DoublePointer) = nullptr;                                              \
     }                                                                          \
   }
 
@@ -19,8 +18,8 @@ static inline result_alloc_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
-    exception_payload_t payload = {.allocation = nullptr};
-    return error(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
+    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+    return error(result_alloc_t, exception);
   }
 
   return ok(result_alloc_t, ptr);
@@ -30,8 +29,8 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
   void *new_ptr = realloc(ptr, size);
 
   if (new_ptr == nullptr) {
-    exception_payload_t payload = {.allocation = nullptr};
-    return error(result_alloc_t, EXCEPTION_KIND_ALLOCATION, payload);
+    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+    return error(result_alloc_t, exception);
   }
 
   return ok(result_alloc_t, new_ptr);

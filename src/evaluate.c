@@ -69,13 +69,12 @@ result_reduce_t reduce(node_t *syntax_tree) {
   list_error:
     listDealloc(&reduced_list);
     nodeDealloc(&reduced_node);
-    return error(result_reduce_t, exception.kind, exception.payload);
+    return error(result_reduce_t, exception);
   }
 
   result_alloc_t allocation = allocSafe(sizeof(node_t));
   if (!allocation.ok) {
-    return error(result_reduce_t, allocation.error.kind,
-                 allocation.error.payload);
+    return error(result_reduce_t, allocation.error);
   }
   node_t *duplicate = allocation.value;
   *duplicate = *syntax_tree;

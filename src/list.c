@@ -1,6 +1,5 @@
 #include "./list.h"
 #include "alloc.h"
-#include "debug.h"
 
 result_alloc_t _listAlloc(size_t capacity, size_t list_size, size_t item_size) {
   result_alloc_t allocation = allocSafe(list_size);
@@ -52,9 +51,4 @@ result_alloc_t _listAppend(generic_list_t *self, const void *item) {
   self->count++;
 
   return (result_alloc_t){.ok = true};
-}
-
-void _listShift(generic_list_t *self) {
-  self->count--;
-  self->data = (char *)self->data + self->item_size;
 }

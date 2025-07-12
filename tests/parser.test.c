@@ -1,5 +1,4 @@
 #include "../src/parser.h"
-#include "../src/debug.h"
 
 #include "./test.h"
 #include "./utils.h"
