@@ -10,7 +10,7 @@
     size_t count;                                                              \
     size_t capacity;                                                           \
     size_t item_size;                                                          \
-    Type *offset;                                                              \
+    Type *data;                                                                \
     arena_t *arena;                                                            \
   }
 

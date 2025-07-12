@@ -19,7 +19,7 @@ result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
   if (!allocation.ok)
     return allocation;
 
-  list->offset = allocation.value;
+  list->data = allocation.value;
   return ok(result_alloc_t, list);
 }
 
@@ -34,13 +34,13 @@ result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
     }
 
     void *new_data = realloc_result.value;
-    bytewiseCopy(new_data, self->offset, self->item_size * self->count);
+    bytewiseCopy(new_data, self->data, self->item_size * self->count);
 
-    self->offset = new_data;
+    self->data = new_data;
     self->capacity = new_capacity;
   }
 
-  void *destination = (byte_t *)self->offset + (self->item_size * self->count);
+  void *destination = (byte_t *)self->data + (self->item_size * self->count);
   memcpy(destination, item, self->item_size);
   self->count++;
 

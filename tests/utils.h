@@ -113,5 +113,5 @@ static inline node_t nSym(const char symbol[]) {
       .position.line = 1,                                                      \
       .value.list.count = (Count),                                             \
       .value.list.capacity = (Count),                                          \
-      .value.list.offset = (Data),                                             \
+      .value.list.data = (Data),                                               \
   }

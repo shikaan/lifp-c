@@ -30,7 +30,7 @@ static bool eqlNode(node_t *self, node_t *other) {
     }
 
     for (size_t i = 0; i < self->value.list.count; i++) {
-      if (!eqlNode(&self->value.list.offset[i], &other->value.list.offset[i])) {
+      if (!eqlNode(&self->value.list.data[i], &other->value.list.data[i])) {
         return false;
       }
     }

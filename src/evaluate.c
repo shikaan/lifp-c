@@ -11,8 +11,8 @@ void sum(node_t *result, node_list_t *nodes) {
 
   for (size_t i = 0; i < nodes->count; i++) {
     // TODO: this should raise an error
-    if (nodes->offset[i].type == NODE_TYPE_INTEGER) {
-      result->value.integer += nodes->offset[i].value.integer;
+    if (nodes->data[i].type == NODE_TYPE_INTEGER) {
+      result->value.integer += nodes->data[i].value.integer;
     }
   }
 }
@@ -30,7 +30,7 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree) {
     reduced_list = allocation.value;
 
     for (size_t i = 0; i < list.count; i++) {
-      result_reduce_t reduction = reduce(arena, &list.offset[i]);
+      result_reduce_t reduction = reduce(arena, &list.data[i]);
       if (!reduction.ok) {
         return error(result_reduce_t, reduction.error);
       }
@@ -44,7 +44,7 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree) {
     }
     reduced_node = allocation.value;
 
-    auto last_node = list.offset[0];
+    auto last_node = list.data[0];
     if (last_node.type == NODE_TYPE_SYMBOL) {
       sum(reduced_node, reduced_list);
       return ok(result_reduce_t, reduced_node);
@@ -53,7 +53,7 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree) {
     reduced_node->type = NODE_TYPE_LIST;
     reduced_node->value.list.capacity = reduced_list->capacity;
     reduced_node->value.list.count = reduced_list->count;
-    reduced_node->value.list.offset = reduced_list->offset;
+    reduced_node->value.list.data = reduced_list->data;
     reduced_node->position = syntax_tree->position;
     return ok(result_reduce_t, reduced_node);
   }

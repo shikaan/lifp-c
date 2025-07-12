@@ -30,7 +30,7 @@ static bool tokenListEql(const token_list_t *self, const token_list_t *other) {
     return false;
   }
   for (size_t i = 0; i < self->count; i++) {
-    if (!tokenEql(&self->offset[i], &other->offset[i]))
+    if (!tokenEql(&self->data[i], &other->data[i]))
       return false;
   }
   return true;

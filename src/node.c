@@ -20,7 +20,7 @@ result_alloc_t nodeAlloc(arena_t *arena, node_type_t type) {
     node->value.list.capacity = list->capacity;
     node->value.list.count = list->count;
     node->value.list.item_size = list->item_size;
-    node->value.list.offset = list->offset;
+    node->value.list.data = list->data;
 
     return node_allocation;
   }

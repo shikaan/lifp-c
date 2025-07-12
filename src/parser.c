@@ -65,13 +65,13 @@ result_node_t parseList(arena_t *arena, const token_list_t *tokens,
   }
 
   node_t *node = node_result.value;
-  node->position = tokens->offset[*offset].position;
+  node->position = tokens->data[*offset].position;
   node->type = NODE_TYPE_LIST;
   (*depth)++;
   (*offset)++;
 
   for (; *offset < tokens->capacity; (*offset)++) {
-    const token_t tok = tokens->offset[*offset];
+    const token_t tok = tokens->data[*offset];
     if (tok.type == TOKEN_TYPE_RPAREN) {
       (*depth)--;
       break;
@@ -100,7 +100,7 @@ result_node_t parse(arena_t *arena, const token_list_t *tokens, size_t *offset,
     return error(result_node_t, exception);
   }
 
-  const token_t first_token = tokens->offset[*offset];
+  const token_t first_token = tokens->data[*offset];
   size_t initial_depth = *depth;
 
   if (first_token.type == TOKEN_TYPE_LPAREN) {

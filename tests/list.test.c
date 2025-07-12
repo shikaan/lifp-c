@@ -24,7 +24,7 @@ int main(void) {
   listAppend(list, &item);
   expectEqlSize(list->count, 1, "is not empty");
   expectEqlSize(list->capacity, 1, "has same capacity");
-  expectEqlInt(list->offset[list->count - 1], item, "has correct item");
+  expectEqlInt(list->data[list->count - 1], item, "has correct item");
 
   case("with resize");
   int item_2 = 2;
