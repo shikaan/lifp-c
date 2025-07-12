@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+static arena_t *test_arena;
+
 static bool eqlNode(node_t *self, node_t *other) {
   // Purposefully leaving out the position check
   if (self->type != other->type) {
@@ -28,7 +30,7 @@ static bool eqlNode(node_t *self, node_t *other) {
     }
 
     for (size_t i = 0; i < self->value.list.count; i++) {
-      if (!eqlNode(&self->value.list.data[i], &other->value.list.data[i])) {
+      if (!eqlNode(&self->value.list.offset[i], &other->value.list.offset[i])) {
         return false;
       }
     }
@@ -68,15 +70,13 @@ void atoms(void) {
                }};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    token_list_t *list = makeTokenList(&cases[i].input, 1);
+    token_list_t *list = makeTokenList(test_arena, &cases[i].input, 1);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(list, &offset, &depth);
+    auto result = parse(test_arena, list, &offset, &depth);
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
-    listDealloc(&list);
-    // TODO: nodeDealloc(result.value);
   }
 }
 
@@ -117,10 +117,11 @@ void unary(void) {
                {"nil", 3, nil_tokens, nList(1, (node_t *){&nil})}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
+    token_list_t *list =
+        makeTokenList(test_arena, cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(list, &offset, &depth);
+    auto result = parse(test_arena, list, &offset, &depth);
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
@@ -156,14 +157,14 @@ void complex(void) {
                {"nested", 9, nested, nList(3, nested_nodes)}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
+    token_list_t *list =
+        makeTokenList(test_arena, cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(list, &offset, &depth);
+    auto result = parse(test_arena, list, &offset, &depth);
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
-    // TODO: nodeDealloc(result.value);
   }
 }
 
@@ -189,21 +190,26 @@ void errors() {
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    token_list_t *list = makeTokenList(cases[i].input, cases[i].length);
+    token_list_t *list =
+        makeTokenList(test_arena, cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(list, &offset, &depth);
+    auto result = parse(test_arena, list, &offset, &depth);
     assert(!result.ok);
     expectEqlUint(result.error.kind, cases[i].expected,
                   "returns correct exception");
-    // TODO: nodeDealloc(result.value);
   }
 }
 
 int main(void) {
+  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  assert(allocation.ok);
+  test_arena = allocation.value;
+
   suite(atoms);
   suite(unary);
   suite(complex);
   suite(errors);
+  arenaDestroy(test_arena);
   return report();
 }

@@ -4,9 +4,14 @@
 #include <stddef.h>
 
 typedef List(int) int_list_t;
+static arena_t *test_arena;
 
 int main(void) {
-  auto allocation = listAlloc(int, 1);
+  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  assert(allocation.ok);
+  test_arena = allocation.value;
+
+  allocation = listAlloc(int, test_arena, 1);
   assert(allocation.ok);
   int_list_t *list = allocation.value;
 
@@ -19,7 +24,7 @@ int main(void) {
   listAppend(list, &item);
   expectEqlSize(list->count, 1, "is not empty");
   expectEqlSize(list->capacity, 1, "has same capacity");
-  expectEqlInt(list->data[list->count - 1], item, "has correct item");
+  expectEqlInt(list->offset[list->count - 1], item, "has correct item");
 
   case("with resize");
   int item_2 = 2;
@@ -33,7 +38,6 @@ int main(void) {
   }
   expectEqlSize(list->capacity, (LIST_STRIDE*2) + 1, "has updated capacity again");
 
-  listDealloc(&list);
-
+  arenaDestroy(test_arena);
   return report();
 }

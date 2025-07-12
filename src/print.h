@@ -31,11 +31,11 @@ void print(const node_t *node, int size, char buffer[static size],
   case NODE_TYPE_LIST: {
     (*offset) += snprintf(buffer + *offset, 2, "(");
     for (size_t i = 0; i < node->value.list.count - 1; i++) {
-      print(&node->value.list.data[i], size, buffer, offset);
+      print(&node->value.list.offset[i], size, buffer, offset);
       *offset += snprintf(buffer + *offset, 2, " ");
     }
 
-    print(&node->value.list.data[node->value.list.count - 1], size, buffer,
+    print(&node->value.list.offset[node->value.list.count - 1], size, buffer,
           offset);
     *offset += snprintf(buffer + *offset, 2, ")");
     return;

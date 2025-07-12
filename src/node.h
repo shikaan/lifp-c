@@ -1,6 +1,7 @@
 #pragma once
 
 #include "alloc.h"
+#include "arena.h"
 #include "lexer.h"
 #include "list.h"
 #include <stddef.h>
@@ -31,6 +32,5 @@ typedef struct node_t {
   node_value_t value;
 } node_t;
 
-result_alloc_t nodeAlloc(node_type_t type);
-result_alloc_t nodeDuplicate(node_t node);
-void nodeDealloc(node_t **ptr);
+result_alloc_t nodeAlloc(arena_t *arena, node_type_t type);
+result_alloc_t nodeClone(arena_t *arena, node_t node);

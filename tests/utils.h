@@ -8,12 +8,12 @@
 
 #define arraySize(array) (sizeof(array) / sizeof((array)[0]))
 
-static inline token_list_t *makeTokenList(const token_t *elements,
-                                          size_t size) {
-  result_alloc_t allocation = listAlloc(token_t, size);
+static inline token_list_t *
+makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
+  result_alloc_t allocation = listAlloc(token_t, arena, capacity);
   assert(allocation.ok);
   token_list_t *list = allocation.value;
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = 0; i < capacity; i++) {
     listAppend(list, &elements[i]);
   }
   return list;
@@ -113,5 +113,5 @@ static inline node_t nSym(const char symbol[]) {
       .position.line = 1,                                                      \
       .value.list.count = (Count),                                             \
       .value.list.capacity = (Count),                                          \
-      .value.list.data = (Data),                                               \
+      .value.list.offset = (Data),                                             \
   }

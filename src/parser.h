@@ -1,5 +1,6 @@
 #pragma once
 
+#include "arena.h"
 #include "lexer.h"
 #include "node.h"
 #include "result.h"
@@ -11,4 +12,5 @@ constexpr char FALSE[] = "false";
 constexpr char NIL[] = "nil";
 
 typedef Result(node_t *) result_node_t;
-result_node_t parse(const token_list_t *tokens, size_t *offset, size_t *depth);
+result_node_t parse(arena_t *arena, const token_list_t *tokens, size_t *offset,
+                    size_t *depth);

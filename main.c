@@ -1,11 +1,12 @@
 
 #include "src/alloc.h"
+#include "src/arena.h"
 #include "src/evaluate.h"
 #include "src/lexer.h"
 #include "src/node.h"
 #include "src/parser.h"
 #include "src/print.h"
-#include <readline/readline.h> //TODO this is not platform dependent
+#include <readline/readline.h> //TODO this is platform dependent
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,11 +18,18 @@ void printError(const char *msg) {
 }
 
 int main(void) {
-  bool exit = false;
   char buffer[BUFFER_SIZE];
-  while (!exit) {
+  result_alloc_t creation = arenaCreate((size_t)(1024 * 1024));
+  if (!creation.ok) {
+    fprintf(stderr, "unable to allocate memory");
+    return 1;
+  }
+  arena_t *arena = creation.value;
+
+  while (true) {
+    arenaReset(arena);
     char *input = readline("> ");
-    result_token_list_t tokenization = tokenize(input);
+    result_token_list_t tokenization = tokenize(arena, input);
     if (!tokenization.ok) {
       printError("tokenization");
       continue;
@@ -30,14 +38,14 @@ int main(void) {
 
     size_t offset = 0;
     size_t depth = 0;
-    result_node_t parsing = parse(tokens, &offset, &depth);
+    result_node_t parsing = parse(arena, tokens, &offset, &depth);
     if (!parsing.ok) {
       printError("parsing");
       continue;
     }
     node_t *syntax_tree = parsing.value;
 
-    result_reduce_t reduction = reduce(syntax_tree);
+    result_reduce_t reduction = reduce(arena, syntax_tree);
     if (!reduction.ok) {
       printError("reduction");
       continue;
@@ -50,8 +58,7 @@ int main(void) {
     printf("~> %s\n", buffer);
 
     memset(buffer, 0, BUFFER_SIZE);
-    nodeDealloc(&reduced);
-    nodeDealloc(&syntax_tree);
-    listDealloc(&tokens);
   }
+  arenaDestroy(arena);
+  return 0;
 }

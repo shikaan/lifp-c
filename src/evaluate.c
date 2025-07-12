@@ -1,11 +1,9 @@
 #include "./evaluate.h"
-#include "alloc.h"
+#include "arena.h"
 #include "list.h"
 #include "node.h"
 #include "result.h"
 #include <stddef.h>
-
-typedef void (*function_t)(node_t *, node_list_t *);
 
 void sum(node_t *result, node_list_t *nodes) {
   result->type = NODE_TYPE_INTEGER;
@@ -13,70 +11,57 @@ void sum(node_t *result, node_list_t *nodes) {
 
   for (size_t i = 0; i < nodes->count; i++) {
     // TODO: this should raise an error
-    if (nodes->data[i].type == NODE_TYPE_INTEGER) {
-      result->value.integer += nodes->data[i].value.integer;
+    if (nodes->offset[i].type == NODE_TYPE_INTEGER) {
+      result->value.integer += nodes->offset[i].value.integer;
     }
   }
 }
 
-result_reduce_t reduce(node_t *syntax_tree) {
+result_reduce_t reduce(arena_t *arena, node_t *syntax_tree) {
   if (syntax_tree->type == NODE_TYPE_LIST) {
     const auto list = syntax_tree->value.list;
-    exception_t exception;
     node_list_t *reduced_list = nullptr;
     node_t *reduced_node = nullptr;
 
-    result_alloc_t allocation = listAlloc(node_t, list.capacity);
+    result_alloc_t allocation = listAlloc(node_t, arena, list.capacity);
     if (!allocation.ok) {
-      exception = allocation.error;
-      goto list_error;
+      return error(result_reduce_t, allocation.error);
     }
     reduced_list = allocation.value;
 
     for (size_t i = 0; i < list.count; i++) {
-      result_reduce_t reduction = reduce(&list.data[i]);
+      result_reduce_t reduction = reduce(arena, &list.offset[i]);
       if (!reduction.ok) {
-        exception = reduction.error;
-        goto list_error;
+        return error(result_reduce_t, reduction.error);
       }
 
       listAppend(reduced_list, reduction.value);
-      nodeDealloc(&reduction.value);
     }
 
-    allocation = allocSafe(sizeof(node_t));
+    allocation = nodeAlloc(arena, NODE_TYPE_LIST);
     if (!allocation.ok) {
-      exception = allocation.error;
-      goto list_error;
+      return error(result_reduce_t, allocation.error);
     }
     reduced_node = allocation.value;
 
-    auto last_node = list.data[0];
+    auto last_node = list.offset[0];
     if (last_node.type == NODE_TYPE_SYMBOL) {
       sum(reduced_node, reduced_list);
-      listDealloc(&reduced_list);
       return ok(result_reduce_t, reduced_node);
     }
 
     reduced_node->type = NODE_TYPE_LIST;
     reduced_node->value.list.capacity = reduced_list->capacity;
     reduced_node->value.list.count = reduced_list->count;
-    reduced_node->value.list.data = reduced_list->data;
+    reduced_node->value.list.offset = reduced_list->offset;
     reduced_node->position = syntax_tree->position;
-    deallocSafe(&reduced_list);
     return ok(result_reduce_t, reduced_node);
-
-  list_error:
-    listDealloc(&reduced_list);
-    nodeDealloc(&reduced_node);
-    return error(result_reduce_t, exception);
   }
 
-  result_alloc_t allocation = allocSafe(sizeof(node_t));
-  if (!allocation.ok) {
-    return error(result_reduce_t, allocation.error);
+  result_alloc_t duplication = nodeClone(arena, *syntax_tree);
+  if (!duplication.ok) {
+    return error(result_reduce_t, duplication.error);
   }
-  node_t *duplicate = allocation.value;
-  *duplicate = *syntax_tree;
+  node_t *duplicate = duplication.value;
   return ok(result_reduce_t, duplicate);
 }

@@ -5,7 +5,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-bool tokenEql(const token_t *self, const token_t *other) {
+static arena_t *test_arena;
+
+static bool tokenEql(const token_t *self, const token_t *other) {
   if (self->type != other->type ||
       !positionEql(self->position, other->position)) {
     return false;
@@ -23,12 +25,12 @@ bool tokenEql(const token_t *self, const token_t *other) {
   }
 }
 
-bool tokenListEql(const token_list_t *self, const token_list_t *other) {
+static bool tokenListEql(const token_list_t *self, const token_list_t *other) {
   if (self->count != other->count) {
     return false;
   }
   for (size_t i = 0; i < self->count; i++) {
-    if (!tokenEql(&self->data[i], &other->data[i]))
+    if (!tokenEql(&self->offset[i], &other->offset[i]))
       return false;
   }
   return true;
@@ -53,32 +55,29 @@ void atoms() {
     const char *name;
   } cases[] = {
       {.input = "(",
-       .expected = makeTokenList(&lparen_token, 1),
+       .expected = makeTokenList(test_arena, &lparen_token, 1),
        .name = "lparen"},
       {.input = ")",
-       .expected = makeTokenList(&rparen_token, 1),
+       .expected = makeTokenList(test_arena, &rparen_token, 1),
        .name = "rparen"},
       {.input = "1",
-       .expected = makeTokenList(&integer_token, 1),
+       .expected = makeTokenList(test_arena, &integer_token, 1),
        .name = "integer"},
       {.input = "a",
-       .expected = makeTokenList(&symbol_token, 1),
+       .expected = makeTokenList(test_arena, &symbol_token, 1),
        .name = "symbol"},
       {.input = "12",
-       .expected = makeTokenList(single_chars_tokens, 2),
+       .expected = makeTokenList(test_arena, single_chars_tokens, 2),
        .name = "only single chars"},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    result_token_list_t list_result = tokenize(cases[i].input);
+    result_token_list_t list_result = tokenize(test_arena, cases[i].input);
 
     case(cases[i].name);
     expectTrue(list_result.ok, "doesn't fail");
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
-
-    listDealloc(&cases[i].expected);
-    listDealloc(&list_result.value);
   }
 }
 
@@ -96,29 +95,26 @@ void whitespaces() {
     const char *name;
   } cases[] = {
       {.input = " a",
-       .expected = makeTokenList(&token, 1),
+       .expected = makeTokenList(test_arena, &token, 1),
        .name = "blank space"},
       {.input = "\ta",
-       .expected = makeTokenList(&token, 1),
+       .expected = makeTokenList(test_arena, &token, 1),
        .name = "tab space"},
       {.input = "\ra",
-       .expected = makeTokenList(&token, 1),
+       .expected = makeTokenList(test_arena, &token, 1),
        .name = "carriage return"},
       {.input = "\nb\r",
-       .expected = makeTokenList(&other_token, 1),
+       .expected = makeTokenList(test_arena, &other_token, 1),
        .name = "new line"},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    auto list_result = tokenize(cases[i].input);
+    auto list_result = tokenize(test_arena, cases[i].input);
 
     case(cases[i].name);
     expectTrue(list_result.ok, "doesn't fail");
     expect(tokenListEql(cases[i].expected, list_result.value),
                  "returns correct list", "Expected token lists to be equal.");
-
-    listDealloc(&cases[i].expected);
-    listDealloc(&list_result.value);
   }
 }
 
@@ -134,7 +130,7 @@ void errors() {
                {"1\b", 2, 1, '\b', "unexpected character with integer"}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    auto result = tokenize(cases[i].input);
+    auto result = tokenize(test_arena, cases[i].input);
     case(cases[i].name);
     expectFalse(result.ok, "should fail");
     char msg[128];
@@ -153,8 +149,13 @@ void errors() {
 }
 
 int main(void) {
+  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  assert(allocation.ok);
+  test_arena = allocation.value;
+
   suite(atoms);
   suite(whitespaces);
   suite(errors);
+  arenaDestroy(test_arena);
   return report();
 }
