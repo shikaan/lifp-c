@@ -46,3 +46,10 @@ result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
 
   return (result_alloc_t){.ok = true};
 }
+
+void *genericListGet(const generic_list_t *self, size_t index) {
+  if (index >= self->count)
+    return nullptr;
+
+  return (byte_t *)self->data + (self->item_size * index);
+}

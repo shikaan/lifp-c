@@ -14,7 +14,8 @@ makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
   assert(allocation.ok);
   token_list_t *list = allocation.value;
   for (size_t i = 0; i < capacity; i++) {
-    listAppend(list, &elements[i]);
+    allocation = listAppend(token_t, list, &elements[i]);
+    assert(allocation.ok);
   }
   return list;
 }
@@ -111,6 +112,7 @@ static inline node_t nSym(const char symbol[]) {
       .type = NODE_TYPE_LIST,                                                  \
       .position.column = 1,                                                    \
       .position.line = 1,                                                      \
+      .value.list.item_size = sizeof(node_t),                                  \
       .value.list.count = (Count),                                             \
       .value.list.capacity = (Count),                                          \
       .value.list.data = (Data),                                               \

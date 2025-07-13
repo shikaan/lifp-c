@@ -30,12 +30,12 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       token_t tok = {.type = TOKEN_TYPE_LPAREN,
                      .value.lparen = nullptr,
                      .position = position};
-      token_push_result = listAppend(tokens, &tok);
+      token_push_result = listAppend(node_t, tokens, &tok);
     } else if (current_char == RPAREN) {
       const token_t tok = {.type = TOKEN_TYPE_RPAREN,
                            .value = {.rparen = nullptr},
                            .position = position};
-      token_push_result = listAppend(tokens, &tok);
+      token_push_result = listAppend(node_t, tokens, &tok);
     } else if (isspace(current_char)) {
       token_push_result.ok = true;
       if (current_char == '\n') {
@@ -47,13 +47,13 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       const token_t tok = {.type = TOKEN_TYPE_INTEGER,
                            .value = {.integer = current_char - '0'},
                            .position = position};
-      token_push_result = listAppend(tokens, &tok);
+      token_push_result = listAppend(node_t, tokens, &tok);
     } else if (isprint(current_char)) {
       const token_t tok = {.type = TOKEN_TYPE_SYMBOL,
                            .position = position,
                            .value = {.symbol = {current_char, 0, 0, 0, 0, 0, 0,
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
-      token_push_result = listAppend(tokens, &tok);
+      token_push_result = listAppend(node_t, tokens, &tok);
     } else {
       exception_t exception = {
           .kind = EXCEPTION_KIND_UNEXPECTED_TOKEN,

@@ -18,10 +18,22 @@ typedef List(void) generic_list_t;
 
 constexpr size_t LIST_STRIDE = 16;
 
-result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
-                                size_t list_size, size_t item_size);
-result_alloc_t genericListAppend(generic_list_t *self, const void *item);
+[[nodiscard]] result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
+                                              size_t list_size,
+                                              size_t item_size);
+[[nodiscard]] result_alloc_t genericListAppend(generic_list_t *self,
+                                               const void *item);
 
-#define listAlloc(Type, Arena, Capacity)                                       \
-  genericListAlloc(Arena, (Capacity), sizeof(List(Type)), sizeof(Type))
-#define listAppend(List, Item) genericListAppend((generic_list_t *)(List), Item)
+void *genericListGet(const generic_list_t *self, size_t index);
+
+#define listAlloc(ItemType, Arena, Capacity)                                   \
+  genericListAlloc(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))
+
+// TODO: can this be made typesafe with static asserts?
+#define listAppend(ItemType, List, Item)                                       \
+  genericListAppend((generic_list_t *)(List), Item)
+
+// #define listGet(ItemType, List, Index)                                         \
+// (ItemType *)genericListGet((const generic_list_t *)(List), Index)
+
+#define listGet(ItemType, List, Index) (ItemType)(List)->data[Index]

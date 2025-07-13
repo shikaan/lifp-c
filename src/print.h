@@ -1,6 +1,7 @@
 #pragma once
 
-#include "parser.h"
+#include "list.h"
+#include "node.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -31,12 +32,14 @@ void print(const node_t *node, int size, char buffer[static size],
   case NODE_TYPE_LIST: {
     (*offset) += snprintf(buffer + *offset, 2, "(");
     for (size_t i = 0; i < node->value.list.count - 1; i++) {
-      print(&node->value.list.data[i], size, buffer, offset);
+      node_t sub_node = listGet(node_t, &node->value.list, i);
+      print(&sub_node, size, buffer, offset);
       *offset += snprintf(buffer + *offset, 2, " ");
     }
 
-    print(&node->value.list.data[node->value.list.count - 1], size, buffer,
-          offset);
+    node_t sub_node =
+        listGet(node_t, &node->value.list, node->value.list.count - 1);
+    print(&sub_node, size, buffer, offset);
     *offset += snprintf(buffer + *offset, 2, ")");
     return;
   }

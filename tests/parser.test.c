@@ -23,14 +23,16 @@ static bool eqlNode(node_t *self, node_t *other) {
   case NODE_TYPE_INTEGER:
     return self->value.integer == other->value.integer;
   case NODE_TYPE_SYMBOL:
-    return strncmp(self->value.symbol, self->value.symbol, SYMBOL_SIZE) == 0;
+    return strncmp(self->value.symbol, other->value.symbol, SYMBOL_SIZE) == 0;
   case NODE_TYPE_LIST: {
     if (self->value.list.count != other->value.list.count) {
       return false;
     }
 
     for (size_t i = 0; i < self->value.list.count; i++) {
-      if (!eqlNode(&self->value.list.data[i], &other->value.list.data[i])) {
+      node_t self_node = listGet(node_t, &self->value.list, i);
+      node_t other_node = listGet(node_t, &other->value.list, i);
+      if (!eqlNode(&self_node, &other_node)) {
         return false;
       }
     }
@@ -85,7 +87,7 @@ void unary(void) {
   node_t boolean_true = nBool(true);
   node_t boolean_false = nBool(false);
   node_t nil = nNil();
-  node_t symbol = nSym("symbol");
+  node_t symbol = nSym("sym");
 
   token_t lparen = tParen('(');
   token_t rparen = tParen(')');
@@ -125,7 +127,6 @@ void unary(void) {
     assert(result.ok);
     expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
-    // TODO: nodeDealloc(result.value);
   }
 }
 

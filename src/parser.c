@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "alloc.h"
 #include "arena.h"
+#include "lexer.h"
 #include "list.h"
 #include "node.h"
 #include "result.h"
@@ -65,13 +66,14 @@ result_node_t parseList(arena_t *arena, const token_list_t *tokens,
   }
 
   node_t *node = node_result.value;
-  node->position = tokens->data[*offset].position;
+  token_t token = listGet(token_t, tokens, *offset);
+  node->position = token.position;
   node->type = NODE_TYPE_LIST;
   (*depth)++;
   (*offset)++;
 
   for (; *offset < tokens->capacity; (*offset)++) {
-    const token_t tok = tokens->data[*offset];
+    const token_t tok = listGet(token_t, tokens, *offset);
     if (tok.type == TOKEN_TYPE_RPAREN) {
       (*depth)--;
       break;
@@ -84,7 +86,7 @@ result_node_t parseList(arena_t *arena, const token_list_t *tokens,
 
     node_t *sub_node = sub_node_result.value;
 
-    result_alloc_t appending = listAppend(&node->value.list, sub_node);
+    result_alloc_t appending = listAppend(node_t, &node->value.list, sub_node);
     if (!appending.ok) {
       return error(result_node_t, appending.error);
     }
@@ -100,7 +102,7 @@ result_node_t parse(arena_t *arena, const token_list_t *tokens, size_t *offset,
     return error(result_node_t, exception);
   }
 
-  const token_t first_token = tokens->data[*offset];
+  const token_t first_token = listGet(token_t, tokens, *offset);
   size_t initial_depth = *depth;
 
   if (first_token.type == TOKEN_TYPE_LPAREN) {
