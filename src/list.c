@@ -25,7 +25,7 @@ result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
 
 result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
   if (self->count >= self->capacity) {
-    size_t new_capacity = self->capacity + LIST_STRIDE;
+    size_t new_capacity = self->capacity * 2;
 
     result_alloc_t realloc_result =
         arenaAllocate(self->arena, self->item_size * new_capacity);
@@ -41,7 +41,7 @@ result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
   }
 
   void *destination = (byte_t *)self->data + (self->item_size * self->count);
-  memcpy(destination, item, self->item_size);
+  bytewiseCopy(destination, item, self->item_size);
   self->count++;
 
   return (result_alloc_t){.ok = true};

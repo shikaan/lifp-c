@@ -32,14 +32,14 @@ int main(void) {
   allocation = listAppend(int, list, &item_2);
   assert(allocation.ok);
   expectEqlSize(list->count, 2, "has correct count");
-  expectEqlSize(list->capacity, LIST_STRIDE + 1, "has updated capacity");
+  expectEqlSize(list->capacity, 2, "has updated capacity");
   
   case("with another resize");
-  for (size_t i = 0; i < LIST_STRIDE; i++) {
+  for (size_t i = 0; i < 4; i++) {
     allocation = listAppend(int, list, &item_2);
     assert(allocation.ok);
   }
-  expectEqlSize(list->capacity, (LIST_STRIDE*2) + 1, "has updated capacity again");
+  expectEqlSize(list->capacity, 8, "has updated capacity again");
 
   arenaDestroy(test_arena);
   return report();
