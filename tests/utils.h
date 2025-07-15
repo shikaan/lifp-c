@@ -10,7 +10,7 @@
 
 static inline token_list_t *
 makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
-  result_alloc_t allocation = listAlloc(token_t, arena, capacity);
+  result_alloc_t allocation = listCreate(token_t, arena, capacity);
   assert(allocation.ok);
   token_list_t *list = allocation.value;
   for (size_t i = 0; i < capacity; i++) {

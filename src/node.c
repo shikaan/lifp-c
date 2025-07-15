@@ -11,7 +11,7 @@ result_alloc_t nodeAlloc(arena_t *arena, node_type_t type) {
     }
     node_t *node = node_allocation.value;
 
-    result_alloc_t list_allocation = listAlloc(node_t, arena, 8);
+    result_alloc_t list_allocation = listCreate(node_t, arena, 8);
     if (!list_allocation.ok) {
       return list_allocation;
     }

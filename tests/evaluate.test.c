@@ -50,7 +50,7 @@ void atoms() {
 }
 
 void listOfElements() {
-  result_alloc_t allocation = listAlloc(node_t, test_arena, 4);
+  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
   assert(allocation.ok);
   node_list_t *expected = allocation.value;
 
@@ -78,7 +78,7 @@ void listOfElements() {
 }
 
 void functionCall() {
-  result_alloc_t allocation = listAlloc(node_t, test_arena, 4);
+  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
   expectTrue(allocation.ok, "list allocation succeeds");
   node_list_t *list = allocation.value;
 
@@ -105,7 +105,7 @@ void functionCall() {
 }
 
 void nested() {
-  result_alloc_t allocation = listAlloc(node_t, test_arena, 4);
+  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
   assert(allocation.ok);
   node_list_t *inner_list = allocation.value;
 
@@ -120,7 +120,7 @@ void nested() {
   inner_list_node.value.list.capacity = inner_list->capacity;
 
   // Create outer list: (3 (1 2))
-  allocation = listAlloc(node_t, test_arena, 4);
+  allocation = listCreate(node_t, test_arena, 4);
   assert(allocation.ok);
   node_list_t *outer_list = allocation.value;
 
@@ -144,7 +144,7 @@ void nested() {
 }
 
 void emptyList() {
-  result_alloc_t allocation = listAlloc(node_t, test_arena, 4); // capacity > 0
+  result_alloc_t allocation = listCreate(node_t, test_arena, 4); // capacity > 0
   assert(allocation.ok);
   node_list_t *empty_list = allocation.value;
 

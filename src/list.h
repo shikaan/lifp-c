@@ -24,7 +24,7 @@ typedef List(void) generic_list_t;
 
 void *genericListGet(const generic_list_t *self, size_t index);
 
-#define listAlloc(ItemType, Arena, Capacity)                                   \
+#define listCreate(ItemType, Arena, Capacity)                                   \
   genericListAlloc(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))
 
 // TODO: can this be made typesafe with static asserts?

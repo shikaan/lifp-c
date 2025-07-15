@@ -11,7 +11,7 @@ int main(void) {
   assert(allocation.ok);
   test_arena = allocation.value;
 
-  allocation = listAlloc(int, test_arena, 1);
+  allocation = listCreate(int, test_arena, 1);
   assert(allocation.ok);
   int_list_t *list = allocation.value;
 

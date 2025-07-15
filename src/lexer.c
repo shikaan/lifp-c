@@ -15,7 +15,7 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
   result_token_list_t result;
   position_t position = {.column = 0, .line = 1};
 
-  result_alloc_t allocation = listAlloc(token_t, arena, 32);
+  result_alloc_t allocation = listCreate(token_t, arena, 32);
   if (!allocation.ok) {
     return error(result_token_list_t, allocation.error);
   }

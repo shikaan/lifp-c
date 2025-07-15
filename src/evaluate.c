@@ -25,7 +25,7 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree) {
     node_list_t *reduced_list = nullptr;
     node_t *reduced_node = nullptr;
 
-    result_alloc_t allocation = listAlloc(node_t, arena, list.capacity);
+    result_alloc_t allocation = listCreate(node_t, arena, list.capacity);
     if (!allocation.ok) {
       return error(result_reduce_t, allocation.error);
     }
