@@ -77,8 +77,8 @@ void getSet() {
   item = mapGet(map, key1);
   int* another_item = mapGet(map, key2);
   expectNeqInt(*item, *another_item, "values don't overlap");
-  expectEqlInt(*another_item, value2, "retrieves correct first value");
-  expectEqlInt(*item, value, "retrieves correct other value");
+  expectEqlInt(*item, value, "retrieves correct value");
+  expectEqlInt(*another_item, value2, "retrieves correct other value");
 
   arenaDestroy(arena);
 }
