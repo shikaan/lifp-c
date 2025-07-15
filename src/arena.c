@@ -14,15 +14,16 @@ result_alloc_t arenaCreate(size_t size) {
 }
 
 result_alloc_t arenaAllocate(arena_t *self, size_t size) {
+  size_t aligned_offset = (self->offset + 7U) & ~7U;
   size_t aligned_size = (size + 7U) & ~7U;
 
-  if (self->offset + aligned_size > self->size) {
+  if (aligned_offset + aligned_size > self->size) {
     exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 
-  byte_t *pointer = &self->memory[self->offset];
-  self->offset += aligned_size;
+  byte_t *pointer = &self->memory[aligned_offset];
+  self->offset = aligned_offset + aligned_size;
   return ok(result_alloc_t, pointer);
 }
 
