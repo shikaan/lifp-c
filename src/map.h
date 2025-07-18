@@ -2,8 +2,11 @@
 
 #include "alloc.h"
 #include "arena.h"
+#include "result.h"
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 constexpr size_t MAX_KEY_LENGTH = 32;
@@ -19,7 +22,7 @@ constexpr size_t MAX_KEY_LENGTH = 32;
     arena_t *arena;                                                            \
   }
 
-typedef Map(byte_t) generic_map_t;
+typedef Map(void) generic_map_t;
 
 static inline uint64_t hash(size_t len, const char key[static len]) {
   uint64_t hash = 14695981039346656037U;
@@ -41,8 +44,18 @@ static inline size_t makeKey(generic_map_t *self, const char *key) {
 #define mapCreate(ItemType, Arena, Capacity)                                   \
   genericMapCreate(Arena, Capacity, sizeof(ItemType))
 
+#define mapSet(Map, Key, Value)                                                \
+  genericMapSet((generic_map_t *)(Map), Key, Value)
+
+#define mapGet(ItemType, Map, Key)                                             \
+  (ItemType *)genericMapGet((generic_map_t *)(Map), Key)
+
 static inline result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
                                               size_t item_size) {
+  assert(arena != nullptr);
+  assert(capacity > 0);
+  assert(item_size > 0);
+
   result_alloc_t allocation = arenaAllocate(arena, sizeof(generic_map_t));
   if (!allocation.ok) {
     return allocation;
@@ -75,17 +88,18 @@ static inline result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
   return ok(result_alloc_t, map);
 }
 
-static inline void rawValueSet(generic_map_t *self, size_t index, const void* value) {
-  byte_t *destination = self->values + (index * self->item_size);
-  // TODO: can this fail? How do we handle that?
+static inline void rawValueSet(generic_map_t *self, size_t index,
+                               const void *value) {
+  byte_t *destination = (byte_t *)self->values + (index * self->item_size);
+  assert(destination != nullptr); // memcpy on nullptr causes undefined behaviour
   memcpy(destination, value, self->item_size);
 }
 
-static inline result_alloc_t mapSet(generic_map_t *self, const char *key,
-                                    void *value) {
-  if (strlen(key) >= MAX_KEY_LENGTH) {
-    // TODO: incorrect error
-    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+static inline result_alloc_t genericMapSet(generic_map_t *self, const char *key,
+                                           void *value) {
+  size_t key_length = strlen(key);
+  if (key_length >= MAX_KEY_LENGTH) {
+    exception_t exception = {.kind = EXCEPTION_KIND_KEY_TOO_LONG, .payload.key_too_long = key_length };
     return error(result_alloc_t, exception);
   }
 
@@ -103,12 +117,12 @@ static inline result_alloc_t mapSet(generic_map_t *self, const char *key,
 
     index = (index + 1) % self->capacity;
     count++;
-  }
 
-  if (index == count) {
-    // TODO: extend and rehash
-    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
-    return error(result_alloc_t, exception);
+    if (count == self->capacity) {
+      // TODO: extend and rehash
+      exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+      return error(result_alloc_t, exception);
+    }
   }
 
   self->used[index] = true;
@@ -120,13 +134,16 @@ static inline result_alloc_t mapSet(generic_map_t *self, const char *key,
   return (result_alloc_t){.ok = true};
 }
 
-static inline void *mapGet(generic_map_t *self, const char *key) {
+static inline void *genericMapGet(generic_map_t *self, const char *key) {
+  if (self->count == 0)
+    return nullptr;
+
   size_t index = makeKey(self, key);
   size_t count = 0;
 
   while ((int)self->used[index] && count < self->capacity) {
     if (strncmp(self->keys[index], key, MAX_KEY_LENGTH) == 0) {
-      return self->values + (index * self->item_size);
+      return (byte_t *)self->values + (index * self->item_size);
     }
 
     index = (index + 1) % self->capacity;
