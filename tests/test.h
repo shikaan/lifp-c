@@ -46,8 +46,8 @@
 // // define main as above
 // ```
 
-#define FLOAT_THRESHOOLD 1e-6f
-#define DOUBLE_THRESHOOLD 1e-6f
+#define FLOAT_THRESHOLD 1e-6f
+#define DOUBLE_THRESHOLD 1e-6f
 
 static int total = 0;
 static int failed = 0;
@@ -59,7 +59,10 @@ void expect(bool condition, const char *test_name,
     printf("    fail - %s: %s\n", test_name, failure_message);
     return;
   }
+
+#ifndef FAILED_ONLY
   printf("     ok  - %s\n", test_name);
+#endif
 }
 
 void expectTrue(bool condition, const char *name) {
@@ -106,25 +109,25 @@ void expectEqlSize(const size_t a, const size_t b, const char *name) {
 void expectEqlFloat(const float a, const float b, const char *name) {
   char msg[256];
   snprintf(msg, 256, "Expected %f to equal %f", a, b);
-  expect(fabsf(a - b) < FLOAT_THRESHOOLD, name, msg);
+  expect(fabsf(a - b) < FLOAT_THRESHOLD, name, msg);
 }
 
 void expectNeqFloat(const float a, const float b, const char *name) {
   char msg[256];
   snprintf(msg, 256, "Expected %f not to equal %f", a, b);
-  expect(fabsf(a - b) >= FLOAT_THRESHOOLD, name, msg);
+  expect(fabsf(a - b) >= FLOAT_THRESHOLD, name, msg);
 }
 
 void expectEqlDouble(const double a, const double b, const char *name) {
   char msg[256];
   snprintf(msg, 256, "Expected %f to equal %f", a, b);
-  expect(fabs(a - b) < DOUBLE_THRESHOOLD, name, msg);
+  expect(fabs(a - b) < DOUBLE_THRESHOLD, name, msg);
 }
 
 void expectNeqDouble(const double a, const double b, const char *name) {
   char msg[256];
   snprintf(msg, 256, "Expected %f not to equal %f", a, b);
-  expect(fabs(a - b) >= DOUBLE_THRESHOOLD, name, msg);
+  expect(fabs(a - b) >= DOUBLE_THRESHOLD, name, msg);
 }
 
 void expectEqlString(const char *a, const char *b, size_t max_size,
@@ -142,16 +145,31 @@ void expectNeqString(const char *a, const char *b, size_t max_size,
 }
 
 int report(void) {
+#ifndef FAILED_ONLY
   printf("\n%d assertions, %d failed\n", total, failed);
+#else
+  printf("%d assertions, %d failed\n", total, failed);
+#endif
   return failed;
 }
 
+#ifndef FAILED_ONLY
 #define case(name) printf("  %s:\n", name)
+#else
+#define case(name)
+#endif
 
+#ifndef FAILED_ONLY
 #define suite(name)                                                            \
   {                                                                            \
     printf("\n> %s\n", #name);                                                 \
     name();                                                                    \
   }
+#else
+#define suite(name)                                                            \
+  {                                                                            \
+    name();                                                                    \
+  }
+#endif
 
 #endif // TEST_H
