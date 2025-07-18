@@ -1,5 +1,8 @@
 #include "../src/arena.h"
 #include "test.h"
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
 void basic() {
   result_alloc_t creation = arenaCreate(1024);
@@ -34,8 +37,22 @@ void overflow() {
   arenaDestroy(arena);
 }
 
+void alignment() {
+  result_alloc_t creation = arenaCreate(1024);
+  assert(creation.ok);
+  arena_t *arena = creation.value;
+
+  for (size_t i = 0; i < 16; i++) {
+    result_alloc_t allocation = arenaAllocate(arena, i);
+    assert(allocation.ok);
+    uintptr_t pointer = (uintptr_t)allocation.value;
+    expectEqlUint(pointer % 8, 0, "address is 8-aligned");
+  }
+}
+
 int main() {
-    suite(basic);
-    suite(overflow);
-    return report();
+  suite(basic);
+  suite(overflow);
+  suite(alignment);
+  return report();
 }
