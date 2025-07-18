@@ -7,18 +7,19 @@ src/lexer.o: src/position.o src/list.o src/arena.o
 src/parser.o: src/lexer.o src/position.o src/list.o src/arena.o src/node.o
 src/list.o: src/arena.o
 src/node.o: src/arena.o
-src/environment.o: src/arena.o
-src/evaluate.o: src/arena.o src/environment.o
+src/environment.o: src/arena.o src/map.o
+src/evaluate.o: src/arena.o src/environment.o src/map.o
+src/map.o: src/arena.o
 
 tests/lexer.test: src/lexer.o src/position.o src/list.o src/arena.o
 tests/parser.test: src/parser.o src/lexer.o src/position.o src/list.o src/node.o src/arena.o
 tests/list.test: src/list.o src/arena.o
 tests/arena.test: src/arena.o
-tests/evaluate.test: src/evaluate.o src/node.o src/list.o src/arena.o src/position.o src/environment.o
-tests/map.test: src/arena.o
+tests/evaluate.test: src/evaluate.o src/node.o src/list.o src/arena.o src/position.o src/environment.o src/map.o
+tests/map.test: src/arena.o src/map.o
 
 LDFLAGS := -lreadline
-bin/repl: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o src/environment.o
+bin/repl: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o src/environment.o src/map.o
 
 .PHONY: run
 run: bin/repl
