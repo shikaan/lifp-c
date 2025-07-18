@@ -1,5 +1,8 @@
 include flags.mk
 
+.PHONY: all
+all: clean bin/repl
+
 src/lexer.o: src/position.o src/list.o src/arena.o
 src/parser.o: src/lexer.o src/position.o src/list.o src/arena.o src/node.o
 src/list.o: src/arena.o
@@ -14,7 +17,11 @@ tests/evaluate.test: src/evaluate.o src/node.o src/list.o src/arena.o src/positi
 tests/map.test: src/arena.o
 
 LDFLAGS := -lreadline
-main: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o
+bin/repl: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o src/environment.o
+
+.PHONY: run
+run: bin/repl
+	bin/repl
 
 .PHONY: clean
 clean:

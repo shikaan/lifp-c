@@ -11,3 +11,4 @@ src/*.o
 # binaries
 main
 tests/*.test
+bin/repl
