@@ -5,8 +5,9 @@
 typedef enum {
   EXCEPTION_KIND_UNEXPECTED_TOKEN,
   EXCEPTION_KIND_ALLOCATION,
-  EXCEPTION_INVALID_EXPRESSION,
-  EXCEPTION_UNBALANCED_PARENTHESES,
+  EXCEPTION_KIND_INVALID_EXPRESSION,
+  EXCEPTION_KIND_UNBALANCED_PARENTHESES,
+  EXCEPTION_KIND_KEY_TOO_LONG,
 } exception_kind_t;
 
 typedef struct {
@@ -19,6 +20,7 @@ typedef union {
   nullptr_t allocation;
   nullptr_t invalid_expression;
   nullptr_t unbalanced_parentheses;
+  size_t key_too_long;
 } exception_payload_t;
 
 typedef struct {
@@ -33,6 +35,12 @@ typedef struct {
       ValueType value;                                                         \
       exception_t error;                                                       \
     };                                                                         \
+  }
+
+#define ResultVoid()                                                           \
+  struct {                                                                     \
+    bool ok;                                                                   \
+    exception_t error;                                                         \
   }
 
 // Helper functions for creating results

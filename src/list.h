@@ -31,4 +31,5 @@ void *genericListGet(const generic_list_t *self, size_t index);
 #define listAppend(ItemType, List, Item)                                       \
   genericListAppend((generic_list_t *)(List), Item)
 
+// TODO: provide bound checks
 #define listGet(ItemType, List, Index) (ItemType)(List)->data[Index]

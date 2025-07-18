@@ -1,5 +1,6 @@
-#include "../src/evaluate.h"
+#include "../src/environment.h"
 #include "../src/arena.h"
+#include "../src/evaluate.h"
 #include "../src/list.h"
 #include "../src/node.h"
 #include "test.h"
@@ -8,6 +9,7 @@
 #include <stddef.h>
 
 static arena_t *test_arena;
+static environment_t *environment;
 
 void expectEqlNodeType(node_type_t actual, node_type_t expected,
                        const char *name) {
@@ -19,7 +21,7 @@ void expectEqlNodeType(node_type_t actual, node_type_t expected,
 
 void atoms() {
   node_t integer_node = nInt(42);
-  result_reduce_t reduction = reduce(test_arena, &integer_node);
+  result_reduce_t reduction = reduce(test_arena, &integer_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_INTEGER,
                     "reduced integer has correct type");
@@ -27,7 +29,7 @@ void atoms() {
                "reduced integer has correct value");
 
   node_t bool_node = nBool(true);
-  reduction = reduce(test_arena, &bool_node);
+  reduction = reduce(test_arena, &bool_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_BOOLEAN,
                     "reduced boolean has correct type");
@@ -35,13 +37,13 @@ void atoms() {
              "reduced boolean has correct value");
 
   node_t nil_node = nNil();
-  reduction = reduce(test_arena, &nil_node);
+  reduction = reduce(test_arena, &nil_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_NIL,
                     "reduced nil has correct type");
 
   node_t symbol_node = nSym("test");
-  reduction = reduce(test_arena, &symbol_node);
+  reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_SYMBOL,
                     "reduced symbol has correct type");
@@ -63,7 +65,7 @@ void listOfElements() {
 
   node_t list_node = nList(2, expected->data);
 
-  result_reduce_t reduction = reduce(test_arena, &list_node);
+  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_LIST, "has correct type");
   node_list_t reduced_list = reduction.value->value.list;
@@ -98,7 +100,7 @@ void functionCall() {
   node_t list_node = nList(4, list->data);
   list_node.value.list.capacity = list->capacity;
 
-  result_reduce_t reduction = reduce(test_arena, &list_node);
+  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
   assert(reduction.ok);
   expectNotNull(reduction.value, "reduced result is not null");
   expectEqlInt(reduction.value->value.integer, 6, "has correct result");
@@ -133,7 +135,7 @@ void nested() {
   node_t outer_list_node = nList(2, outer_list->data);
   outer_list_node.value.list.capacity = outer_list->capacity;
 
-  result_reduce_t reduction = reduce(test_arena, &outer_list_node);
+  result_reduce_t reduction = reduce(test_arena, &outer_list_node, environment);
   assert(reduction.ok);
   expectEqlNodeType(reduction.value->type, NODE_TYPE_LIST, "has correct type");
   expectEqlSize(reduction.value->value.list.count, 2, "has correct count");
@@ -151,7 +153,7 @@ void emptyList() {
   node_t empty_list_node = nList(0, empty_list->data);
   empty_list_node.value.list.capacity = empty_list->capacity;
 
-  result_reduce_t result = reduce(test_arena, &empty_list_node);
+  result_reduce_t result = reduce(test_arena, &empty_list_node, environment);
   assert(result.ok);
   expectEqlNodeType(result.value->type, NODE_TYPE_LIST, "has correct type");
   expectEqlSize(result.value->value.list.count, 0, "has correct count");
@@ -164,7 +166,7 @@ void allocations() {
 
   arenaAllocate(small_arena, 31); // Use up most space
   node_t large_node = nInt(123);
-  result_reduce_t reduction = reduce(small_arena, &large_node);
+  result_reduce_t reduction = reduce(small_arena, &large_node, environment);
   assert(!reduction.ok);
   expectEqlUint(reduction.error.kind, EXCEPTION_KIND_ALLOCATION,
                 "returns allocation error");
@@ -176,6 +178,10 @@ int main(void) {
   result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
+
+  allocation = environmentCreate(test_arena, nullptr);
+  assert(allocation.ok);
+  environment = allocation.value;
 
   suite(atoms);
   suite(listOfElements);

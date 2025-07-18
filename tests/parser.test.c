@@ -183,11 +183,11 @@ void errors() {
     token_t *input;
     exception_kind_t expected;
   } cases[] = {
-      {"no tokens", 0, {}, EXCEPTION_INVALID_EXPRESSION},
+      {"no tokens", 0, {}, EXCEPTION_KIND_INVALID_EXPRESSION},
       {"unbalanced parentheses right", 4, unbalanced_right,
-       EXCEPTION_UNBALANCED_PARENTHESES},
+       EXCEPTION_KIND_UNBALANCED_PARENTHESES},
       {"unbalanced parentheses left", 4, unbalanced_left,
-       EXCEPTION_INVALID_EXPRESSION},
+       EXCEPTION_KIND_INVALID_EXPRESSION},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
