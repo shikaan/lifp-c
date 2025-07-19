@@ -7,11 +7,14 @@
 #include "node.h"
 #include "result.h"
 #include "value.h"
-#include <__stddef_unreachable.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+// Make clang see unreachable
+// TODO: under which conditions can this be removed?
+#define __need_unreachable 1
 
 result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
                            environment_t *environment) {
