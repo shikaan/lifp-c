@@ -97,7 +97,7 @@ result_node_t parseList(arena_t *arena, const token_list_t *tokens,
 
 result_node_t parse(arena_t *arena, const token_list_t *tokens, size_t *offset,
                     size_t *depth) {
-  if (tokens->capacity == 0) {
+  if (tokens->count == 0) {
     exception_t exception = {.kind = EXCEPTION_KIND_INVALID_EXPRESSION};
     return error(result_node_t, exception);
   }

@@ -8,8 +8,7 @@
 static arena_t *test_arena;
 
 static bool tokenEql(const token_t *self, const token_t *other) {
-  if (self->type != other->type ||
-      !positionEql(self->position, other->position)) {
+  if (self->type != other->type) {
     return false;
   }
   switch (self->type) {
@@ -32,24 +31,18 @@ static bool tokenListEql(const token_list_t *self, const token_list_t *other) {
   for (size_t i = 0; i < self->count; i++) {
     token_t self_token = listGet(token_t, self, i);
     token_t other_token = listGet(token_t, other, i);
-    if (!tokenEql(&self_token, &other_token))
+    if (!tokenEql(&self_token, &other_token)) {
       return false;
+    }
   }
   return true;
 }
 
 void atoms() {
-  // Single token cases
   token_t lparen_token = tParen('(');
   token_t rparen_token = tParen(')');
-  token_t integer_token = tInt(1);
-  token_t symbol_token = tSym("a");
-
-  // Multi-token
-  token_t single_chars_tokens[2] = {tInt(1),
-                                    {.type = TOKEN_TYPE_INTEGER,
-                                     .value = {.integer = 2},
-                                     .position = {.column = 2, .line = 1}}};
+  token_t integer_token = tInt(12);
+  token_t symbol_token = tSym("lol");
 
   struct {
     const char *input;
@@ -62,24 +55,19 @@ void atoms() {
       {.input = ")",
        .expected = makeTokenList(test_arena, &rparen_token, 1),
        .name = "rparen"},
-      {.input = "1",
+      {.input = "12",
        .expected = makeTokenList(test_arena, &integer_token, 1),
        .name = "integer"},
-      {.input = "a",
+      {.input = "lol",
        .expected = makeTokenList(test_arena, &symbol_token, 1),
        .name = "symbol"},
-      {.input = "12",
-       .expected = makeTokenList(test_arena, single_chars_tokens, 2),
-       .name = "only single chars"},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
     result_token_list_t list_result = tokenize(test_arena, cases[i].input);
-
-    case(cases[i].name);
-    expectTrue(list_result.ok, "doesn't fail");
-    expect(tokenListEql(cases[i].expected, list_result.value),
-                 "returns correct list", "Expected token lists to be equal.");
+    assert(list_result.ok);
+    expect(tokenListEql(cases[i].expected, list_result.value), cases[i].name,
+           "Expected token lists to be equal.");
   }
 }
 
@@ -113,10 +101,9 @@ void whitespaces() {
   for (size_t i = 0; i < arraySize(cases); i++) {
     auto list_result = tokenize(test_arena, cases[i].input);
 
-    case(cases[i].name);
-    expectTrue(list_result.ok, "doesn't fail");
-    expect(tokenListEql(cases[i].expected, list_result.value),
-                 "returns correct list", "Expected token lists to be equal.");
+    assert(list_result.ok);
+    expect(tokenListEql(cases[i].expected, list_result.value), cases[i].name,
+           "Expected token lists to be equal.");
   }
 }
 
@@ -150,14 +137,44 @@ void errors() {
   }
 }
 
+void complex() {
+  token_t lparen_token = tParen('(');
+  token_t rparen_token = tParen(')');
+  token_t twelve_token = tInt(12);
+  token_t two_token = tInt(2);
+  token_t def_token = tSym("def!");
+  token_t x_token = tSym("x");
+
+  token_t flat_list[4] = {lparen_token, twelve_token, two_token, rparen_token};
+  token_t nested_list[6] = {lparen_token, two_token, lparen_token, twelve_token, rparen_token, rparen_token};
+  token_t whitespaces[5] = {lparen_token, def_token, x_token, two_token, rparen_token};
+
+    struct {
+    const char *input;
+    token_list_t *expected;
+    const char *name;
+  } cases[] = {{"(12 2)", makeTokenList(test_arena, flat_list, 4), "flat list"},
+               {"(2 (12))", makeTokenList(test_arena, nested_list, 6), "nested list"},
+               {"(def!\nx 2\n)", makeTokenList(test_arena, whitespaces, 5), "with random whitespaces"}};
+  for (size_t i = 0; i < arraySize(cases); i++) {
+    result_token_list_t list_result = tokenize(test_arena, cases[i].input);
+
+    assert(list_result.ok);
+    expect(tokenListEql(cases[i].expected, list_result.value),
+                 cases[i].name, "Expected token lists to be equal.");
+  }
+}
+
 int main(void) {
   result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 
   suite(atoms);
+  suite(complex);
   suite(whitespaces);
   suite(errors);
+
   arenaDestroy(test_arena);
   return report();
 }

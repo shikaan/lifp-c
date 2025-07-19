@@ -18,6 +18,8 @@ tests/arena.test: src/arena.o
 tests/evaluate.test: src/evaluate.o src/node.o src/list.o src/arena.o src/position.o src/environment.o src/map.o
 tests/map.test: src/arena.o src/map.o
 
+tests/integration.test: src/lexer.o src/parser.o src/arena.o src/evaluate.o src/list.o src/map.o src/node.o src/environment.o
+
 LDFLAGS := -lreadline
 bin/repl: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o src/environment.o src/map.o
 
