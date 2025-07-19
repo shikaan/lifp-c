@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../src/parser.h"
+#include "../src/value.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -63,6 +64,13 @@ static inline token_t tParen(char paren) {
   };
 }
 
+static inline value_t pInt(int integer) {
+  return (value_t){.type = VALUE_TYPE_INTEGER,
+                   .position.column = 1,
+                   .position.line = 1,
+                   .value.integer = integer};
+}
+
 static inline node_t nInt(int integer) {
   return (node_t){.type = NODE_TYPE_INTEGER,
                   .position.column = 1,
@@ -106,6 +114,17 @@ static inline node_t nSym(const char symbol[]) {
                   .value.symbol[14] = (char)(len > 14 ? symbol[14] : '\0'),
                   .value.symbol[15] = (char)(len > 15 ? symbol[15] : '\0')};
 }
+
+#define pList(Count, Data)                                                     \
+  {                                                                            \
+      .type = VALUE_TYPE_LIST,                                                 \
+      .position.column = 1,                                                    \
+      .position.line = 1,                                                      \
+      .value.list.item_size = sizeof(node_t),                                  \
+      .value.list.count = (Count),                                             \
+      .value.list.capacity = (Count),                                          \
+      .value.list.data = (Data),                                               \
+  }
 
 #define nList(Count, Data)                                                     \
   {                                                                            \

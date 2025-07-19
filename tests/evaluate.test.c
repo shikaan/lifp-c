@@ -1,6 +1,6 @@
-#include "../src/environment.h"
-#include "../src/arena.h"
 #include "../src/evaluate.h"
+#include "../src/arena.h"
+#include "../src/environment.h"
 #include "../src/list.h"
 #include "../src/node.h"
 #include "test.h"
@@ -11,8 +11,8 @@
 static arena_t *test_arena;
 static environment_t *environment;
 
-void expectEqlNodeType(node_type_t actual, node_type_t expected,
-                       const char *name) {
+void expectEqlValueType(value_type_t actual, value_type_t expected,
+                        const char *name) {
   char msg[256];
   snprintf(msg, 256, "Expected node type %d to equal %d", (int)actual,
            (int)expected);
@@ -23,32 +23,30 @@ void atoms() {
   node_t integer_node = nInt(42);
   result_reduce_t reduction = reduce(test_arena, &integer_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_INTEGER,
-                    "reduced integer has correct type");
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_INTEGER,
+                     "reduced integer has correct type");
   expectEqlInt(reduction.value->value.integer, 42,
                "reduced integer has correct value");
 
   node_t bool_node = nBool(true);
   reduction = reduce(test_arena, &bool_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_BOOLEAN,
-                    "reduced boolean has correct type");
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_BOOLEAN,
+                     "reduced boolean has correct type");
   expectTrue(reduction.value->value.boolean,
              "reduced boolean has correct value");
 
   node_t nil_node = nNil();
   reduction = reduce(test_arena, &nil_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_NIL,
-                    "reduced nil has correct type");
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_NIL,
+                     "reduced nil has correct type");
 
   node_t symbol_node = nSym("test");
   reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_SYMBOL,
-                    "reduced symbol has correct type");
-  expectEqlString(reduction.value->value.symbol, "test", SYMBOL_SIZE,
-                  "reduced symbol has correct value");
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_FUNCTION,
+                     "reduced symbol has correct type");
 }
 
 void listOfElements() {
@@ -67,13 +65,14 @@ void listOfElements() {
 
   result_reduce_t reduction = reduce(test_arena, &list_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_LIST, "has correct type");
-  node_list_t reduced_list = reduction.value->value.list;
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
+                     "has correct type");
+  value_list_t reduced_list = reduction.value->value.list;
   expectEqlSize(reduced_list.count, 2, "has correct count");
   for (size_t i = 0; i < reduced_list.count; i++) {
-    node_t node = listGet(node_t, &reduced_list, i);
+    value_t node = listGet(value_t, &reduced_list, i);
     node_t expected_node = listGet(node_t, expected, i);
-    expectEqlNodeType(node.type, NODE_TYPE_INTEGER, "has correct type");
+    expectEqlValueType(node.type, VALUE_TYPE_INTEGER, "has correct type");
     expectEqlInt(node.value.integer, expected_node.value.integer,
                  "has correct value");
   }
@@ -137,12 +136,13 @@ void nested() {
 
   result_reduce_t reduction = reduce(test_arena, &outer_list_node, environment);
   assert(reduction.ok);
-  expectEqlNodeType(reduction.value->type, NODE_TYPE_LIST, "has correct type");
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
+                     "has correct type");
   expectEqlSize(reduction.value->value.list.count, 2, "has correct count");
-  node_t first = listGet(node_t, &reduction.value->value.list, 0);
-  node_t second = listGet(node_t, &reduction.value->value.list, 1);
-  expectEqlNodeType(first.type, NODE_TYPE_INTEGER, "has correct type");
-  expectEqlNodeType(second.type, NODE_TYPE_LIST, "has correct type");
+  value_t first = listGet(value_t, &reduction.value->value.list, 0);
+  value_t second = listGet(value_t, &reduction.value->value.list, 1);
+  expectEqlValueType(first.type, VALUE_TYPE_INTEGER, "has correct type");
+  expectEqlValueType(second.type, VALUE_TYPE_LIST, "has correct type");
 }
 
 void emptyList() {
@@ -155,7 +155,7 @@ void emptyList() {
 
   result_reduce_t result = reduce(test_arena, &empty_list_node, environment);
   assert(result.ok);
-  expectEqlNodeType(result.value->type, NODE_TYPE_LIST, "has correct type");
+  expectEqlValueType(result.value->type, VALUE_TYPE_LIST, "has correct type");
   expectEqlSize(result.value->value.list.count, 0, "has correct count");
 }
 

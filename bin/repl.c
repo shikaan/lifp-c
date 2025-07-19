@@ -66,7 +66,7 @@ int main(void) {
       printError("reduction");
       continue;
     }
-    node_t *reduced = reduction.value;
+    value_t *reduced = reduction.value;
 
     int buffer_offset = 0;
     print(reduced, BUFFER_SIZE, buffer, &buffer_offset);

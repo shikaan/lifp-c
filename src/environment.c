@@ -1,14 +1,15 @@
 #include "environment.h"
+#include "value.h"
 
 constexpr size_t BUILTINS_COUNT = 1;
-result_builtin_t sum(node_t *result, node_list_t *nodes) {
-  result->type = NODE_TYPE_INTEGER;
+result_builtin_t sum(value_t *result, value_list_t *values) {
+  result->type = VALUE_TYPE_INTEGER;
   result->value.integer = 0;
 
-  for (size_t i = 0; i < nodes->count; i++) {
-    node_t current = listGet(node_t, nodes, i);
+  for (size_t i = 0; i < values->count; i++) {
+    value_t current = listGet(value_t, values, i);
     // TODO: this should raise an error instead of silently skipping non-numbers
-    if (current.type == NODE_TYPE_INTEGER) {
+    if (current.type == VALUE_TYPE_INTEGER) {
       result->value.integer += current.value.integer;
     }
   }

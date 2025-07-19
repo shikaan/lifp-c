@@ -27,15 +27,3 @@ result_alloc_t nodeAlloc(arena_t *arena, node_type_t type) {
 
   return arenaAllocate(arena, sizeof(node_t));
 }
-
-result_alloc_t nodeClone(arena_t *arena, node_t node) {
-  result_alloc_t allocation = nodeAlloc(arena, node.type);
-  if (!allocation.ok) {
-    return allocation;
-  }
-  node_t *duplicate = allocation.value;
-  duplicate->type = node.type;
-  duplicate->position = node.position;
-  bytewiseCopy(&duplicate->value, &node.value, sizeof(duplicate->value));
-  return allocation;
-}
