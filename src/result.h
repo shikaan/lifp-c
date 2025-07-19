@@ -1,46 +1,56 @@
 #pragma once
 
 #include "./position.h"
+#include <wchar.h>
 
 typedef enum {
-  EXCEPTION_KIND_UNEXPECTED_TOKEN,
-  EXCEPTION_KIND_ALLOCATION,
-  EXCEPTION_KIND_INVALID_EXPRESSION,
-  EXCEPTION_KIND_UNBALANCED_PARENTHESES,
-  EXCEPTION_KIND_KEY_TOO_LONG,
-} exception_kind_t;
+  ERROR_KIND_ALLOCATION,
 
-typedef struct {
-  char token;
-  position_t position;
-} unexpected_token_payload_t;
+  // Syntax Error
+  ERROR_KIND_UNEXPECTED_TOKEN,
+  ERROR_KIND_INVALID_EXPRESSION,
+  ERROR_KIND_UNBALANCED_PARENTHESES,
+
+  // Constraint Errors
+  ERROR_KIND_KEY_TOO_LONG,
+
+  // Reference Errors
+  ERROR_KIND_SYMBOL_NOT_FOUND,
+} error_kind_t;
 
 typedef union {
-  unexpected_token_payload_t unexpected_token;
+  struct {
+    position_t position;
+    char token;
+  } unexpected_token;
+  struct {
+    position_t position;
+    char *symbol;
+  } symbol_not_found;
   nullptr_t allocation;
   nullptr_t invalid_expression;
   nullptr_t unbalanced_parentheses;
   size_t key_too_long;
-} exception_payload_t;
+} error_payload_t;
 
 typedef struct {
-  exception_kind_t kind;
-  exception_payload_t payload;
-} exception_t;
+  error_kind_t kind;
+  error_payload_t payload;
+} error_t;
 
 #define Result(ValueType)                                                      \
   struct {                                                                     \
     bool ok;                                                                   \
     union {                                                                    \
       ValueType value;                                                         \
-      exception_t error;                                                       \
+      error_t error;                                                           \
     };                                                                         \
   }
 
 #define ResultVoid()                                                           \
   struct {                                                                     \
     bool ok;                                                                   \
-    exception_t error;                                                         \
+    error_t error;                                                             \
   }
 
 // Helper functions for creating results

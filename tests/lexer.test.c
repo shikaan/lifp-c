@@ -124,7 +124,7 @@ void errors() {
     expectFalse(result.ok, "should fail");
     char msg[128];
     snprintf(msg, 128, "Expected UNEXPECTED_TOKEN got %u\n", result.error.kind);
-    expect(result.error.kind == EXCEPTION_KIND_UNEXPECTED_TOKEN,
+    expect(result.error.kind == ERROR_KIND_UNEXPECTED_TOKEN,
                  "error is ERROR_UNEXPECTED_TOKEN", msg);
     expectEqlSize(result.error.payload.unexpected_token.position.column,
                         cases[i].column, "column matches");

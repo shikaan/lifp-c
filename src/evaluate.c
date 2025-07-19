@@ -48,13 +48,16 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
 
   auto first_node = listGet(node_t, &list, 0);
   if (first_node.type == NODE_TYPE_SYMBOL) {
-    const char *symbol = first_node.value.symbol;
+    char *symbol = first_node.value.symbol;
 
     builtin_t *builtin = mapGet(builtin_t, environment->builtins, symbol);
     if (!builtin) {
-      // FIXME: wrong error type
-      return error(result_reduce_t,
-                   (exception_t){.kind = EXCEPTION_KIND_ALLOCATION});
+      error_t error = {
+          .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
+          .payload.symbol_not_found.symbol = symbol,
+          .payload.symbol_not_found.position = first_node.position,
+      };
+      return error(result_reduce_t, error);
     }
 
     result_builtin_t invocation = (*builtin)(result_value, primitives);
@@ -105,10 +108,20 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
     break;
   }
   case NODE_TYPE_SYMBOL: {
-    // TODO: rest of enviroment resolution
+    builtin_t *builtin =
+        mapGet(builtin_t, environment->builtins, syntax_tree->value.symbol);
+
+    if (!builtin) {
+      error_t error = {
+          .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
+          .payload.symbol_not_found.symbol = syntax_tree->value.symbol,
+          .payload.symbol_not_found.position = syntax_tree->position,
+      };
+      return error(result_reduce_t, error);
+    }
+
     value->type = VALUE_TYPE_FUNCTION;
-    value->value.function = (void *)mapGet(builtin_t, environment->builtins,
-                                           syntax_tree->value.symbol);
+    value->value.function = (void *)builtin;
     break;
   }
   case NODE_TYPE_LIST: {

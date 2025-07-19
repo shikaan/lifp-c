@@ -18,7 +18,7 @@ static inline result_alloc_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
-    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 
@@ -29,7 +29,7 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
   void *new_ptr = realloc(ptr, size);
 
   if (new_ptr == nullptr) {
-    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 

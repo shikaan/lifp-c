@@ -32,7 +32,7 @@ void overflow() {
   
   result_alloc_t allocation = arenaAllocate(arena, 200);
   expectFalse(allocation.ok, "fails oversized allocation");
-  expectEqlUint(allocation.error.kind, EXCEPTION_KIND_ALLOCATION, "throws correct exception");
+  expectEqlUint(allocation.error.kind, ERROR_KIND_ALLOCATION, "throws correct exception");
   
   arenaDestroy(arena);
 }

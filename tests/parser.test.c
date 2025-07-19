@@ -181,13 +181,13 @@ void errors() {
     const char *name;
     size_t length;
     token_t *input;
-    exception_kind_t expected;
+    error_kind_t expected;
   } cases[] = {
-      {"no tokens", 0, {}, EXCEPTION_KIND_INVALID_EXPRESSION},
+      {"no tokens", 0, {}, ERROR_KIND_INVALID_EXPRESSION},
       {"unbalanced parentheses right", 4, unbalanced_right,
-       EXCEPTION_KIND_UNBALANCED_PARENTHESES},
+       ERROR_KIND_UNBALANCED_PARENTHESES},
       {"unbalanced parentheses left", 4, unbalanced_left,
-       EXCEPTION_KIND_INVALID_EXPRESSION},
+       ERROR_KIND_INVALID_EXPRESSION},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {

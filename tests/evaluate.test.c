@@ -42,7 +42,8 @@ void atoms() {
   expectEqlValueType(reduction.value->type, VALUE_TYPE_NIL,
                      "reduced nil has correct type");
 
-  node_t symbol_node = nSym("test");
+  // Note: this symbol must exist in the environment for the test to work
+  node_t symbol_node = nSym("+");
   reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_FUNCTION,
@@ -168,10 +169,25 @@ void allocations() {
   node_t large_node = nInt(123);
   result_reduce_t reduction = reduce(small_arena, &large_node, environment);
   assert(!reduction.ok);
-  expectEqlUint(reduction.error.kind, EXCEPTION_KIND_ALLOCATION,
+  expectEqlUint(reduction.error.kind, ERROR_KIND_ALLOCATION,
                 "returns allocation error");
 
   arenaDestroy(small_arena);
+}
+
+void errors() {
+  result_alloc_t allocation = listCreate(node_t, test_arena, 1);
+  assert(allocation.ok);
+  node_list_t *list = allocation.value;
+
+  case("non-existing symbol");
+  node_t sym = nSym("not-existent");
+  result_alloc_t appending = listAppend(node_t, list, &sym);
+  assert(appending.ok);
+
+  result_reduce_t reduction = reduce(test_arena, &sym, environment);
+  expectFalse(reduction.ok, "fails reduction");
+  expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
 }
 
 int main(void) {
@@ -189,6 +205,7 @@ int main(void) {
   suite(nested);
   suite(emptyList);
   suite(allocations);
+  suite(errors);
 
   arenaDestroy(test_arena);
   return report();

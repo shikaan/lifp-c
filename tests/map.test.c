@@ -102,7 +102,7 @@ void allocations() {
   
   allocation = mapSet(map, "another", &value);
   expectFalse(allocation.ok, "cannot allocate over capacity");
-  expectEqlUint(allocation.error.kind, EXCEPTION_KIND_ALLOCATION, "returns correct error");
+  expectEqlUint(allocation.error.kind, ERROR_KIND_ALLOCATION, "returns correct error");
   arenaReset(test_arena);
 }
 

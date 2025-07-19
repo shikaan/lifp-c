@@ -18,7 +18,7 @@ result_alloc_t arenaAllocate(arena_t *self, size_t size) {
   size_t aligned_size = (size + 7U) & ~7U;
 
   if (aligned_offset + aligned_size > self->size) {
-    exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 

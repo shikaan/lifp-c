@@ -21,7 +21,7 @@ typedef struct value_t {
   union {
     bool boolean;
     int32_t integer;
-    void *function;
+    void *function; // TODO: how to type a generic function?
     nullptr_t nil;
     value_list_t list;
   } value;

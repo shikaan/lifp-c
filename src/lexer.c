@@ -103,8 +103,8 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       atom_buffer_len = 0;
     } else if (isprint(current_char)) {
       if (atom_buffer_len > BUFFER_CAPACITY) {
-        exception_t exception = {
-            .kind = EXCEPTION_KIND_UNEXPECTED_TOKEN,
+        error_t exception = {
+            .kind = ERROR_KIND_UNEXPECTED_TOKEN,
             .payload.unexpected_token.position = position,
             .payload.unexpected_token.token = current_char,
         };
@@ -114,8 +114,8 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       atom_buffer[atom_buffer_len++] = current_char;
       continue;
     } else {
-      exception_t exception = {
-          .kind = EXCEPTION_KIND_UNEXPECTED_TOKEN,
+      error_t exception = {
+          .kind = ERROR_KIND_UNEXPECTED_TOKEN,
           .payload.unexpected_token.position = position,
           .payload.unexpected_token.token = current_char,
       };

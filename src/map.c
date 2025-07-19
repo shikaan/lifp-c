@@ -69,8 +69,8 @@ result_alloc_t genericMapSet(generic_map_t *self, const char *key,
                              void *value) {
   size_t key_length = strlen(key);
   if (key_length >= MAX_KEY_LENGTH) {
-    exception_t exception = {.kind = EXCEPTION_KIND_KEY_TOO_LONG,
-                             .payload.key_too_long = key_length};
+    error_t exception = {.kind = ERROR_KIND_KEY_TOO_LONG,
+                         .payload.key_too_long = key_length};
     return error(result_alloc_t, exception);
   }
 
@@ -91,7 +91,7 @@ result_alloc_t genericMapSet(generic_map_t *self, const char *key,
 
     if (count == self->capacity) {
       // TODO: extend and rehash
-      exception_t exception = {.kind = EXCEPTION_KIND_ALLOCATION};
+      error_t exception = {.kind = ERROR_KIND_ALLOCATION};
       return error(result_alloc_t, exception);
     }
   }
