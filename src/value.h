@@ -7,6 +7,8 @@
 
 typedef struct value_t value_t;
 typedef List(struct value_t) value_list_t;
+typedef ResultVoid() result_lambda_t;
+typedef result_lambda_t (*lambda_t)(value_t *result, value_list_t *nodes);
 
 typedef enum {
   VALUE_TYPE_BOOLEAN,
@@ -21,7 +23,7 @@ typedef struct value_t {
   union {
     bool boolean;
     int32_t integer;
-    void *function; // TODO: how to type a generic function?
+    lambda_t function;
     nullptr_t nil;
     value_list_t list;
   } value;

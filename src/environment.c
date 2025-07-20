@@ -1,8 +1,9 @@
 #include "environment.h"
+#include "arena.h"
+#include "map.h"
 #include "value.h"
 
-constexpr size_t BUILTINS_COUNT = 1;
-result_builtin_t sum(value_t *result, value_list_t *values) {
+result_lambda_t sum(value_t *result, value_list_t *values) {
   result->type = VALUE_TYPE_INTEGER;
   result->value.integer = 0;
 
@@ -14,7 +15,7 @@ result_builtin_t sum(value_t *result, value_list_t *values) {
     }
   }
 
-  return (result_builtin_t){.ok = true};
+  return (result_lambda_t){.ok = true};
 }
 
 result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
@@ -24,24 +25,45 @@ result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
   environment_t *environment = allocation.value;
   environment->parent = parent;
 
-  allocation = mapCreate(builtin_t, arena, BUILTINS_COUNT);
+  // TODO: the number of values per environnment is very arbitrary because it's
+  // fixed for now. The hashmap should grow instead
+  allocation = mapCreate(value_t, arena, 32);
   if (!allocation.ok)
     return allocation;
+  environment->values = allocation.value;
 
-  environment->builtins = allocation.value;
+  // TODO: as arbitrarily as above, I am putting a stub value until we develop
+  // special forms
+  allocation = arenaAllocate(arena, sizeof(value_t));
+  if (!allocation.ok)
+    return allocation;
+  value_t *test_value = allocation.value;
+  test_value->value.integer = 42;
+  test_value->type = VALUE_TYPE_INTEGER;
+  mapSet(environment->values, "VERSION", (void *)test_value);
 
-// Utility inline macro to not forget to put the function pointer into a stack
-// variable so that we can extract the pointer to the function pointer before
-// storing it on the map
 #define setBuiltin(Label, Builtin)                                             \
   {                                                                            \
-    builtin = Builtin;                                                         \
-    mapSet(environment->builtins, Label, (void *)&builtin);                    \
+    allocation = arenaAllocate(arena, sizeof(value_t));                        \
+    if (!allocation.ok)                                                        \
+      return allocation;                                                       \
+    builtin = allocation.value;                                                \
+    builtin->type = VALUE_TYPE_FUNCTION;                                       \
+    builtin->value.function = Builtin;                                         \
+    mapSet(environment->values, (Label), builtin);                             \
   }
 
-  builtin_t builtin;
+  value_t *builtin = nullptr;
   setBuiltin("+", sum);
 #undef setBuiltin
 
   return ok(result_alloc_t, environment);
+}
+
+value_t *environmentResolveSymbol(environment_t *self, const char *symbol) {
+  value_t *result = mapGet(value_t, self->values, symbol);
+  if (!result && self->parent) {
+    return environmentResolveSymbol(self->parent, symbol);
+  }
+  return result;
 }

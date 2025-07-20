@@ -3,10 +3,10 @@
 #include "arena.h"
 #include "environment.h"
 #include "list.h"
-#include "map.h"
 #include "node.h"
 #include "result.h"
 #include "value.h"
+#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -48,19 +48,29 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
 
   auto first_node = listGet(node_t, &list, 0);
   if (first_node.type == NODE_TYPE_SYMBOL) {
-    char *symbol = first_node.value.symbol;
+    value_t *resolved_value =
+        environmentResolveSymbol(environment, first_node.value.symbol);
 
-    builtin_t *builtin = mapGet(builtin_t, environment->builtins, symbol);
-    if (!builtin) {
+    if (!resolved_value) {
       error_t error = {
           .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
-          .payload.symbol_not_found.symbol = symbol,
+          .payload.symbol_not_found.symbol = first_node.value.symbol,
           .payload.symbol_not_found.position = first_node.position,
       };
       return error(result_reduce_t, error);
     }
 
-    result_builtin_t invocation = (*builtin)(result_value, primitives);
+    if (resolved_value->type != VALUE_TYPE_FUNCTION) {
+      error_t error = {
+          .kind = ERROR_KIND_UNEXPECTED_TYPE,
+          .payload.unexpected_type.expected = VALUE_TYPE_FUNCTION,
+          .payload.unexpected_type.actual = resolved_value->type,
+      };
+      return error(result_reduce_t, error);
+    }
+
+    result_lambda_t invocation =
+        (resolved_value->value.function)(result_value, primitives);
     if (!invocation.ok) {
       return error(result_reduce_t, invocation.error);
     }
@@ -85,11 +95,11 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
     return reduceList(arena, syntax_tree, environment);
   }
 
-  result_alloc_t duplication = arenaAllocate(arena, sizeof(value_t));
-  if (!duplication.ok) {
-    return error(result_reduce_t, duplication.error);
+  result_alloc_t allocation = arenaAllocate(arena, sizeof(value_t));
+  if (!allocation.ok) {
+    return error(result_reduce_t, allocation.error);
   }
-  value_t *value = duplication.value;
+  value_t *value = allocation.value;
 
   switch (syntax_tree->type) {
   case NODE_TYPE_BOOLEAN: {
@@ -108,10 +118,10 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
     break;
   }
   case NODE_TYPE_SYMBOL: {
-    builtin_t *builtin =
-        mapGet(builtin_t, environment->builtins, syntax_tree->value.symbol);
+    value_t *resolved_value =
+        environmentResolveSymbol(environment, syntax_tree->value.symbol);
 
-    if (!builtin) {
+    if (!resolved_value) {
       error_t error = {
           .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
           .payload.symbol_not_found.symbol = syntax_tree->value.symbol,
@@ -120,13 +130,15 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
       return error(result_reduce_t, error);
     }
 
-    value->type = VALUE_TYPE_FUNCTION;
-    value->value.function = (void *)builtin;
+    value->type = resolved_value->type;
+    value->value = resolved_value->value;
     break;
   }
   case NODE_TYPE_LIST: {
-    // this case will only occur for an empty list
-    result_alloc_t allocation = listCreate(byte_t, arena, 0);
+    // this case can only occur for an empty list, the case where the list is
+    // full is handled above
+    assert(syntax_tree->value.list.count == 0);
+    allocation = listCreate(byte_t, arena, 0);
     if (!allocation.ok) {
       return error(result_reduce_t, allocation.error);
     }

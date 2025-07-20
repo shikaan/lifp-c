@@ -47,7 +47,13 @@ void atoms() {
   reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_FUNCTION,
-                     "reduced symbol has correct type");
+                     "reduced function has correct type");
+
+  symbol_node = nSym("VERSION");
+  reduction = reduce(test_arena, &symbol_node, environment);
+  assert(reduction.ok);
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_INTEGER,
+                     "reduced other value has correct type");
 }
 
 void listOfElements() {
