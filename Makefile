@@ -33,10 +33,11 @@ clean:
 	rm -f tests/*.test
 
 .PHONY: test
-test: tests/lexer.test tests/parser.test tests/list.test tests/arena.test tests/evaluate.test tests/map.test
+test: tests/lexer.test tests/parser.test tests/list.test tests/arena.test tests/evaluate.test tests/map.test tests/integration.test
 	tests/lexer.test
 	tests/parser.test
 	tests/list.test
 	tests/arena.test
 	tests/evaluate.test
 	tests/map.test
+	tests/integration.test
