@@ -1,13 +1,13 @@
 .idea
 .vscode
 compile_commands.json
-.cache
-
 .todo
 
 # build artifacts
 src/*.o
 **/*.dSYM
+*.plist
+.cache
 
 # binaries
 main
