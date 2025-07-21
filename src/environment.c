@@ -61,7 +61,7 @@ result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
 }
 
 value_t *environmentResolveSymbol(environment_t *self, const char *symbol) {
-  value_t *result = mapGet(value_t, self->values, symbol);
+  const auto result = mapGet(value_t, self->values, symbol);
   if (!result && self->parent) {
     return environmentResolveSymbol(self->parent, symbol);
   }

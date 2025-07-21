@@ -18,7 +18,7 @@ static inline result_alloc_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
-    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
+    const error_t exception = {.kind = ERROR_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 
@@ -29,7 +29,7 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
   void *new_ptr = realloc(ptr, size);
 
   if (new_ptr == nullptr) {
-    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
+    const error_t exception = {.kind = ERROR_KIND_ALLOCATION};
     return error(result_alloc_t, exception);
   }
 
@@ -37,8 +37,8 @@ static inline result_alloc_t reallocSafe(void *ptr, size_t size) {
 }
 
 static inline void bytewiseCopy(void *dest, const void *src, size_t size) {
-  unsigned char *dest_bytes = (unsigned char *)dest;
-  const unsigned char *src_bytes = (const unsigned char *)src;
+  const auto dest_bytes = (unsigned char *)dest;
+  const auto src_bytes = (const unsigned char *)src;
   for (size_t i = 0; i < size; i++) {
     dest_bytes[i] = src_bytes[i];
   }

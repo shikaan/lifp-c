@@ -122,7 +122,7 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
         environmentResolveSymbol(environment, syntax_tree->value.symbol);
 
     if (!resolved_value) {
-      error_t error = {
+      const error_t error = {
           .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
           .payload.symbol_not_found.symbol = syntax_tree->value.symbol,
           .payload.symbol_not_found.position = syntax_tree->position,
