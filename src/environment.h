@@ -6,6 +6,7 @@
 #include "./value.h"
 
 typedef struct environment_t {
+  arena_t *arena;
   Map(value_t) * values;
   struct environment_t *parent;
 } environment_t;

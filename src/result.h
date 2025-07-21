@@ -23,17 +23,21 @@ typedef enum {
 
 typedef union {
   nullptr_t allocation;
+
   struct {
     position_t position;
     char token;
   } unexpected_token;
+
   nullptr_t invalid_expression;
   nullptr_t unbalanced_parentheses;
   size_t key_too_long;
+
   struct {
     position_t position;
     char *symbol;
   } symbol_not_found;
+
   struct {
     // TODO: these should be value_type_t, but we have a circular dependency
     uint32_t expected;
@@ -59,6 +63,27 @@ typedef struct {
   struct {                                                                     \
     bool ok;                                                                   \
     error_t error;                                                             \
+  }
+
+#define _concat_detail(x, y) x##y
+#define _concat(x, y) _concat_detail(x, y)
+#define _result_name(ResultType) _concat(ResultType, __LINE__)
+
+#define try(ResultType, Action, Destination)                                   \
+  {                                                                            \
+    auto _result_name(ResultType) = Action;                                    \
+    if (!_result_name(ResultType).ok) {                                        \
+      return error(ResultType, _result_name(ResultType).error);                \
+    }                                                                          \
+    Destination = (_result_name(ResultType).value);                            \
+  }
+
+#define tryVoid(ResultType, Action)                                            \
+  {                                                                            \
+    auto _result_name(ResultType) = Action;                                    \
+    if (!_result_name(ResultType).ok) {                                        \
+      return error(ResultType, _result_name(ResultType).error);                \
+    }                                                                          \
   }
 
 // Helper functions for creating results

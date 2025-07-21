@@ -1,12 +1,12 @@
 #pragma once
 
-#include "./list.h"
+#include "list.h"
 #include "alloc.h"
 #include "arena.h"
 #include "position.h"
 
 typedef struct value_t value_t;
-typedef List(struct value_t) value_list_t;
+typedef List(value_t) value_list_t;
 typedef ResultVoid() result_lambda_t;
 typedef result_lambda_t (*lambda_t)(value_t *result, value_list_t *nodes);
 
@@ -30,6 +30,6 @@ typedef struct value_t {
   position_t position;
 } value_t;
 
-static inline result_alloc_t valueAlloc(arena_t *arena) {
+static inline result_alloc_t valueCreate(arena_t *arena) {
   return arenaAllocate(arena, sizeof(value_t));
 };

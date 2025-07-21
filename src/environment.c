@@ -24,16 +24,17 @@ result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
     return allocation;
   environment_t *environment = allocation.value;
   environment->parent = parent;
+  environment->arena = arena;
 
   // TODO: the number of values per environnment is very arbitrary because it's
-  // fixed for now. The hashmap should grow instead
+  //   fixed for now. The hashmap should grow instead
   allocation = mapCreate(value_t, arena, 32);
   if (!allocation.ok)
     return allocation;
   environment->values = allocation.value;
 
   // TODO: as arbitrarily as above, I am putting a stub value until we develop
-  // special forms
+  //   special forms
   allocation = arenaAllocate(arena, sizeof(value_t));
   if (!allocation.ok)
     return allocation;
