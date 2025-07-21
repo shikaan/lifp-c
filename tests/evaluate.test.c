@@ -110,6 +110,9 @@ void functionCall() {
   assert(reduction.ok);
   expectNotNull(reduction.value, "reduced result is not null");
   expectEqlInt(reduction.value->value.integer, 6, "has correct result");
+
+  // TODO: add test that if first element is symbol, but not function, it
+  // doesn't get invoked
 }
 
 void nested() {
@@ -196,6 +199,32 @@ void errors() {
   expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
 }
 
+void specialForms() { 
+  result_alloc_t allocation = listCreate(node_t, test_arena, 1);
+  assert(allocation.ok);
+  node_list_t *list = allocation.value;
+
+  node_t special = nSym("def!");
+  node_t var = nSym("foo");
+  node_t value = nInt(1);
+
+  result_alloc_t appending = listAppend(node_t, list, &special);
+  assert(appending.ok);
+  appending = listAppend(node_t, list, &var);
+  assert(appending.ok);
+  appending = listAppend(node_t, list, &value);
+  assert(appending.ok);
+
+  node_t list_node = nList(3, list->data);
+
+  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
+  assert(reduction.ok); 
+  value_t* val = mapGet(value_t, environment->values, "foo");
+
+  expectNotNull(val, "environment is updated");
+  expectEqlInt(val->value.integer, 1, "with correct value");
+}
+
 int main(void) {
   result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
@@ -212,6 +241,7 @@ int main(void) {
   suite(emptyList);
   suite(allocations);
   suite(errors);
+  suite(specialForms);
 
   arenaDestroy(test_arena);
   return report();

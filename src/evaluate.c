@@ -47,7 +47,6 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
   }
 
   auto first_node = listGet(node_t, &list, 0);
-
   if (isSpecialFormNode(first_node)) {
     tryVoid(result_reduce_t, define(environment, &list));
 
