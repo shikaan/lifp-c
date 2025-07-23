@@ -1,6 +1,5 @@
-#include "./list.h"
+#include "list.h"
 #include "arena.h"
-#include <stddef.h>
 
 result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
                                 size_t list_size, size_t item_size) {

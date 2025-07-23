@@ -1,7 +1,6 @@
 #pragma once
 
-#include "./position.h"
-#include <stdint.h>
+#include "position.h"
 
 typedef enum {
   ERROR_KIND_ALLOCATION,
@@ -39,9 +38,9 @@ typedef union {
   } symbol_not_found;
 
   struct {
-    // TODO: these should be value_type_t, but we have a circular dependency
-    uint32_t expected;
-    uint32_t actual;
+    // These should be value_type_t, but we'd have a circular dependency.
+    int expected;
+    int actual;
   } unexpected_type;
 } error_payload_t;
 

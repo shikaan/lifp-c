@@ -1,8 +1,6 @@
 #pragma once
 
 #include "arena.h"
-#include <stddef.h>
-#include <string.h>
 
 #define List(Type)                                                             \
   struct {                                                                     \

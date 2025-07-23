@@ -109,3 +109,16 @@ void arenaDestroy(arena_t *self);
  *   arenaReset(arena);  // All memory now available again
  */
 void arenaReset(arena_t *self);
+
+/**
+ * Copy bytes from source to destination memory locations.
+ * @name bytewiseCopy
+ * @param {void*} dest - Pointer to the destination memory location
+ * @param {const void*} src - Pointer to the source memory location to copy from
+ * @param {size_t} size - Number of bytes to copy
+ * @example
+ *   char source[] = "Hello";
+ *   char dest[6];
+ *   bytewiseCopy(dest, source, 6);  // dest now contains "Hello"
+ */
+void bytewiseCopy(void *dest, const void *src, size_t size);
