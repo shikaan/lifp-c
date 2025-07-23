@@ -1,8 +1,7 @@
 #pragma once
 
-#include "list.h"
-#include "alloc.h"
 #include "arena.h"
+#include "list.h"
 #include "position.h"
 
 typedef struct value_t value_t;

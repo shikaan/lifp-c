@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "alloc.h"
 #include "arena.h"
 #include "list.h"
 #include "position.h"

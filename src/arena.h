@@ -37,10 +37,16 @@
 
 #pragma once
 
-#include "alloc.h"
+#include "result.h"
 #include <stddef.h>
 
 typedef unsigned char byte_t;
+
+/**
+ * The result of an allocation. It returns a void* to be casted by the caller.
+ * @name result_alloc_t
+ */
+typedef Result(void *) result_alloc_t;
 
 /**
  * Arena allocator structure.

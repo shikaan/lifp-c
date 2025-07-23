@@ -1,4 +1,3 @@
-#include "../src/alloc.h"
 #include "../src/arena.h"
 #include "../src/environment.h"
 #include "../src/evaluate.h"

@@ -67,7 +67,6 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
   }
 
   value_t first_value = listGet(value_t, reduced_values, 0);
-
   if (first_value.type == VALUE_TYPE_FUNCTION) {
     lambda_t lambda = first_value.value.function;
     tryVoid(result_reduce_t, lambda(result_value, reduced_values));

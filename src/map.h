@@ -42,7 +42,6 @@
 
 #pragma once
 
-#include "alloc.h"
 #include "arena.h"
 #include <stddef.h>
 #include <stdint.h>
