@@ -14,8 +14,9 @@ result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
   list->arena = arena;
 
   allocation = arenaAllocate(arena, item_size * list->capacity);
-  if (!allocation.ok)
+  if (!allocation.ok) {
     return allocation;
+  }
 
   list->data = allocation.value;
   return ok(result_alloc_t, list);

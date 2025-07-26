@@ -23,6 +23,8 @@ result_token_t parseAtomBuffer(size_t buffer_len,
   // FIXME: this is silently overflowing
   int32_t number = (int32_t)strtol(buffer, &remainder, 10);
 
+  position.column = position.column - buffer_len;
+
   // This condition is met when all the chars of the token represent an integer
   // This includes also leading +/-
   const bool is_number = ((!remainder) || (strlen(remainder) == 0)) != 0;
@@ -104,8 +106,8 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       if (atom_buffer_len > BUFFER_CAPACITY) {
         error_t exception = {
             .kind = ERROR_KIND_UNEXPECTED_TOKEN,
-            .payload.unexpected_token.position = position,
-            .payload.unexpected_token.token = current_char,
+            .payload.unexpected_token = current_char,
+            .position = position,
         };
         return error(result_token_list_t, exception);
       }
@@ -115,8 +117,8 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
     } else {
       error_t exception = {
           .kind = ERROR_KIND_UNEXPECTED_TOKEN,
-          .payload.unexpected_token.position = position,
-          .payload.unexpected_token.token = current_char,
+          .position = position,
+          .payload.unexpected_token = current_char,
       };
       return error(result_token_list_t, exception);
     }
