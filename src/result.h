@@ -1,6 +1,7 @@
 #pragma once
 
 #include "position.h"
+#include <stddef.h>
 
 typedef enum {
   ERROR_KIND_ALLOCATION,
@@ -17,36 +18,41 @@ typedef enum {
   ERROR_KIND_SYMBOL_NOT_FOUND,
 
   // Type Error
-  ERROR_KIND_UNEXPECTED_TYPE
+  ERROR_KIND_UNEXPECTED_TYPE,
+  ERROR_KIND_UNEXPECTED_VALUE,
+  ERROR_KIND_UNEXPECTED_ARITY,
 } error_kind_t;
 
 typedef union {
   nullptr_t allocation;
-
-  struct {
-    position_t position;
-    char token;
-  } unexpected_token;
-
+  char unexpected_token;
   nullptr_t invalid_expression;
   nullptr_t unbalanced_parentheses;
   size_t key_too_long;
-
-  struct {
-    position_t position;
-    char *symbol;
-  } symbol_not_found;
+  char *symbol_not_found;
 
   struct {
     // These should be value_type_t, but we'd have a circular dependency.
     int expected;
     int actual;
   } unexpected_type;
+
+  struct {
+    void *expected;
+    void *actual;
+  } unexpected_value;
+
+  struct {
+    size_t expected;
+    size_t actual;
+  } unexpected_arity;
 } error_payload_t;
 
 typedef struct {
   error_kind_t kind;
   error_payload_t payload;
+  position_t position;
+  const char *example;
 } error_t;
 
 #define Result(ValueType)                                                      \
