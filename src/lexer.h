@@ -25,9 +25,9 @@ typedef union {
 } token_value_t;
 
 typedef struct {
-  const token_value_t value;
-  const position_t position;
-  const token_type_t type;
+  token_value_t value;
+  position_t position;
+  token_type_t type;
 } token_t;
 
 typedef List(token_t) token_list_t;

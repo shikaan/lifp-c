@@ -1,0 +1,14 @@
+{
+  "configurations": {
+    "launch": {
+      "adapter": "CodeLLDB",
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}/bin/repl",
+        "args": [],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": true
+      }
+    }
+  }
+}

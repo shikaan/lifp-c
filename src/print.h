@@ -11,6 +11,7 @@ constexpr size_t OUTPUT_BUFFER_SIZE = 4096;
 void formatCurrentLine(const error_t error, const char *input_buffer,
                        size_t size, char output_buffer[static size],
                        int *offset) {
+  // TODO: use strtok
   if (input_buffer) {
     size_t current_line = 1;
     const char *line_start = input_buffer;
@@ -122,15 +123,18 @@ void formatOutput(const value_t *node, int size, char buffer[static size],
   }
   case VALUE_TYPE_LIST: {
     (*offset) += snprintf(buffer + *offset, 2, "(");
-    for (size_t i = 0; i < node->value.list.count - 1; i++) {
-      value_t sub_node = listGet(value_t, &node->value.list, i);
-      formatOutput(&sub_node, size, buffer, offset);
-      *offset += snprintf(buffer + *offset, 2, " ");
-    }
 
-    value_t sub_node =
-        listGet(value_t, &node->value.list, node->value.list.count - 1);
-    formatOutput(&sub_node, size, buffer, offset);
+    if (node->value.list.count > 0) {
+      for (size_t i = 0; i < node->value.list.count - 1; i++) {
+        value_t sub_node = listGet(value_t, &node->value.list, i);
+        formatOutput(&sub_node, size, buffer, offset);
+        *offset += snprintf(buffer + *offset, 2, " ");
+      }
+
+      value_t sub_node =
+          listGet(value_t, &node->value.list, node->value.list.count - 1);
+      formatOutput(&sub_node, size, buffer, offset);
+    }
     *offset += snprintf(buffer + *offset, 2, ")");
     return;
   }

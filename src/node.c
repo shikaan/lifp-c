@@ -1,28 +1,41 @@
 #include "node.h"
 #include "arena.h"
 #include "list.h"
+#include "result.h"
 
-result_alloc_t nodeAlloc(arena_t *arena, node_type_t type) {
+static constexpr size_t INITIAL_SIZE = 8;
+
+result_alloc_t nodeCreate(arena_t *arena, node_type_t type) {
+  node_t *node = nullptr;
+  try(result_alloc_t, arenaAllocate(arena, sizeof(node_t)), node);
+
   if (type == NODE_TYPE_LIST) {
-    result_alloc_t node_allocation = arenaAllocate(arena, sizeof(node_t));
-    if (!node_allocation.ok) {
-      return node_allocation;
-    }
-    node_t *node = node_allocation.value;
-
-    result_alloc_t list_allocation = listCreate(node_t, arena, 8);
-    if (!list_allocation.ok) {
-      return list_allocation;
-    }
-
-    node_list_t *list = list_allocation.value;
-    node->value.list.capacity = list->capacity;
-    node->value.list.count = list->count;
-    node->value.list.item_size = list->item_size;
-    node->value.list.data = list->data;
-
-    return node_allocation;
+    node_list_t *list = nullptr;
+    try(result_alloc_t, listCreate(node_t, arena, INITIAL_SIZE), list);
+    bytewiseCopy(&node->value.list, list, sizeof(node_list_t));
   }
 
-  return arenaAllocate(arena, sizeof(node_t));
+  return ok(result_alloc_t, node);
+}
+
+result_copy_t nodeCopy(const node_t *source, node_t *destination) {
+  destination->type = source->type;
+  destination->position.column = source->position.column;
+  destination->position.line = source->position.line;
+
+  if (source->type == NODE_TYPE_LIST) {
+    tryVoid(result_copy_t,
+            listCopy(node_t, &source->value.list, &destination->value.list));
+  } else {
+    destination->value = source->value;
+  }
+
+  return (result_copy_t){.ok = true};
+}
+
+result_alloc_t nodeClone(arena_t *arena, const node_t *source) {
+  node_t *destination = nullptr;
+  try(result_alloc_t, nodeCreate(arena, source->type), destination);
+  tryVoid(result_alloc_t, nodeCopy(source, destination));
+  return ok(result_alloc_t, destination);
 }

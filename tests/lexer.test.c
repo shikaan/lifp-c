@@ -126,13 +126,13 @@ void errors() {
     snprintf(msg, 128, "Expected UNEXPECTED_TOKEN got %u\n", result.error.kind);
     expect(result.error.kind == ERROR_KIND_UNEXPECTED_TOKEN,
                  "error is ERROR_UNEXPECTED_TOKEN", msg);
-    expectEqlSize(result.error.payload.unexpected_token.position.column,
+    expectEqlSize(result.error.position.column,
                         cases[i].column, "column matches");
-    expectEqlSize(result.error.payload.unexpected_token.position.line,
+    expectEqlSize(result.error.position.line,
                         cases[i].line, "line matches");
     snprintf(msg, 128, "Expected '%c' got '%c'\n", cases[i].token,
-             result.error.payload.unexpected_token.token);
-    expect(result.error.payload.unexpected_token.token == cases[i].token,
+             result.error.payload.unexpected_token);
+    expect(result.error.payload.unexpected_token == cases[i].token,
                  "token matches", msg);
   }
 }

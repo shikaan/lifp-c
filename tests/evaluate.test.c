@@ -46,7 +46,7 @@ void atoms() {
   node_t symbol_node = nSym("+");
   reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_FUNCTION,
+  expectEqlValueType(reduction.value->type, VALUE_TYPE_BUILTIN,
                      "reduced function has correct type");
 
   symbol_node = nSym("VERSION");
@@ -216,6 +216,7 @@ void specialForms() {
   assert(appending.ok);
 
   node_t list_node = nList(3, list->data);
+  list_node.value.list.arena = test_arena;
 
   result_reduce_t reduction = reduce(test_arena, &list_node, environment);
   assert(reduction.ok); 

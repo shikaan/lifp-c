@@ -31,4 +31,6 @@ typedef struct node_t {
   node_value_t value;
 } node_t;
 
-result_alloc_t nodeAlloc(arena_t *arena, node_type_t type);
+result_alloc_t nodeCreate(arena_t *arena, node_type_t type);
+result_alloc_t nodeClone(arena_t *arena, const node_t *source);
+result_copy_t nodeCopy(const node_t *source, node_t *destination);

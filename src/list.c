@@ -3,22 +3,16 @@
 
 result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
                                 size_t list_size, size_t item_size) {
-  result_alloc_t allocation = arenaAllocate(arena, list_size);
-  if (!allocation.ok) {
-    return allocation;
-  }
-  generic_list_t *list = allocation.value;
+  generic_list_t *list = nullptr;
+  try(result_alloc_t, arenaAllocate(arena, list_size), list);
+
   list->count = 0;
   list->capacity = capacity;
   list->item_size = item_size;
   list->arena = arena;
+  try(result_alloc_t, arenaAllocate(arena, item_size * list->capacity),
+      list->data);
 
-  allocation = arenaAllocate(arena, item_size * list->capacity);
-  if (!allocation.ok) {
-    return allocation;
-  }
-
-  list->data = allocation.value;
   return ok(result_alloc_t, list);
 }
 
@@ -26,13 +20,10 @@ result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
   if (self->count >= self->capacity) {
     size_t new_capacity = self->capacity * 2;
 
-    result_alloc_t realloc_result =
-        arenaAllocate(self->arena, self->item_size * new_capacity);
-    if (!realloc_result.ok) {
-      return realloc_result;
-    }
+    void *new_data = nullptr;
+    try(result_alloc_t,
+        arenaAllocate(self->arena, self->item_size * new_capacity), new_data);
 
-    void *new_data = realloc_result.value;
     bytewiseCopy(new_data, self->data, self->item_size * self->count);
 
     self->data = new_data;
@@ -51,4 +42,23 @@ void *genericListGet(const generic_list_t *self, size_t index) {
     return nullptr;
 
   return (byte_t *)self->data + (self->item_size * index);
+}
+
+result_alloc_t genericListCopy(const generic_list_t *source,
+                               generic_list_t *destination) {
+
+  if (destination->capacity < source->count) {
+    const error_t error = {.kind = ERROR_KIND_ALLOCATION};
+    return error(result_alloc_t, error);
+  }
+
+  destination->item_size = source->item_size;
+
+  for (size_t i = 0; i < source->count; i++) {
+    void *source_node = genericListGet(source, i);
+    tryVoid(result_alloc_t, genericListAppend(destination, source_node));
+  }
+
+  destination->count = source->count;
+  return ok(result_alloc_t, destination);
 }

@@ -47,6 +47,7 @@ typedef unsigned char byte_t;
  * @name result_alloc_t
  */
 typedef Result(void *) result_alloc_t;
+typedef ResultVoid() result_copy_t;
 
 /**
  * Arena allocator structure.

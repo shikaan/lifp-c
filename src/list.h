@@ -7,8 +7,8 @@
     size_t count;                                                              \
     size_t capacity;                                                           \
     size_t item_size;                                                          \
-    Type *data;                                                                \
     arena_t *arena;                                                            \
+    Type *data;                                                                \
   }
 
 typedef List(void) generic_list_t;
@@ -19,7 +19,10 @@ typedef List(void) generic_list_t;
 [[nodiscard]] result_alloc_t genericListAppend(generic_list_t *self,
                                                const void *item);
 
-void *genericListGet(const generic_list_t *self, size_t index);
+[[nodiscard]] void *genericListGet(const generic_list_t *self, size_t index);
+
+[[nodiscard]] result_alloc_t genericListCopy(const generic_list_t *source,
+                                             generic_list_t *destination);
 
 #define listCreate(ItemType, Arena, Capacity)                                  \
   genericListAlloc(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))
@@ -30,3 +33,8 @@ void *genericListGet(const generic_list_t *self, size_t index);
 
 // TODO: provide bound checks
 #define listGet(ItemType, List, Index) (ItemType)(List)->data[Index]
+
+// TODO: can this be made typesafe with static asserts?
+#define listCopy(ItemType, Source, Destination)                                \
+  genericListCopy((const generic_list_t *)(Source),                            \
+                  (generic_list_t *)(Destination))

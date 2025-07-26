@@ -32,7 +32,7 @@ typedef union {
   char *symbol_not_found;
 
   struct {
-    // These should be value_type_t, but we'd have a circular dependency.
+    // NOTE: these need casting to value_type_t
     int expected;
     int actual;
   } unexpected_type;
@@ -80,7 +80,7 @@ typedef struct {
     if (!_result_name(ResultType).ok) {                                        \
       return error(ResultType, _result_name(ResultType).error);                \
     }                                                                          \
-    Destination = (_result_name(ResultType).value);                            \
+    (Destination) = (_result_name(ResultType).value);                          \
   }
 
 #define tryVoid(ResultType, Action)                                            \

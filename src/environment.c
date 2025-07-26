@@ -3,7 +3,7 @@
 #include "map.h"
 #include "value.h"
 
-result_lambda_t sum(value_t *result, value_list_t *values) {
+result_builtin_t sum(value_t *result, value_list_t *values) {
   result->type = VALUE_TYPE_INTEGER;
   result->value.integer = 0;
 
@@ -15,7 +15,7 @@ result_lambda_t sum(value_t *result, value_list_t *values) {
     }
   }
 
-  return (result_lambda_t){.ok = true};
+  return (result_builtin_t){.ok = true};
 }
 
 result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
@@ -49,8 +49,8 @@ result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
     if (!allocation.ok)                                                        \
       return allocation;                                                       \
     builtin = allocation.value;                                                \
-    builtin->type = VALUE_TYPE_FUNCTION;                                       \
-    builtin->value.function = Builtin;                                         \
+    builtin->type = VALUE_TYPE_BUILTIN;                                        \
+    builtin->value.builtin = Builtin;                                          \
     mapSet(environment->values, (Label), builtin);                             \
   }
 

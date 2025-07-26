@@ -14,13 +14,10 @@
 
 result_node_t parseAtom(arena_t *arena, token_t token) {
   assert(token.type == TOKEN_TYPE_INTEGER || token.type == TOKEN_TYPE_SYMBOL);
-  result_alloc_t allocation = nodeAlloc(arena, NODE_TYPE_INTEGER);
 
-  if (!allocation.ok) {
-    return error(result_node_t, allocation.error);
-  }
+  node_t *node = nullptr;
+  try(result_node_t, nodeCreate(arena, NODE_TYPE_INTEGER), node);
 
-  node_t *node = allocation.value;
   node->position = token.position;
 
   switch (token.type) {
@@ -59,12 +56,9 @@ result_node_t parseAtom(arena_t *arena, token_t token) {
 
 result_node_t parseList(arena_t *arena, const token_list_t *tokens,
                         size_t *offset, size_t *depth) {
-  result_alloc_t node_result = nodeAlloc(arena, NODE_TYPE_LIST);
-  if (!node_result.ok) {
-    return error(result_node_t, node_result.error);
-  }
+  node_t *node = nullptr;
+  try(result_node_t, nodeCreate(arena, NODE_TYPE_LIST), node);
 
-  node_t *node = node_result.value;
   token_t token = listGet(token_t, tokens, *offset);
   node->position = token.position;
   node->type = NODE_TYPE_LIST;
@@ -78,17 +72,10 @@ result_node_t parseList(arena_t *arena, const token_list_t *tokens,
       break;
     }
 
-    result_node_t sub_node_result = parse(arena, tokens, offset, depth);
-    if (!sub_node_result.ok) {
-      return sub_node_result;
-    }
+    node_t *sub_node = nullptr;
+    try(result_node_t, parse(arena, tokens, offset, depth), sub_node);
 
-    node_t *sub_node = sub_node_result.value;
-
-    result_alloc_t appending = listAppend(node_t, &node->value.list, sub_node);
-    if (!appending.ok) {
-      return error(result_node_t, appending.error);
-    }
+    tryVoid(result_node_t, listAppend(node_t, &node->value.list, sub_node));
   }
 
   return ok(result_node_t, node);
