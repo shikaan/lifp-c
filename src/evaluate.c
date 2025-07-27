@@ -47,12 +47,10 @@ static result_reduce_t invokeBuiltin(value_t *result, value_t builtin_value,
 }
 
 static result_reduce_t invokeClosure(value_t *result, value_t closure_value,
-                                     arena_t *arena) {
+                                     arena_t *arena,
+                                     environment_t *parent_environment) {
   assert(closure_value.type == VALUE_TYPE_CLOSURE);
   closure_t closure = closure_value.value.closure;
-
-  environment_t *child_environment = closure.environment;
-  node_t form = closure.form;
 
   if (result->value.list.count - 1 != closure.arguments.count) {
     error_t error = {
@@ -64,15 +62,20 @@ static result_reduce_t invokeClosure(value_t *result, value_t closure_value,
     return error(result_reduce_t, error);
   }
 
+  environment_t *environment = nullptr;
+  try(result_reduce_t,
+      environmentCreate(parent_environment->arena, parent_environment),
+      environment);
+
   // Populate the closure with the values, skipping the closure symbol
   for (size_t i = 1; i < result->value.list.count; i++) {
     auto argument = listGet(node_t, &closure.arguments, i - 1);
     auto value = listGet(value_t, &result->value.list, i);
-    mapSet(child_environment->values, argument.value.symbol, &value);
+    mapSet(environment->values, argument.value.symbol, &value);
   }
 
   value_t *reduced = nullptr;
-  try(result_reduce_t, reduce(arena, &form, child_environment), reduced);
+  try(result_reduce_t, reduce(arena, &closure.form, environment), reduced);
   return ok(result_reduce_t, reduced);
 }
 
@@ -114,7 +117,7 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
   }
 
   if (first_value.type == VALUE_TYPE_CLOSURE) {
-    return invokeClosure(result, first_value, arena);
+    return invokeClosure(result, first_value, arena, environment);
   }
 
   return ok(result_reduce_t, result);

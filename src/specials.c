@@ -82,7 +82,6 @@ result_special_t function(environment_t *env, const node_list_t *nodes) {
 
   closure->position.column = first.position.column;
   closure->position.line = first.position.line;
-  closure->value.closure.environment = child_environment;
 
   tryVoid(result_special_t, listCopy(node_t, &arguments.value.list,
                                      &closure->value.closure.arguments));

@@ -19,36 +19,18 @@ result_builtin_t sum(value_t *result, value_list_t *values) {
 }
 
 result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
-  auto allocation = arenaAllocate(arena, sizeof(environment_t));
-  if (!allocation.ok)
-    return allocation;
-  environment_t *environment = allocation.value;
+  environment_t *environment = nullptr;
+  try(result_alloc_t, arenaAllocate(arena, sizeof(environment_t)), environment);
   environment->parent = parent;
   environment->arena = arena;
 
   // TODO: the number of values per environnment is very arbitrary because it's
   //   fixed for now. The hashmap should grow instead
-  allocation = mapCreate(value_t, arena, 32);
-  if (!allocation.ok)
-    return allocation;
-  environment->values = allocation.value;
-
-  // TODO: as arbitrarily as above, I am putting a stub value until we develop
-  //   special forms
-  allocation = arenaAllocate(arena, sizeof(value_t));
-  if (!allocation.ok)
-    return allocation;
-  value_t *test_value = allocation.value;
-  test_value->value.integer = 42;
-  test_value->type = VALUE_TYPE_INTEGER;
-  mapSet(environment->values, "VERSION", (void *)test_value);
+  try(result_alloc_t, mapCreate(value_t, arena, 32), environment->values);
 
 #define setBuiltin(Label, Builtin)                                             \
   {                                                                            \
-    allocation = arenaAllocate(arena, sizeof(value_t));                        \
-    if (!allocation.ok)                                                        \
-      return allocation;                                                       \
-    builtin = allocation.value;                                                \
+    try(result_alloc_t, arenaAllocate(arena, sizeof(value_t)), builtin);       \
     builtin->type = VALUE_TYPE_BUILTIN;                                        \
     builtin->value.builtin = Builtin;                                          \
     mapSet(environment->values, (Label), builtin);                             \

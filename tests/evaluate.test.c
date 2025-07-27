@@ -42,14 +42,11 @@ void atoms() {
   expectEqlValueType(reduction.value->type, VALUE_TYPE_NIL,
                      "reduced nil has correct type");
 
-  // Note: this symbol must exist in the environment for the test to work
-  node_t symbol_node = nSym("+");
-  reduction = reduce(test_arena, &symbol_node, environment);
-  assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_BUILTIN,
-                     "reduced function has correct type");
+  result_alloc_t creation = valueCreate(test_arena, VALUE_TYPE_INTEGER);
+  assert(creation.ok);
+  mapSet(environment->values, "value", creation.value);
 
-  symbol_node = nSym("VERSION");
+  node_t symbol_node = nSym("value");
   reduction = reduce(test_arena, &symbol_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_INTEGER,

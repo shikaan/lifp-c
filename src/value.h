@@ -26,7 +26,6 @@ typedef enum {
 typedef struct {
   node_t form;
   node_list_t arguments;
-  void *environment; // TODO: circular dependency
 } closure_t;
 
 typedef struct value_t {
@@ -92,14 +91,10 @@ static inline result_clone_t valueClone(arena_t *arena, const value_t *source) {
     destination->value.nil = source->value.nil;
     break;
   case VALUE_TYPE_CLOSURE:
-    // node_t *form = nullptr;
-    // try(result_clone_t, nodeClone(arena, &source->value.closure.form), form);
-    // destination->value.closure.form = *form;
     nodeCopy(&source->value.closure.form, &destination->value.closure.form);
 
     tryVoid(result_clone_t, listCopy(value_t, &source->value.closure.arguments,
                                      &destination->value.closure.arguments));
-    destination->value.closure.environment = source->value.closure.environment;
     break;
   case VALUE_TYPE_LIST:
     tryVoid(result_clone_t,
