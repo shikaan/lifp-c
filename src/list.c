@@ -1,8 +1,10 @@
 #include "list.h"
 #include "arena.h"
+#include <assert.h>
 
 result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
                                 size_t list_size, size_t item_size) {
+  assert(arena);
   generic_list_t *list = nullptr;
   try(result_alloc_t, arenaAllocate(arena, list_size), list);
 
@@ -17,6 +19,10 @@ result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
 }
 
 result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
+  assert(self);
+  if (!item)
+    return (result_alloc_t){.ok = true};
+
   if (self->count >= self->capacity) {
     size_t new_capacity = self->capacity * 2;
 
@@ -38,6 +44,7 @@ result_alloc_t genericListAppend(generic_list_t *self, const void *item) {
 }
 
 void *genericListGet(const generic_list_t *self, size_t index) {
+  assert(self);
   if (index >= self->count)
     return nullptr;
 
@@ -46,6 +53,8 @@ void *genericListGet(const generic_list_t *self, size_t index) {
 
 result_alloc_t genericListCopy(const generic_list_t *source,
                                generic_list_t *destination) {
+  assert(source);
+  assert(destination);
 
   if (destination->capacity < source->count) {
     const error_t error = {.kind = ERROR_KIND_ALLOCATION};
