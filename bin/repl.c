@@ -1,10 +1,10 @@
 #include "../src/arena.h"
 #include "../src/environment.h"
 #include "../src/evaluate.h"
+#include "../src/fmt.h"
 #include "../src/lexer.h"
 #include "../src/node.h"
 #include "../src/parser.h"
-#include "../src/print.h"
 #include <readline/history.h>  //TODO this is platform dependent
 #include <readline/readline.h> //TODO this is platform dependent
 #include <stddef.h>
@@ -15,9 +15,10 @@ constexpr size_t BUFFER_SIZE = 4096;
 constexpr size_t AST_MEMORY = (size_t)(1024 * 1024);
 constexpr size_t VM_MEMORY = (size_t)(1024 * 1024);
 
-void printError(const error_t error, [[maybe_unused]] const char *input_buffer,
-                size_t size, char output_buffer[static size]) {
-  formatError(error, input_buffer, "repl", size, output_buffer);
+void printError(const error_t *error, const char *input_buffer, int size,
+                char output_buffer[static size]) {
+  int offset = 0;
+  formatError(error, input_buffer, "repl", size, output_buffer, &offset);
   fprintf(stdout, "!! %s\n", output_buffer);
 }
 
@@ -51,7 +52,7 @@ int main(void) {
     char *input = readline("> ");
     result_token_list_t tokenization = tokenize(ast_arena, input);
     if (!tokenization.ok) {
-      printError(tokenization.error, input, BUFFER_SIZE, buffer);
+      printError(&tokenization.error, input, BUFFER_SIZE, buffer);
       continue;
     }
     token_list_t *tokens = tokenization.value;
@@ -61,20 +62,20 @@ int main(void) {
     size_t depth = 0;
     result_node_t parsing = parse(ast_arena, tokens, &offset, &depth);
     if (!parsing.ok) {
-      printError(parsing.error, input, BUFFER_SIZE, buffer);
+      printError(&parsing.error, input, BUFFER_SIZE, buffer);
       continue;
     }
     node_t *syntax_tree = parsing.value;
 
     result_reduce_t reduction = reduce(ast_arena, syntax_tree, environment);
     if (!reduction.ok) {
-      printError(reduction.error, input, BUFFER_SIZE, buffer);
+      printError(&reduction.error, input, BUFFER_SIZE, buffer);
       continue;
     }
     value_t *reduced = reduction.value;
 
     int buffer_offset = 0;
-    formatOutput(reduced, BUFFER_SIZE, buffer, &buffer_offset);
+    formatValue(reduced, BUFFER_SIZE, buffer, &buffer_offset);
     printf("~> %s\n", buffer);
 
     memset(buffer, 0, BUFFER_SIZE);

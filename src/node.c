@@ -15,6 +15,7 @@ result_alloc_t nodeCreate(arena_t *arena, node_type_t type) {
     bytewiseCopy(&node->value.list, list, sizeof(node_list_t));
   }
 
+  node->type = type;
   return ok(result_alloc_t, node);
 }
 
