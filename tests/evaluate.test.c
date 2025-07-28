@@ -11,11 +11,16 @@
 static arena_t *test_arena;
 static environment_t *environment;
 
-#define try_assert(Action, Destination)                                        \
+#define tryAssert(Action, Destination)                                         \
   {                                                                            \
     auto result__LINE__ = (Action);                                            \
     assert(result__LINE__.ok);                                                 \
     Destination = (result__LINE__.value);                                      \
+  }
+#define tryAssertVoid(Action)                                                  \
+  {                                                                            \
+    auto result__LINE__ = (Action);                                            \
+    assert(result__LINE__.ok);                                                 \
   }
 
 void expectEqlValueType(value_type_t actual, value_type_t expected,
@@ -31,31 +36,31 @@ void atoms() {
 
   case("integer");
   node_t integer_node = nInt(42);
-  try_assert(evaluate(test_arena, &integer_node, environment), result);
+  tryAssert(evaluate(test_arena, &integer_node, environment), result);
   expectEqlValueType(result->type, VALUE_TYPE_INTEGER,
                      "has correct type");
   expectEqlInt(result->value.integer, 42, "has correct value");
 
   case("boolean");
   node_t bool_node = nBool(true);
-  try_assert(evaluate(test_arena, &bool_node, environment), result);
+  tryAssert(evaluate(test_arena, &bool_node, environment), result);
   expectEqlValueType(result->type, VALUE_TYPE_BOOLEAN,
                      "has correct type");
   expectTrue(result->value.boolean, "has correct value");
 
   case("nil");
   node_t nil_node = nNil();
-  try_assert(evaluate(test_arena, &nil_node, environment), result);
+  tryAssert(evaluate(test_arena, &nil_node, environment), result);
   expectEqlValueType(result->type, VALUE_TYPE_NIL,
                      "has correct type");
 
   case("symbol");
   value_t *symbol = nullptr;
-  try_assert(valueCreate(test_arena, VALUE_TYPE_INTEGER), symbol);
+  tryAssert(valueCreate(test_arena, VALUE_TYPE_INTEGER), symbol);
   mapSet(environment->values, "value", symbol);
 
   node_t symbol_node = nSym("value");
-  try_assert(evaluate(test_arena, &symbol_node, environment), result);
+  tryAssert(evaluate(test_arena, &symbol_node, environment), result);
   expectEqlValueType(result->type, VALUE_TYPE_INTEGER,
                      "has correct type");
 }
@@ -107,16 +112,25 @@ void functionCall() {
   allocation = listAppend(node_t, list, &num3);
   assert(allocation.ok);
 
-  node_t list_node = nList(4, list->data);
-  list_node.value.list.capacity = list->capacity;
+  node_t form_node = nList(4, list->data);
+  form_node.value.list.capacity = list->capacity;
 
   value_t *result = nullptr;
-  try_assert(evaluate(test_arena, &list_node, environment), result);
+  tryAssert(evaluate(test_arena, &form_node, environment), result);
   expectNotNull(result, "reduced result is not null");
   expectEqlInt(result->value.integer, 6, "has correct result");
-
-  // TODO: add test that if first element is symbol, but not function, it
-  // doesn't get invoked
+  
+  value_t val = { .type = VALUE_TYPE_INTEGER, .value.integer = 1};
+  mapSet(environment->values, "lol", &val);
+  node_t lol_symbol = nSym("lol");
+  
+  tryAssert(listCreate(node_t, test_arena, 4), list);
+  tryAssertVoid(listAppend(node_t, list, &lol_symbol))
+  tryAssertVoid(listAppend(node_t, list, &num1))
+  node_t list_node = nList(4, list->data);
+  form_node.value.list.capacity = list->capacity;
+  tryAssert(evaluate(test_arena, &list_node, environment), result);
+  expectEqlUint(result->type, VALUE_TYPE_LIST, "does't invoke if symbol is not lambda");
 }
 
 void nested() {
