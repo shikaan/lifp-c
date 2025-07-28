@@ -8,10 +8,6 @@
 #include <stddef.h>
 #include <string.h>
 
-// Make clang see unreachable
-// TODO: under which conditions can this be removed?
-#define __need_unreachable 1
-
 result_node_t parseAtom(arena_t *arena, token_t token) {
   assert(token.type == TOKEN_TYPE_INTEGER || token.type == TOKEN_TYPE_SYMBOL);
 

@@ -15,10 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// Make clang see unreachable
-// TODO: under which conditions can this be removed?
-#define __need_unreachable 1
-
 static bool isSpecialFormNode(const node_t FIRST_NODE) {
   if (FIRST_NODE.type != NODE_TYPE_SYMBOL)
     return false;
