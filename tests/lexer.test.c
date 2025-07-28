@@ -7,6 +7,23 @@
 
 static arena_t *test_arena;
 
+void expectEqlError(const error_t *first, const error_t *second) {
+  char msg[128];
+  snprintf(msg, 128, "Expected %u to equal %u\n", first->kind, second->kind);
+  expectEqlUint(first->kind, second->kind, "has correct type");
+  expectEqlSize(first->position.column, second->position.column,
+                "column matches");
+  expectEqlSize(first->position.line, second->position.line, "line matches");
+
+  if (first->kind == ERROR_KIND_UNEXPECTED_TOKEN) {
+    expectEqlString(&first->payload.unexpected_token,
+                    &second->payload.unexpected_token, 1, "payload matches");
+  } else if (first->kind == ERROR_KIND_INVALID_TOKEN_SIZE) {
+    expectEqlSize(first->payload.invalid_token_size,
+                  second->payload.invalid_token_size, "payload matches");
+  }
+}
+
 static bool tokenEql(const token_t *self, const token_t *other) {
   if (self->type != other->type) {
     return false;
@@ -110,30 +127,38 @@ void whitespaces() {
 void errors() {
   struct {
     const char *input;
-    size_t column;
-    size_t line;
-    char token;
+    error_t error;
     const char *name;
-  } cases[] = {{"\a", 1, 1, '\a', "unexpected character"},
-               {"a\b", 2, 1, '\b', "unexpected character with symbol"},
-               {"1\b", 2, 1, '\b', "unexpected character with integer"}};
+  } cases[] = {{"\a",
+                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
+                          .position.column = 1,
+                          .position.line = 1,
+                          .payload.unexpected_token = '\a'},
+                "unexpected character"},
+               {"a\b",
+                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
+                          .position.column = 2,
+                          .position.line = 1,
+                          .payload.unexpected_token = '\b'},
+                "unexpected character with symbol"},
+               {"1\b",
+                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
+                          .position.column = 2,
+                          .position.line = 1,
+                          .payload.unexpected_token = '\b'},
+                "unexpected character with integer"},
+               {"symbol_way_too_long",
+                (error_t){.kind = ERROR_KIND_INVALID_TOKEN_SIZE,
+                          .position.column = 1,
+                          .position.line = 1,
+                          .payload.invalid_token_size = 19},
+                "symbol too long"}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
     auto result = tokenize(test_arena, cases[i].input);
     case(cases[i].name);
     expectFalse(result.ok, "should fail");
-    char msg[128];
-    snprintf(msg, 128, "Expected UNEXPECTED_TOKEN got %u\n", result.error.kind);
-    expect(result.error.kind == ERROR_KIND_UNEXPECTED_TOKEN,
-                 "error is ERROR_UNEXPECTED_TOKEN", msg);
-    expectEqlSize(result.error.position.column,
-                        cases[i].column, "column matches");
-    expectEqlSize(result.error.position.line,
-                        cases[i].line, "line matches");
-    snprintf(msg, 128, "Expected '%c' got '%c'\n", cases[i].token,
-             result.error.payload.unexpected_token);
-    expect(result.error.payload.unexpected_token == cases[i].token,
-                 "token matches", msg);
+    expectEqlError(&result.error, &cases[i].error);
   }
 }
 

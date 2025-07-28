@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../src/parser.h"
 #include "../src/value.h"
 #include <assert.h>
 #include <stddef.h>

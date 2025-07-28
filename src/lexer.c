@@ -13,17 +13,12 @@
 #include "result.h"
 
 typedef Result(token_t) result_token_t;
-
-result_token_t parseAtomBuffer(size_t buffer_len,
-                               char buffer[static buffer_len],
-                               position_t position) {
-
+result_token_t bufferToToken(size_t buffer_len, char buffer[static buffer_len],
+                             position_t position) {
   buffer[buffer_len] = 0;
   char *remainder;
   // FIXME: this is silently overflowing
   int32_t number = (int32_t)strtol(buffer, &remainder, 10);
-
-  position.column = position.column - buffer_len;
 
   // This condition is met when all the chars of the token represent an integer
   // This includes also leading +/-
@@ -35,109 +30,107 @@ result_token_t parseAtomBuffer(size_t buffer_len,
     return ok(result_token_t, tok);
   }
 
-  token_value_t value = {};
-  strncpy(value.symbol, buffer, buffer_len);
+  if (buffer_len >= SYMBOL_SIZE) {
+    error_t error = {.kind = ERROR_KIND_INVALID_TOKEN_SIZE,
+                     .payload.invalid_token_size = buffer_len,
+                     .position = position};
+    return error(result_token_t, error);
+  }
 
-  const token_t tok = {
-      .type = TOKEN_TYPE_SYMBOL,
-      .value = value,
-      .position = position,
-  };
+  // else, it's just a symbol
+  token_t tok = {.type = TOKEN_TYPE_SYMBOL, .position = position};
+  bytewiseCopy(&tok.value.symbol, buffer, buffer_len);
+  tok.value.symbol[buffer_len] = 0;
   return ok(result_token_t, tok);
 }
 
 result_token_list_t tokenize(arena_t *arena, const char *source) {
-  position_t position = {.column = 0, .line = 1};
+  position_t cursor = {.column = 0, .line = 1};
 
-  result_alloc_t allocation = listCreate(token_t, arena, 32);
-  if (!allocation.ok) {
-    return error(result_token_list_t, allocation.error);
-  }
-  token_list_t *tokens = allocation.value;
+  token_list_t *tokens = nullptr;
+  try(result_token_list_t, listCreate(token_t, arena, 32), tokens);
 
   constexpr size_t BUFFER_CAPACITY = 64;
-  char atom_buffer[BUFFER_CAPACITY] = {0};
-  size_t atom_buffer_len = 0;
-  result_alloc_t append;
+  char buffer[BUFFER_CAPACITY] = {0};
+  size_t buffer_len = 0;
+  token_t token;
+  position_t position = {};
 
   for (int i = 0; source[i] != '\0'; i++) {
-    position.column++;
+    cursor.column++;
     const char current_char = source[i];
 
     if (current_char == LPAREN) {
-      token_t tok = {.type = TOKEN_TYPE_LPAREN,
-                     .value.lparen = nullptr,
-                     .position = position};
-      append = listAppend(node_t, tokens, &tok);
+      token.type = TOKEN_TYPE_LPAREN;
+      token.value.lparen = nullptr;
+      token.position = cursor;
+      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
     } else if (current_char == RPAREN) {
-      if (atom_buffer_len > 0) {
-        result_token_t parsing =
-            parseAtomBuffer(atom_buffer_len, atom_buffer, position);
-        if (!parsing.ok) {
-          return error(result_token_list_t, parsing.error);
-        }
-        append = listAppend(token_t, tokens, &parsing.value);
+      if (buffer_len > 0) {
+        try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
+            token);
+        tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
         // clean buffer
-        atom_buffer_len = 0;
+        buffer_len = 0;
       }
 
-      const token_t tok = {.type = TOKEN_TYPE_RPAREN,
-                           .value = {.rparen = nullptr},
-                           .position = position};
-      append = listAppend(node_t, tokens, &tok);
+      token.type = TOKEN_TYPE_RPAREN;
+      token.value.rparen = nullptr;
+      token.position = cursor;
+      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
     } else if (isspace(current_char)) {
       if (current_char == '\n') {
-        position.line++;
-        position.column = 0;
+        cursor.line++;
+        cursor.column = 0;
       }
 
-      if (atom_buffer_len == 0)
+      if (buffer_len == 0)
         continue;
 
-      result_token_t parsing =
-          parseAtomBuffer(atom_buffer_len, atom_buffer, position);
-      if (!parsing.ok) {
-        return error(result_token_list_t, parsing.error);
-      }
-      append = listAppend(token_t, tokens, &parsing.value);
+      try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
+          token);
+      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
       // clean buffer
-      atom_buffer_len = 0;
+      buffer_len = 0;
     } else if (isprint(current_char)) {
-      if (atom_buffer_len > BUFFER_CAPACITY) {
+      if (buffer_len == 0) {
+        position.line = cursor.line;
+        position.column = cursor.column;
+      }
+
+      if (buffer_len >= BUFFER_CAPACITY) {
         error_t exception = {
-            .kind = ERROR_KIND_UNEXPECTED_TOKEN,
-            .payload.unexpected_token = current_char,
+            .kind = ERROR_KIND_INVALID_TOKEN_SIZE,
+            .payload.invalid_token_size = buffer_len,
             .position = position,
         };
         return error(result_token_list_t, exception);
       }
 
-      atom_buffer[atom_buffer_len++] = current_char;
+      buffer[buffer_len++] = current_char;
       continue;
     } else {
       error_t exception = {
           .kind = ERROR_KIND_UNEXPECTED_TOKEN,
-          .position = position,
+          .position = cursor,
           .payload.unexpected_token = current_char,
       };
       return error(result_token_list_t, exception);
     }
-
-    if (!append.ok) {
-      return error(result_token_list_t, allocation.error);
-    }
   }
 
-  if (atom_buffer_len > 0) {
-    result_token_t parsing =
-        parseAtomBuffer(atom_buffer_len, atom_buffer, position);
-    if (!parsing.ok) {
-      return error(result_token_list_t, parsing.error);
+  if (buffer_len > 0) {
+    if (buffer_len >= BUFFER_CAPACITY) {
+      error_t exception = {
+          .kind = ERROR_KIND_INVALID_TOKEN_SIZE,
+          .payload.invalid_token_size = buffer_len,
+          .position = position,
+      };
+      return error(result_token_list_t, exception);
     }
-    append = listAppend(token_t, tokens, &parsing.value);
-    if (!append.ok) {
-      return error(result_token_list_t, allocation.error);
-    }
+    try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
+        token);
+    tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
   }
 
   return ok(result_token_list_t, tokens);

@@ -82,22 +82,45 @@ void errors() {
   int offset = 0;
 
   char symbol[10] = "not-found";
-  const error_t error = {
+  error_t error = {
       .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
       .payload.symbol_not_found = symbol,
       .position.line = 1,
       .position.column = 10,
   };
 
-  const char input_buffer[23] = "(1 2 3 4 not-found 10)";
-  formatError(&error, input_buffer, "file.lifp", size, buffer, &offset);
+  const char list_buffer[23] = "(1 2 3 4 not-found 10)";
+  formatError(&error, list_buffer, "file.lifp", size, buffer, &offset);
   expectEqlString(buffer,
                   "Error: symbol 'not-found' not found\n"
                   "\n"
                   "  (1 2 3 4 not-found 10)\n"
                   "           ^\n"
                   "  at file.lifp:1:10",
-                  95, "puts caret in the right place");
+                  95, "puts caret in the right place (list)");
+
+  offset = 0;
+  error.position.column = 1;
+  const char atom_buffer[10] = "not-found";
+  formatError(&error, atom_buffer, "file.lifp", size, buffer, &offset);
+  expectEqlString(buffer,
+                  "Error: symbol 'not-found' not found\n"
+                  "\n"
+                  "  not-found\n"
+                  "  ^\n"
+                  "  at file.lifp:1:1",
+                  72, "puts caret in the right place (atom)");
+  offset = 0;
+  error.position.column = 2;
+  const char init_list_buffer[12] = "(not-found)";
+  formatError(&error, init_list_buffer, "file.lifp", size, buffer, &offset);
+  expectEqlString(buffer,
+                  "Error: symbol 'not-found' not found\n"
+                  "\n"
+                  "  (not-found)\n"
+                  "   ^\n"
+                  "  at file.lifp:1:2",
+                  72, "puts caret in the right place (init list)");
 }
 
 int main() {

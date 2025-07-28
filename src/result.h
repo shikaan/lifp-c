@@ -13,6 +13,7 @@ typedef enum {
 
   // Constraint Errors
   ERROR_KIND_KEY_TOO_LONG,
+  ERROR_KIND_INVALID_TOKEN_SIZE,
 
   // Reference Errors
   ERROR_KIND_SYMBOL_NOT_FOUND,
@@ -29,6 +30,7 @@ typedef union {
   nullptr_t invalid_expression;
   nullptr_t unbalanced_parentheses;
   size_t key_too_long;
+  size_t invalid_token_size;
   char *symbol_not_found;
 
   struct {

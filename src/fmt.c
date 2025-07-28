@@ -26,8 +26,8 @@ static void formatCurrentLine(const error_t *error, const char *input_buffer,
 
   const char *indent = "  ";
   append(size, output_buffer, offset, "\n\n%s%s", indent, line);
-  append(size, output_buffer, offset, "\n%s%*c^\n", indent,
-         (int)error->position.column - 1, ' ');
+  append(size, output_buffer, offset, "\n%*c^\n",
+         (int)error->position.column - 1 + (int)strlen(indent), ' ');
 }
 
 static void formatNode(const node_t *node, int size, char buffer[static size],
@@ -89,6 +89,9 @@ void formatError(const error_t *error, const char *input_buffer,
     break;
   case ERROR_KIND_KEY_TOO_LONG:
     append(size, output_buffer, offset, "invalid key size");
+    break;
+  case ERROR_KIND_INVALID_TOKEN_SIZE:
+    append(size, output_buffer, offset, "invalid token size");
     break;
   case ERROR_KIND_UNEXPECTED_TOKEN:
     append(size, output_buffer, offset, "unexpected token '%c'",
