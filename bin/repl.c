@@ -12,8 +12,8 @@
 #include <string.h>
 
 constexpr size_t BUFFER_SIZE = 4096;
-constexpr size_t AST_MEMORY = (size_t)(1024 * 1024);
-constexpr size_t VM_MEMORY = (size_t)(1024 * 1024);
+constexpr size_t AST_MEMORY = (size_t)(1024 * 64);
+constexpr size_t VM_MEMORY = (size_t)(1024 * 64);
 
 void printError(const error_t *error, const char *input_buffer, int size,
                 char output_buffer[static size]) {
