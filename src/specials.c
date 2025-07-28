@@ -35,7 +35,7 @@ result_special_t define(environment_t *env, const node_list_t *nodes) {
   // Perform reduction in the AST memory
   value_t *result = nullptr;
   node_t value = listGet(node_t, nodes, 2);
-  try(result_special_t, reduce(nodes->arena, &value, env), result);
+  try(result_special_t, evaluate(nodes->arena, &value, env), result);
 
   // If reduction is successful, we can move the closure to VM memory
   value_t *copy = nullptr;

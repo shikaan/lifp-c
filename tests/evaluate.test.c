@@ -11,6 +11,13 @@
 static arena_t *test_arena;
 static environment_t *environment;
 
+#define try_assert(Action, Destination)                                        \
+  {                                                                            \
+    auto result__LINE__ = (Action);                                            \
+    assert(result__LINE__.ok);                                                 \
+    Destination = (result__LINE__.value);                                      \
+  }
+
 void expectEqlValueType(value_type_t actual, value_type_t expected,
                         const char *name) {
   char msg[256];
@@ -20,37 +27,37 @@ void expectEqlValueType(value_type_t actual, value_type_t expected,
 }
 
 void atoms() {
+  value_t *result = nullptr;
+
+  case("integer");
   node_t integer_node = nInt(42);
-  result_reduce_t reduction = reduce(test_arena, &integer_node, environment);
-  assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_INTEGER,
-                     "reduced integer has correct type");
-  expectEqlInt(reduction.value->value.integer, 42,
-               "reduced integer has correct value");
+  try_assert(evaluate(test_arena, &integer_node, environment), result);
+  expectEqlValueType(result->type, VALUE_TYPE_INTEGER,
+                     "has correct type");
+  expectEqlInt(result->value.integer, 42, "has correct value");
 
+  case("boolean");
   node_t bool_node = nBool(true);
-  reduction = reduce(test_arena, &bool_node, environment);
-  assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_BOOLEAN,
-                     "reduced boolean has correct type");
-  expectTrue(reduction.value->value.boolean,
-             "reduced boolean has correct value");
+  try_assert(evaluate(test_arena, &bool_node, environment), result);
+  expectEqlValueType(result->type, VALUE_TYPE_BOOLEAN,
+                     "has correct type");
+  expectTrue(result->value.boolean, "has correct value");
 
+  case("nil");
   node_t nil_node = nNil();
-  reduction = reduce(test_arena, &nil_node, environment);
-  assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_NIL,
-                     "reduced nil has correct type");
+  try_assert(evaluate(test_arena, &nil_node, environment), result);
+  expectEqlValueType(result->type, VALUE_TYPE_NIL,
+                     "has correct type");
 
-  result_alloc_t creation = valueCreate(test_arena, VALUE_TYPE_INTEGER);
-  assert(creation.ok);
-  mapSet(environment->values, "value", creation.value);
+  case("symbol");
+  value_t *symbol = nullptr;
+  try_assert(valueCreate(test_arena, VALUE_TYPE_INTEGER), symbol);
+  mapSet(environment->values, "value", symbol);
 
   node_t symbol_node = nSym("value");
-  reduction = reduce(test_arena, &symbol_node, environment);
-  assert(reduction.ok);
-  expectEqlValueType(reduction.value->type, VALUE_TYPE_INTEGER,
-                     "reduced other value has correct type");
+  try_assert(evaluate(test_arena, &symbol_node, environment), result);
+  expectEqlValueType(result->type, VALUE_TYPE_INTEGER,
+                     "has correct type");
 }
 
 void listOfElements() {
@@ -67,7 +74,7 @@ void listOfElements() {
 
   node_t list_node = nList(2, expected->data);
 
-  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
+  result_valuep_t reduction = evaluate(test_arena, &list_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
                      "has correct type");
@@ -103,10 +110,10 @@ void functionCall() {
   node_t list_node = nList(4, list->data);
   list_node.value.list.capacity = list->capacity;
 
-  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
-  assert(reduction.ok);
-  expectNotNull(reduction.value, "reduced result is not null");
-  expectEqlInt(reduction.value->value.integer, 6, "has correct result");
+  value_t *result = nullptr;
+  try_assert(evaluate(test_arena, &list_node, environment), result);
+  expectNotNull(result, "reduced result is not null");
+  expectEqlInt(result->value.integer, 6, "has correct result");
 
   // TODO: add test that if first element is symbol, but not function, it
   // doesn't get invoked
@@ -141,7 +148,8 @@ void nested() {
   node_t outer_list_node = nList(2, outer_list->data);
   outer_list_node.value.list.capacity = outer_list->capacity;
 
-  result_reduce_t reduction = reduce(test_arena, &outer_list_node, environment);
+  result_valuep_t reduction =
+      evaluate(test_arena, &outer_list_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
                      "has correct type");
@@ -160,7 +168,7 @@ void emptyList() {
   node_t empty_list_node = nList(0, empty_list->data);
   empty_list_node.value.list.capacity = empty_list->capacity;
 
-  result_reduce_t result = reduce(test_arena, &empty_list_node, environment);
+  result_valuep_t result = evaluate(test_arena, &empty_list_node, environment);
   assert(result.ok);
   expectEqlValueType(result.value->type, VALUE_TYPE_LIST, "has correct type");
   expectEqlSize(result.value->value.list.count, 0, "has correct count");
@@ -173,7 +181,7 @@ void allocations() {
 
   arenaAllocate(small_arena, 31); // Use up most space
   node_t large_node = nInt(123);
-  result_reduce_t reduction = reduce(small_arena, &large_node, environment);
+  result_valuep_t reduction = evaluate(small_arena, &large_node, environment);
   assert(!reduction.ok);
   expectEqlUint(reduction.error.kind, ERROR_KIND_ALLOCATION,
                 "returns allocation error");
@@ -191,7 +199,7 @@ void errors() {
   result_alloc_t appending = listAppend(node_t, list, &sym);
   assert(appending.ok);
 
-  result_reduce_t reduction = reduce(test_arena, &sym, environment);
+  result_valuep_t reduction = evaluate(test_arena, &sym, environment);
   expectFalse(reduction.ok, "fails reduction");
   expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
 }
@@ -215,7 +223,7 @@ void specialForms() {
   node_t list_node = nList(3, list->data);
   list_node.value.list.arena = test_arena;
 
-  result_reduce_t reduction = reduce(test_arena, &list_node, environment);
+  result_valuep_t reduction = evaluate(test_arena, &list_node, environment);
   assert(reduction.ok); 
   value_t* val = mapGet(value_t, environment->values, "foo");
 

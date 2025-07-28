@@ -27,26 +27,26 @@ static bool isSpecialFormNode(const node_t FIRST_NODE) {
           (strncmp(FIRST_NODE.value.symbol, "fn*", 3) == 0)) != 0;
 }
 
-static result_reduce_t invokeBuiltin(value_t *result, value_t builtin_value,
+static result_valuep_t invokeBuiltin(value_t *result, value_t builtin_value,
                                      arena_t *arena) {
   assert(builtin_value.type == VALUE_TYPE_BUILTIN);
   builtin_t builtin = builtin_value.value.builtin;
 
   // Prepare argument list with all values except for the symbol
   value_list_t *arguments = nullptr;
-  try(result_reduce_t, listCreate(value_t, arena, result->value.list.count - 1),
+  try(result_valuep_t, listCreate(value_t, arena, result->value.list.count - 1),
       arguments);
 
   for (size_t i = 1; i < result->value.list.count; i++) {
     value_t argument = listGet(value_t, &result->value.list, i);
-    tryVoid(result_reduce_t, listAppend(value_t, arguments, &argument));
+    tryVoid(result_valuep_t, listAppend(value_t, arguments, &argument));
   }
 
-  tryVoid(result_reduce_t, builtin(result, arguments));
-  return ok(result_reduce_t, result);
+  tryVoid(result_valuep_t, builtin(result, arguments));
+  return ok(result_valuep_t, result);
 }
 
-static result_reduce_t invokeClosure(value_t *result, value_t closure_value,
+static result_valuep_t invokeClosure(value_t *result, value_t closure_value,
                                      arena_t *arena,
                                      environment_t *parent_environment) {
   assert(closure_value.type == VALUE_TYPE_CLOSURE);
@@ -59,11 +59,11 @@ static result_reduce_t invokeClosure(value_t *result, value_t closure_value,
         .payload.unexpected_arity.expected = closure.arguments.count,
         .position = closure_value.position,
         .example = nullptr};
-    return error(result_reduce_t, error);
+    return error(result_valuep_t, error);
   }
 
   environment_t *environment = nullptr;
-  try(result_reduce_t,
+  try(result_valuep_t,
       environmentCreate(parent_environment->arena, parent_environment),
       environment);
 
@@ -75,39 +75,39 @@ static result_reduce_t invokeClosure(value_t *result, value_t closure_value,
   }
 
   value_t *reduced = nullptr;
-  try(result_reduce_t, reduce(arena, &closure.form, environment), reduced);
-  return ok(result_reduce_t, reduced);
+  try(result_valuep_t, evaluate(arena, &closure.form, environment), reduced);
+  return ok(result_valuep_t, reduced);
 }
 
-result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
-                           environment_t *environment) {
+result_valuep_t evaluateList(arena_t *arena, node_t *syntax_tree,
+                             environment_t *environment) {
   const auto list = syntax_tree->value.list;
 
   value_t *result = nullptr;
-  try(result_reduce_t, valueCreate(arena, VALUE_TYPE_LIST), result);
+  try(result_valuep_t, valueCreate(arena, VALUE_TYPE_LIST), result);
   result->position.column = syntax_tree->position.column;
   result->position.line = syntax_tree->position.line;
 
   if (list.count == 0) {
-    return ok(result_reduce_t, result);
+    return ok(result_valuep_t, result);
   }
 
   auto first_node = listGet(node_t, &list, 0);
   if (isSpecialFormNode(first_node)) {
     if (first_node.value.symbol[0] == 'd') {
-      try(result_reduce_t, define(environment, &list), result);
+      try(result_valuep_t, define(environment, &list), result);
     } else {
-      try(result_reduce_t, function(environment, &list), result);
+      try(result_valuep_t, function(environment, &list), result);
     }
 
-    return ok(result_reduce_t, result);
+    return ok(result_valuep_t, result);
   }
 
   for (size_t i = 0; i < list.count; i++) {
     auto node = listGet(node_t, &list, i);
     value_t *reduced = nullptr;
-    try(result_reduce_t, reduce(arena, &node, environment), reduced);
-    tryVoid(result_reduce_t, listAppend(value_t, &result->value.list, reduced));
+    try(result_valuep_t, evaluate(arena, &node, environment), reduced);
+    tryVoid(result_valuep_t, listAppend(value_t, &result->value.list, reduced));
   }
 
   value_t first_value = listGet(value_t, &result->value.list, 0);
@@ -120,13 +120,13 @@ result_reduce_t reduceList(arena_t *arena, node_t *syntax_tree,
     return invokeClosure(result, first_value, arena, environment);
   }
 
-  return ok(result_reduce_t, result);
+  return ok(result_valuep_t, result);
 }
 
-result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
-                       environment_t *environment) {
+result_valuep_t evaluate(arena_t *arena, node_t *syntax_tree,
+                         environment_t *environment) {
   value_t *value = nullptr;
-  try(result_reduce_t, valueCreate(arena, VALUE_TYPE_INTEGER), value);
+  try(result_valuep_t, valueCreate(arena, VALUE_TYPE_INTEGER), value);
   value->position.column = syntax_tree->position.column;
   value->position.line = syntax_tree->position.line;
 
@@ -151,12 +151,10 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
         environmentResolveSymbol(environment, syntax_tree->value.symbol);
 
     if (!resolved_value) {
-      error_t error = {
-          .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
-          .position = syntax_tree->position,
-          .payload.symbol_not_found = syntax_tree->value.symbol,
-      };
-      return error(result_reduce_t, error);
+      error_t error = {.kind = ERROR_KIND_SYMBOL_NOT_FOUND,
+                       .position = syntax_tree->position,
+                       .payload.symbol_not_found = syntax_tree->value.symbol};
+      return error(result_valuep_t, error);
     }
 
     value->type = resolved_value->type;
@@ -164,9 +162,9 @@ result_reduce_t reduce(arena_t *arena, node_t *syntax_tree,
     break;
   }
   case NODE_TYPE_LIST:
-    return reduceList(arena, syntax_tree, environment);
+    return evaluateList(arena, syntax_tree, environment);
   default:
     unreachable();
   }
-  return ok(result_reduce_t, value);
+  return ok(result_valuep_t, value);
 }

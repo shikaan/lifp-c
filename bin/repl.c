@@ -67,7 +67,7 @@ int main(void) {
     }
     node_t *syntax_tree = parsing.value;
 
-    result_reduce_t reduction = reduce(ast_arena, syntax_tree, environment);
+    result_valuep_t reduction = evaluate(ast_arena, syntax_tree, environment);
     if (!reduction.ok) {
       printError(&reduction.error, input, BUFFER_SIZE, buffer);
       continue;

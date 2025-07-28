@@ -10,12 +10,12 @@
 static arena_t *test_ast_arena;
 static arena_t *test_vm_arena;
 
-result_reduce_t execute(const char *input) {
+result_valuep_t execute(const char *input) {
   char input_copy[1024];
   strcpy(input_copy, input);
 
   char *line = strtok(input_copy, "\n");
-  result_reduce_t last_result;
+  result_valuep_t last_result;
 
   result_alloc_t allocation = environmentCreate(test_vm_arena, nullptr);
   assert(allocation.ok);
@@ -32,7 +32,7 @@ result_reduce_t execute(const char *input) {
     assert(parsing.ok);
     node_t *syntax_tree = parsing.value;
 
-    result_reduce_t reduction = reduce(test_ast_arena, syntax_tree, env);
+    result_valuep_t reduction = evaluate(test_ast_arena, syntax_tree, env);
     assert(reduction.ok);
     last_result = reduction;
 
@@ -54,7 +54,7 @@ int main() {
   test_vm_arena = allocation.value;
 
   case("number");
-  result_reduce_t reduction = execute("1");
+  result_valuep_t reduction = execute("1");
   expectEqlInt(reduction.value->value.integer, 1, "returns correct value");
 
   case("symbol");
