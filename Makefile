@@ -30,7 +30,7 @@ run: bin/repl
 
 .PHONY: clean
 clean:
-	rm -rf **/*.o **/*.dSYM main *.dSYM
+	rm -rf **/*.o **/*.dSYM main *.dSYM *.plist
 	rm -f tests/*.test
 
 .PHONY: test
