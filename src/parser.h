@@ -11,6 +11,6 @@ constexpr char TRUE[] = "true";
 constexpr char FALSE[] = "false";
 constexpr char NIL[] = "nil";
 
-typedef Result(node_t *) result_node_t;
-result_node_t parse(arena_t *arena, const token_list_t *tokens, size_t *offset,
-                    size_t *depth);
+typedef Result(node_t *) result_node_ref_t;
+result_node_ref_t parse(arena_t *arena, const token_list_t *tokens,
+                        size_t *offset, size_t *depth);

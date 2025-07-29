@@ -44,11 +44,11 @@ result_token_t bufferToToken(size_t buffer_len, char buffer[static buffer_len],
   return ok(result_token_t, tok);
 }
 
-result_token_list_t tokenize(arena_t *arena, const char *source) {
+result_token_list_ref_t tokenize(arena_t *arena, const char *source) {
   position_t cursor = {.column = 0, .line = 1};
 
   token_list_t *tokens = nullptr;
-  try(result_token_list_t, listCreate(token_t, arena, 32), tokens);
+  tryAssign(result_token_list_ref_t, listCreate(token_t, arena, 32), tokens);
 
   constexpr size_t BUFFER_CAPACITY = 64;
   char buffer[BUFFER_CAPACITY] = {0};
@@ -64,12 +64,12 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       token.type = TOKEN_TYPE_LPAREN;
       token.value.lparen = nullptr;
       token.position = cursor;
-      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
+      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
     } else if (current_char == RPAREN) {
       if (buffer_len > 0) {
-        try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
-            token);
-        tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
+        tryAssign(result_token_list_ref_t,
+                  bufferToToken(buffer_len, buffer, position), token);
+        tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
         // clean buffer
         buffer_len = 0;
       }
@@ -77,7 +77,7 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       token.type = TOKEN_TYPE_RPAREN;
       token.value.rparen = nullptr;
       token.position = cursor;
-      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
+      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
     } else if (isspace(current_char)) {
       if (current_char == '\n') {
         cursor.line++;
@@ -87,9 +87,9 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
       if (buffer_len == 0)
         continue;
 
-      try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
-          token);
-      tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
+      tryAssign(result_token_list_ref_t,
+                bufferToToken(buffer_len, buffer, position), token);
+      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
       // clean buffer
       buffer_len = 0;
     } else if (isprint(current_char)) {
@@ -104,7 +104,7 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
             .payload.invalid_token_size = buffer_len,
             .position = position,
         };
-        return error(result_token_list_t, exception);
+        return error(result_token_list_ref_t, exception);
       }
 
       buffer[buffer_len++] = current_char;
@@ -115,7 +115,7 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
           .position = cursor,
           .payload.unexpected_token = current_char,
       };
-      return error(result_token_list_t, exception);
+      return error(result_token_list_ref_t, exception);
     }
   }
 
@@ -126,12 +126,12 @@ result_token_list_t tokenize(arena_t *arena, const char *source) {
           .payload.invalid_token_size = buffer_len,
           .position = position,
       };
-      return error(result_token_list_t, exception);
+      return error(result_token_list_ref_t, exception);
     }
-    try(result_token_list_t, bufferToToken(buffer_len, buffer, position),
-        token);
-    tryVoid(result_token_list_t, listAppend(token_t, tokens, &token));
+    tryAssign(result_token_list_ref_t,
+              bufferToToken(buffer_len, buffer, position), token);
+    tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
   }
 
-  return ok(result_token_list_t, tokens);
+  return ok(result_token_list_ref_t, tokens);
 }

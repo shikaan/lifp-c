@@ -10,7 +10,7 @@ void testFunction(void) {}
 static arena_t *test_arena;
 
 void create() {
-  result_alloc_t creation = mapCreate(int, test_arena, 8);
+  result_ref_t creation = mapCreate(int, test_arena, 8);
   expectTrue(creation.ok, "map allocation succeeds");
   generic_map_t *map = creation.value;
 
@@ -21,7 +21,7 @@ void create() {
 }
 
 void getSet() {
-  result_alloc_t map_creation = mapCreate(int, test_arena, 8);
+  result_ref_t map_creation = mapCreate(int, test_arena, 8);
   assert(map_creation.ok);
   generic_map_t *map = map_creation.value;
 
@@ -30,7 +30,7 @@ void getSet() {
     
   case("new item");
   int value = 42;
-  result_alloc_t setting = mapSet(map, "test", &value);
+  result_ref_t setting = mapSet(map, "test", &value);
   expectTrue(setting.ok, "sets successfully");
   expectEqlSize(map->count, 1, "count increases");
   int* item = mapGet(int, map, "test");
@@ -92,7 +92,7 @@ void getSet() {
 }
 
 void allocations() {
-  result_alloc_t allocation = mapCreate(int, test_arena, 1);
+  result_ref_t allocation = mapCreate(int, test_arena, 1);
   assert(allocation.ok);
   Map(int) *map = allocation.value;
 
@@ -107,7 +107,7 @@ void allocations() {
 }
 
 int main() {
-  result_alloc_t creation = arenaCreate(1024);
+  result_ref_t creation = arenaCreate(1024);
   assert(creation.ok);
   test_arena = creation.value;
 

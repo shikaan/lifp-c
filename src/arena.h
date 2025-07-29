@@ -16,12 +16,12 @@
 // - Memory-efficient for scenarios with many small allocations
 //
 // ```c
-// result_alloc_t result = arenaCreate(1024);
+// result_ref_t result = arenaCreate(1024);
 // if (result.ok) {
 //     arena_t *arena = result.value;
 //
 //     // Allocate some memory
-//     result_alloc_t alloc = arenaAllocate(arena, sizeof(int));
+//     result_ref_t alloc = arenaAllocate(arena, sizeof(int));
 //     if (alloc.ok) {
 //         int *ptr = (int*)alloc.value;
 //         *ptr = 42;
@@ -44,10 +44,9 @@ typedef unsigned char byte_t;
 
 /**
  * The result of an allocation. It returns a void* to be casted by the caller.
- * @name result_alloc_t
+ * @name result_ref_t
  */
-typedef Result(void *) result_alloc_t;
-typedef ResultVoid() result_copy_t;
+typedef Result(void *) result_ref_t;
 
 /**
  * Arena allocator structure.
@@ -63,33 +62,33 @@ typedef struct {
  * Create a new arena with the specified size.
  * @name arenaCreate
  * @param {size_t} size - The total size in bytes for the arena's memory buffer
- * @returns {result_alloc_t} Result containing the arena pointer on success, or
+ * @returns {result_ref_t} Result containing the arena pointer on success, or
  * an allocation error
  * @example
- *   result_alloc_t result = arenaCreate(1024);
+ *   result_ref_t result = arenaCreate(1024);
  *   if (result.ok) {
  *       arena_t *arena = result.value;
  *       // Use the arena...
  *       arenaDestroy(arena);
  *   }
  */
-result_alloc_t arenaCreate(size_t size);
+result_ref_t arenaCreate(size_t size);
 
 /**
  * Allocate memory from the arena.
  * @name arenaAllocate
  * @param {arena_t*} self - Pointer to the arena to allocate from
  * @param {size_t} size - Number of bytes to allocate
- * @returns {result_alloc_t} Result containing pointer to allocated memory on
+ * @returns {result_ref_t} Result containing pointer to allocated memory on
  * success, or allocation error
  * @example
- *   result_alloc_t result = arenaAllocate(arena, sizeof(int));
+ *   result_ref_t result = arenaAllocate(arena, sizeof(int));
  *   if (result.ok) {
  *       int *ptr = (int*)result.value;
  *       *ptr = 42;
  *   }
  */
-result_alloc_t arenaAllocate(arena_t *self, size_t size);
+result_ref_t arenaAllocate(arena_t *self, size_t size);
 
 /**
  * Destroy the arena and free all its memory.

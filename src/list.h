@@ -13,16 +13,15 @@
 
 typedef List(void) generic_list_t;
 
-[[nodiscard]] result_alloc_t genericListAlloc(arena_t *arena, size_t capacity,
-                                              size_t list_size,
-                                              size_t item_size);
-[[nodiscard]] result_alloc_t genericListAppend(generic_list_t *self,
-                                               const void *item);
+[[nodiscard]] result_ref_t genericListAlloc(arena_t *arena, size_t capacity,
+                                            size_t list_size, size_t item_size);
+[[nodiscard]] result_ref_t genericListAppend(generic_list_t *self,
+                                             const void *item);
 
 [[nodiscard]] void *genericListGet(const generic_list_t *self, size_t index);
 
-[[nodiscard]] result_alloc_t genericListCopy(const generic_list_t *source,
-                                             generic_list_t *destination);
+[[nodiscard]] result_ref_t genericListCopy(const generic_list_t *source,
+                                           generic_list_t *destination);
 
 #define listCreate(ItemType, Arena, Capacity)                                  \
   genericListAlloc(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))

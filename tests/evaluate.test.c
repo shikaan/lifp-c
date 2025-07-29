@@ -15,7 +15,7 @@ static environment_t *environment;
   {                                                                            \
     auto result__LINE__ = (Action);                                            \
     assert(result__LINE__.ok);                                                 \
-    Destination = (result__LINE__.value);                                      \
+    (Destination) = (result__LINE__.value);                                    \
   }
 #define tryAssertVoid(Action)                                                  \
   {                                                                            \
@@ -66,7 +66,7 @@ void atoms() {
 }
 
 void listOfElements() {
-  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
+  result_ref_t allocation = listCreate(node_t, test_arena, 4);
   assert(allocation.ok);
   node_list_t *expected = allocation.value;
 
@@ -79,7 +79,7 @@ void listOfElements() {
 
   node_t list_node = nList(2, expected->data);
 
-  result_valuep_t reduction = evaluate(test_arena, &list_node, environment);
+  result_value_ref_t reduction = evaluate(test_arena, &list_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
                      "has correct type");
@@ -95,7 +95,7 @@ void listOfElements() {
 }
 
 void functionCall() {
-  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
+  result_ref_t allocation = listCreate(node_t, test_arena, 4);
   expectTrue(allocation.ok, "list allocation succeeds");
   node_list_t *list = allocation.value;
 
@@ -134,7 +134,7 @@ void functionCall() {
 }
 
 void nested() {
-  result_alloc_t allocation = listCreate(node_t, test_arena, 4);
+  result_ref_t allocation = listCreate(node_t, test_arena, 4);
   assert(allocation.ok);
   node_list_t *inner_list = allocation.value;
 
@@ -162,7 +162,7 @@ void nested() {
   node_t outer_list_node = nList(2, outer_list->data);
   outer_list_node.value.list.capacity = outer_list->capacity;
 
-  result_valuep_t reduction =
+  result_value_ref_t reduction =
       evaluate(test_arena, &outer_list_node, environment);
   assert(reduction.ok);
   expectEqlValueType(reduction.value->type, VALUE_TYPE_LIST,
@@ -175,27 +175,27 @@ void nested() {
 }
 
 void emptyList() {
-  result_alloc_t allocation = listCreate(node_t, test_arena, 4); // capacity > 0
+  result_ref_t allocation = listCreate(node_t, test_arena, 4); // capacity > 0
   assert(allocation.ok);
   node_list_t *empty_list = allocation.value;
 
   node_t empty_list_node = nList(0, empty_list->data);
   empty_list_node.value.list.capacity = empty_list->capacity;
 
-  result_valuep_t result = evaluate(test_arena, &empty_list_node, environment);
+  result_value_ref_t result = evaluate(test_arena, &empty_list_node, environment);
   assert(result.ok);
   expectEqlValueType(result.value->type, VALUE_TYPE_LIST, "has correct type");
   expectEqlSize(result.value->value.list.count, 0, "has correct count");
 }
 
 void allocations() {
-  result_alloc_t arena_result = arenaCreate(32);
+  result_ref_t arena_result = arenaCreate(32);
   assert(arena_result.ok);
   arena_t *small_arena = arena_result.value;
 
   arenaAllocate(small_arena, 31); // Use up most space
   node_t large_node = nInt(123);
-  result_valuep_t reduction = evaluate(small_arena, &large_node, environment);
+  result_value_ref_t reduction = evaluate(small_arena, &large_node, environment);
   assert(!reduction.ok);
   expectEqlUint(reduction.error.kind, ERROR_KIND_ALLOCATION,
                 "returns allocation error");
@@ -204,22 +204,22 @@ void allocations() {
 }
 
 void errors() {
-  result_alloc_t allocation = listCreate(node_t, test_arena, 1);
+  result_ref_t allocation = listCreate(node_t, test_arena, 1);
   assert(allocation.ok);
   node_list_t *list = allocation.value;
 
   case("non-existing symbol");
   node_t sym = nSym("not-existent");
-  result_alloc_t appending = listAppend(node_t, list, &sym);
+  result_ref_t appending = listAppend(node_t, list, &sym);
   assert(appending.ok);
 
-  result_valuep_t reduction = evaluate(test_arena, &sym, environment);
+  result_value_ref_t reduction = evaluate(test_arena, &sym, environment);
   expectFalse(reduction.ok, "fails reduction");
   expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
 }
 
 void specialForms() { 
-  result_alloc_t allocation = listCreate(node_t, test_arena, 1);
+  result_ref_t allocation = listCreate(node_t, test_arena, 1);
   assert(allocation.ok);
   node_list_t *list = allocation.value;
 
@@ -227,7 +227,7 @@ void specialForms() {
   node_t var = nSym("foo");
   node_t value = nInt(1);
 
-  result_alloc_t appending = listAppend(node_t, list, &special);
+  result_ref_t appending = listAppend(node_t, list, &special);
   assert(appending.ok);
   appending = listAppend(node_t, list, &var);
   assert(appending.ok);
@@ -237,7 +237,7 @@ void specialForms() {
   node_t list_node = nList(3, list->data);
   list_node.value.list.arena = test_arena;
 
-  result_valuep_t reduction = evaluate(test_arena, &list_node, environment);
+  result_value_ref_t reduction = evaluate(test_arena, &list_node, environment);
   assert(reduction.ok); 
   value_t* val = mapGet(value_t, environment->values, "foo");
 
@@ -246,7 +246,7 @@ void specialForms() {
 }
 
 int main(void) {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 

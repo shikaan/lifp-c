@@ -203,7 +203,7 @@ void errors() {
 }
 
 int main(void) {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 

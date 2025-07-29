@@ -81,7 +81,7 @@ void atoms() {
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    result_token_list_t list_result = tokenize(test_arena, cases[i].input);
+    result_token_list_ref_t list_result = tokenize(test_arena, cases[i].input);
     assert(list_result.ok);
     expect(tokenListEql(cases[i].expected, list_result.value), cases[i].name,
            "Expected token lists to be equal.");
@@ -182,7 +182,7 @@ void complex() {
                {"(2 (12))", makeTokenList(test_arena, nested_list, 6), "nested list"},
                {"(def!\nx 2\n)", makeTokenList(test_arena, whitespaces, 5), "with random whitespaces"}};
   for (size_t i = 0; i < arraySize(cases); i++) {
-    result_token_list_t list_result = tokenize(test_arena, cases[i].input);
+    result_token_list_ref_t list_result = tokenize(test_arena, cases[i].input);
 
     assert(list_result.ok);
     expect(tokenListEql(cases[i].expected, list_result.value),
@@ -191,7 +191,7 @@ void complex() {
 }
 
 int main(void) {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 

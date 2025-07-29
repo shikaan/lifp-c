@@ -3,6 +3,7 @@
 #include "arena.h"
 #include "lexer.h"
 #include "list.h"
+#include "result.h"
 #include <stddef.h>
 
 typedef struct node_t node_t;
@@ -31,5 +32,5 @@ typedef struct node_t {
   node_value_t value;
 } node_t;
 
-result_alloc_t nodeCreate(arena_t *arena, node_type_t type);
-result_copy_t nodeCopy(const node_t *source, node_t *destination);
+result_ref_t nodeCreate(arena_t *arena, node_type_t type);
+result_void_t nodeCopy(const node_t *source, node_t *destination);

@@ -3,7 +3,7 @@
 #include "map.h"
 #include "value.h"
 
-result_builtin_t sum(value_t *result, value_list_t *values) {
+result_void_t sum(value_t *result, value_list_t *values) {
   result->type = VALUE_TYPE_INTEGER;
   result->value.integer = 0;
 
@@ -15,22 +15,23 @@ result_builtin_t sum(value_t *result, value_list_t *values) {
     }
   }
 
-  return (result_builtin_t){.ok = true};
+  return (result_void_t){.ok = true};
 }
 
-result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
+result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   environment_t *environment = nullptr;
-  try(result_alloc_t, arenaAllocate(arena, sizeof(environment_t)), environment);
+  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(environment_t)),
+            environment);
   environment->parent = parent;
   environment->arena = arena;
 
   // TODO: the number of values per environnment is very arbitrary because it's
   //   fixed for now. The hashmap should grow instead
-  try(result_alloc_t, mapCreate(value_t, arena, 32), environment->values);
+  tryAssign(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
 
 #define setBuiltin(Label, Builtin)                                             \
   {                                                                            \
-    try(result_alloc_t, arenaAllocate(arena, sizeof(value_t)), builtin);       \
+    tryAssign(result_ref_t, arenaAllocate(arena, sizeof(value_t)), builtin);   \
     builtin->type = VALUE_TYPE_BUILTIN;                                        \
     builtin->value.builtin = Builtin;                                          \
     mapSet(environment->values, (Label), builtin);                             \
@@ -40,7 +41,7 @@ result_alloc_t environmentCreate(arena_t *arena, environment_t *parent) {
   setBuiltin("+", sum);
 #undef setBuiltin
 
-  return ok(result_alloc_t, environment);
+  return ok(result_ref_t, environment);
 }
 
 value_t *environmentResolveSymbol(environment_t *self, const char *symbol) {

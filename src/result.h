@@ -57,6 +57,11 @@ typedef struct {
   const char *example;
 } error_t;
 
+typedef struct {
+  bool ok;
+  error_t error;
+} result_void_t;
+
 #define Result(ValueType)                                                      \
   struct {                                                                     \
     bool ok;                                                                   \
@@ -66,17 +71,11 @@ typedef struct {
     };                                                                         \
   }
 
-#define ResultVoid()                                                           \
-  struct {                                                                     \
-    bool ok;                                                                   \
-    error_t error;                                                             \
-  }
-
 #define _concat_detail(x, y) x##y
 #define _concat(x, y) _concat_detail(x, y)
 #define _result_name(ResultType) _concat(ResultType, __LINE__)
 
-#define try(ResultType, Action, Destination)                                   \
+#define tryAssign(ResultType, Action, Destination)                             \
   {                                                                            \
     auto _result_name(ResultType) = Action;                                    \
     if (!_result_name(ResultType).ok) {                                        \

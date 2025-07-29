@@ -7,7 +7,7 @@ typedef List(int) int_list_t;
 static arena_t *test_arena;
 
 int main(void) {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 

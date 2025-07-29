@@ -1,8 +1,8 @@
 #pragma once
 
-#include "./list.h"
-#include "./result.h"
 #include "arena.h"
+#include "list.h"
+#include "result.h"
 #include <stdint.h>
 
 constexpr char LPAREN = '(';
@@ -31,6 +31,6 @@ typedef struct {
 } token_t;
 
 typedef List(token_t) token_list_t;
-typedef Result(token_list_t *) result_token_list_t;
+typedef Result(token_list_t *) result_token_list_ref_t;
 
-result_token_list_t tokenize(arena_t *arena, const char *source);
+result_token_list_ref_t tokenize(arena_t *arena, const char *source);

@@ -16,12 +16,12 @@
 // - O(1) average case insertion and lookup
 //
 // ```c
-// result_alloc_t arena_result = arenaCreate(1024);
+// result_ref_t arena_result = arenaCreate(1024);
 // if (arena_result.ok) {
 //     arena_t *arena = arena_result.value;
 //
 //     // Create a map for integers
-//     result_alloc_t map_result = mapCreate(int, arena, 16);
+//     result_ref_t map_result = mapCreate(int, arena, 16);
 //     if (map_result.ok) {
 //         Map(int) *map = map_result.value;
 //
@@ -80,10 +80,10 @@ typedef Map(void) generic_map_t;
  * @param {Type} ItemType - The type of values to store in the map
  * @param {arena_t*} Arena - Arena allocator to use for memory allocation
  * @param {size_t} Capacity - Initial capacity of the map (should be power of 2)
- * @returns {result_alloc_t} Result containing the map pointer on success, or
+ * @returns {result_ref_t} Result containing the map pointer on success, or
  * allocation error
  * @example
- *   result_alloc_t result = mapCreate(int, arena, 16);
+ *   result_ref_t result = mapCreate(int, arena, 16);
  *   if (result.ok) {
  *       Map(int) *map = result.value;
  *       // Use the map...
@@ -98,10 +98,10 @@ typedef Map(void) generic_map_t;
  * @param {Map(Type)*} Map - Pointer to the map to modify
  * @param {const char*} Key - Key string (max 31 characters + null terminator)
  * @param {Type*} Value - Pointer to the value to store
- * @returns {result_alloc_t} Result indicating success or allocation error
+ * @returns {result_ref_t} Result indicating success or allocation error
  * @example
  *   int value = 42;
- *   result_alloc_t result = mapSet(map, "key", &value);
+ *   result_ref_t result = mapSet(map, "key", &value);
  *   if (!result.ok) {
  *       // Handle error
  *   }
@@ -133,11 +133,11 @@ typedef Map(void) generic_map_t;
  * @param {arena_t*} arena - Arena allocator to use for memory allocation
  * @param {size_t} capacity - Initial capacity of the map
  * @param {size_t} item_size - Size in bytes of each value item
- * @returns {result_alloc_t} Result containing the map pointer on success, or
+ * @returns {result_ref_t} Result containing the map pointer on success, or
  * allocation error
  */
-result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
-                                size_t item_size);
+result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
+                              size_t item_size);
 
 /**
  * Set a key-value pair in a generic map.
@@ -145,9 +145,9 @@ result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
  * @param {generic_map_t*} self - Pointer to the map to modify
  * @param {const char*} key - Key string (max 31 characters + null terminator)
  * @param {void*} value - Pointer to the value to store
- * @returns {result_alloc_t} Result indicating success or allocation error
+ * @returns {result_ref_t} Result indicating success or allocation error
  */
-result_alloc_t genericMapSet(generic_map_t *self, const char *key, void *value);
+result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value);
 
 /**
  * Get a value from a generic map by key.

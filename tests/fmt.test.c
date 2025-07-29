@@ -39,7 +39,7 @@ void values() {
 
   offset = 0;
   arenaReset(test_arena);
-  result_alloc_t allocation = valueCreate(test_arena, VALUE_TYPE_LIST);
+  result_ref_t allocation = valueCreate(test_arena, VALUE_TYPE_LIST);
   assert(allocation.ok);
   value_t *list = allocation.value;
 
@@ -124,7 +124,7 @@ void errors() {
 }
 
 int main() {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_arena = allocation.value;
 

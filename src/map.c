@@ -20,13 +20,13 @@ size_t makeKey(generic_map_t *self, const char *key) {
   return hashed_key % self->capacity;
 }
 
-result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
-                                size_t item_size) {
+result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
+                              size_t item_size) {
   assert(arena != nullptr);
   assert(capacity > 0);
   assert(item_size > 0);
 
-  result_alloc_t allocation = arenaAllocate(arena, sizeof(generic_map_t));
+  result_ref_t allocation = arenaAllocate(arena, sizeof(generic_map_t));
   if (!allocation.ok) {
     return allocation;
   }
@@ -55,7 +55,7 @@ result_alloc_t genericMapCreate(arena_t *arena, size_t capacity,
   map->values = allocation.value;
   memset(map->values, 0, item_size * capacity);
 
-  return ok(result_alloc_t, map);
+  return ok(result_ref_t, map);
 }
 
 void rawValueSet(generic_map_t *self, size_t index, const void *value) {
@@ -65,13 +65,12 @@ void rawValueSet(generic_map_t *self, size_t index, const void *value) {
   memcpy(destination, value, self->item_size);
 }
 
-result_alloc_t genericMapSet(generic_map_t *self, const char *key,
-                             void *value) {
+result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
   size_t key_length = strlen(key);
   if (key_length >= MAX_KEY_LENGTH) {
     error_t exception = {.kind = ERROR_KIND_KEY_TOO_LONG,
                          .payload.key_too_long = key_length};
-    return error(result_alloc_t, exception);
+    return error(result_ref_t, exception);
   }
 
   size_t index = makeKey(self, key);
@@ -83,7 +82,7 @@ result_alloc_t genericMapSet(generic_map_t *self, const char *key,
 
     if (is_same_key) {
       rawValueSet(self, index, value);
-      return (result_alloc_t){.ok = true};
+      return (result_ref_t){.ok = true};
     }
 
     index = (index + 1) % self->capacity;
@@ -92,7 +91,7 @@ result_alloc_t genericMapSet(generic_map_t *self, const char *key,
     if (count == self->capacity) {
       // TODO: extend and rehash
       error_t exception = {.kind = ERROR_KIND_ALLOCATION};
-      return error(result_alloc_t, exception);
+      return error(result_ref_t, exception);
     }
   }
 
@@ -102,7 +101,7 @@ result_alloc_t genericMapSet(generic_map_t *self, const char *key,
   rawValueSet(self, index, value);
   self->count++;
 
-  return (result_alloc_t){.ok = true};
+  return (result_ref_t){.ok = true};
 }
 
 void *genericMapGet(generic_map_t *self, const char *key) {

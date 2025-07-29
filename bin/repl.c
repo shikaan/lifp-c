@@ -24,7 +24,7 @@ void printError(const error_t *error, const char *input_buffer, int size,
 
 int main(void) {
   char buffer[BUFFER_SIZE];
-  result_alloc_t creation = arenaCreate(AST_MEMORY);
+  result_ref_t creation = arenaCreate(AST_MEMORY);
   if (!creation.ok) {
     fprintf(stderr, "unable to allocate memory");
     return 1;
@@ -50,7 +50,7 @@ int main(void) {
   while (true) {
     arenaReset(ast_arena);
     char *input = readline("> ");
-    result_token_list_t tokenization = tokenize(ast_arena, input);
+    result_token_list_ref_t tokenization = tokenize(ast_arena, input);
     if (!tokenization.ok) {
       printError(&tokenization.error, input, BUFFER_SIZE, buffer);
       continue;
@@ -60,14 +60,15 @@ int main(void) {
 
     size_t offset = 0;
     size_t depth = 0;
-    result_node_t parsing = parse(ast_arena, tokens, &offset, &depth);
+    result_node_ref_t parsing = parse(ast_arena, tokens, &offset, &depth);
     if (!parsing.ok) {
       printError(&parsing.error, input, BUFFER_SIZE, buffer);
       continue;
     }
     node_t *syntax_tree = parsing.value;
 
-    result_valuep_t reduction = evaluate(ast_arena, syntax_tree, environment);
+    result_value_ref_t reduction =
+        evaluate(ast_arena, syntax_tree, environment);
     if (!reduction.ok) {
       printError(&reduction.error, input, BUFFER_SIZE, buffer);
       continue;

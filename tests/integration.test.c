@@ -10,29 +10,29 @@
 static arena_t *test_ast_arena;
 static arena_t *test_vm_arena;
 
-result_valuep_t execute(const char *input) {
+result_value_ref_t execute(const char *input) {
   char input_copy[1024];
   strcpy(input_copy, input);
 
   char *line = strtok(input_copy, "\n");
-  result_valuep_t last_result;
+  result_value_ref_t last_result;
 
-  result_alloc_t allocation = environmentCreate(test_vm_arena, nullptr);
+  result_ref_t allocation = environmentCreate(test_vm_arena, nullptr);
   assert(allocation.ok);
   environment_t *env = allocation.value;
 
   while (line != NULL) {
-    result_token_list_t tokenization = tokenize(test_ast_arena, line);
+    result_token_list_ref_t tokenization = tokenize(test_ast_arena, line);
     assert(tokenization.ok);
     token_list_t *tokens = tokenization.value;
 
     size_t offset = 0;
     size_t depth = 0;
-    result_node_t parsing = parse(test_ast_arena, tokens, &offset, &depth);
+    result_node_ref_t parsing = parse(test_ast_arena, tokens, &offset, &depth);
     assert(parsing.ok);
     node_t *syntax_tree = parsing.value;
 
-    result_valuep_t reduction = evaluate(test_ast_arena, syntax_tree, env);
+    result_value_ref_t reduction = evaluate(test_ast_arena, syntax_tree, env);
     assert(reduction.ok);
     last_result = reduction;
 
@@ -45,7 +45,7 @@ result_valuep_t execute(const char *input) {
 }
 
 int main() {
-  result_alloc_t allocation = arenaCreate((size_t)(1024 * 1024));
+  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
   assert(allocation.ok);
   test_ast_arena = allocation.value;
 
@@ -54,7 +54,7 @@ int main() {
   test_vm_arena = allocation.value;
 
   case("number");
-  result_valuep_t reduction = execute("1");
+  result_value_ref_t reduction = execute("1");
   expectEqlInt(reduction.value->value.integer, 1, "returns correct value");
 
   case("symbol");
