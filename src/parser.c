@@ -71,7 +71,7 @@ result_node_ref_t parseList(arena_t *arena, const token_list_t *tokens,
     node_t *sub_node = nullptr;
     tryAssign(result_node_ref_t, parse(arena, tokens, offset, depth), sub_node);
 
-    tryVoid(result_node_ref_t, listAppend(node_t, &node->value.list, sub_node));
+    try(result_node_ref_t, listAppend(node_t, &node->value.list, sub_node));
   }
 
   return ok(result_node_ref_t, node);

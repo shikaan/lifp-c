@@ -36,10 +36,10 @@ static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
 
   for (size_t i = 1; i < result->value.list.count; i++) {
     value_t argument = listGet(value_t, &result->value.list, i);
-    tryVoid(result_value_ref_t, listAppend(value_t, arguments, &argument));
+    try(result_value_ref_t, listAppend(value_t, arguments, &argument));
   }
 
-  tryVoid(result_value_ref_t, builtin(result, arguments));
+  try(result_value_ref_t, builtin(result, arguments));
   return ok(result_value_ref_t, result);
 }
 
@@ -105,8 +105,7 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
     auto node = listGet(node_t, &list, i);
     value_t *reduced = nullptr;
     tryAssign(result_value_ref_t, evaluate(arena, &node, environment), reduced);
-    tryVoid(result_value_ref_t,
-            listAppend(value_t, &result->value.list, reduced));
+    try(result_value_ref_t, listAppend(value_t, &result->value.list, reduced));
   }
 
   value_t first_value = listGet(value_t, &result->value.list, 0);

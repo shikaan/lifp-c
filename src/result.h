@@ -84,7 +84,7 @@ typedef struct {
     (Destination) = (_result_name(ResultType).value);                          \
   }
 
-#define tryVoid(ResultType, Action)                                            \
+#define try(ResultType, Action)                                                \
   {                                                                            \
     auto _result_name(ResultType) = Action;                                    \
     if (!_result_name(ResultType).ok) {                                        \

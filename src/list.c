@@ -66,7 +66,7 @@ result_ref_t genericListCopy(const generic_list_t *source,
 
   for (size_t i = 0; i < source->count; i++) {
     void *source_node = genericListGet(source, i);
-    tryVoid(result_ref_t, genericListAppend(destination, source_node));
+    try(result_ref_t, genericListAppend(destination, source_node));
   }
 
   destination->count = source->count;

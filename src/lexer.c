@@ -64,12 +64,12 @@ result_token_list_ref_t tokenize(arena_t *arena, const char *source) {
       token.type = TOKEN_TYPE_LPAREN;
       token.value.lparen = nullptr;
       token.position = cursor;
-      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
+      try(result_token_list_ref_t, listAppend(token_t, tokens, &token));
     } else if (current_char == RPAREN) {
       if (buffer_len > 0) {
         tryAssign(result_token_list_ref_t,
                   bufferToToken(buffer_len, buffer, position), token);
-        tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
+        try(result_token_list_ref_t, listAppend(token_t, tokens, &token));
         // clean buffer
         buffer_len = 0;
       }
@@ -77,7 +77,7 @@ result_token_list_ref_t tokenize(arena_t *arena, const char *source) {
       token.type = TOKEN_TYPE_RPAREN;
       token.value.rparen = nullptr;
       token.position = cursor;
-      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
+      try(result_token_list_ref_t, listAppend(token_t, tokens, &token));
     } else if (isspace(current_char)) {
       if (current_char == '\n') {
         cursor.line++;
@@ -89,7 +89,7 @@ result_token_list_ref_t tokenize(arena_t *arena, const char *source) {
 
       tryAssign(result_token_list_ref_t,
                 bufferToToken(buffer_len, buffer, position), token);
-      tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
+      try(result_token_list_ref_t, listAppend(token_t, tokens, &token));
       // clean buffer
       buffer_len = 0;
     } else if (isprint(current_char)) {
@@ -130,7 +130,7 @@ result_token_list_ref_t tokenize(arena_t *arena, const char *source) {
     }
     tryAssign(result_token_list_ref_t,
               bufferToToken(buffer_len, buffer, position), token);
-    tryVoid(result_token_list_ref_t, listAppend(token_t, tokens, &token));
+    try(result_token_list_ref_t, listAppend(token_t, tokens, &token));
   }
 
   return ok(result_token_list_ref_t, tokens);

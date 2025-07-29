@@ -92,13 +92,12 @@ static inline result_value_ref_t valueClone(arena_t *arena,
   case VALUE_TYPE_CLOSURE:
     nodeCopy(&source->value.closure.form, &destination->value.closure.form);
 
-    tryVoid(result_value_ref_t,
-            listCopy(value_t, &source->value.closure.arguments,
-                     &destination->value.closure.arguments));
+    try(result_value_ref_t, listCopy(value_t, &source->value.closure.arguments,
+                                     &destination->value.closure.arguments));
     break;
   case VALUE_TYPE_LIST:
-    tryVoid(result_value_ref_t,
-            listCopy(value_t, &source->value.list, &destination->value.list));
+    try(result_value_ref_t,
+        listCopy(value_t, &source->value.list, &destination->value.list));
     break;
   default:
     unreachable();

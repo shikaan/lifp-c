@@ -25,8 +25,8 @@ result_void_t nodeCopy(const node_t *source, node_t *destination) {
   destination->position.line = source->position.line;
 
   if (source->type == NODE_TYPE_LIST) {
-    tryVoid(result_void_t,
-            listCopy(node_t, &source->value.list, &destination->value.list));
+    try(result_void_t,
+        listCopy(node_t, &source->value.list, &destination->value.list));
   } else {
     destination->value = source->value;
   }
@@ -37,6 +37,6 @@ result_void_t nodeCopy(const node_t *source, node_t *destination) {
 result_ref_t nodeClone(arena_t *arena, const node_t *source) {
   node_t *destination = nullptr;
   tryAssign(result_ref_t, nodeCreate(arena, source->type), destination);
-  tryVoid(result_ref_t, nodeCopy(source, destination));
+  try(result_ref_t, nodeCopy(source, destination));
   return ok(result_ref_t, destination);
 }

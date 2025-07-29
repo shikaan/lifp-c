@@ -84,9 +84,9 @@ result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
   closure->position.column = first.position.column;
   closure->position.line = first.position.line;
 
-  tryVoid(result_value_ref_t, listCopy(node_t, &arguments.value.list,
-                                       &closure->value.closure.arguments));
-  tryVoid(result_value_ref_t, nodeCopy(&form, &closure->value.closure.form));
+  try(result_value_ref_t, listCopy(node_t, &arguments.value.list,
+                                   &closure->value.closure.arguments));
+  try(result_value_ref_t, nodeCopy(&form, &closure->value.closure.form));
 
   return ok(result_value_ref_t, closure);
 }
