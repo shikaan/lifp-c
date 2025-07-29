@@ -19,8 +19,10 @@ static bool isSpecialFormNode(const node_t FIRST_NODE) {
   if (FIRST_NODE.type != NODE_TYPE_SYMBOL)
     return false;
 
-  return ((strncmp(FIRST_NODE.value.symbol, "def!", 4) == 0) ||
-          (strncmp(FIRST_NODE.value.symbol, "fn*", 3) == 0)) != 0;
+  size_t len = strlen(FIRST_NODE.value.symbol);
+  return ((strncmp(FIRST_NODE.value.symbol, DEFINE, 4) == 0 && len == 4) ||
+          (strncmp(FIRST_NODE.value.symbol, FUNCTION, 2) == 0 && len == 2)) !=
+         0;
 }
 
 static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,

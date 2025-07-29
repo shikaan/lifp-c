@@ -78,7 +78,7 @@ int main() {
   expectEqlInt(reduction.value->value.integer, 7, "returns correct value");
 
   case("declare function");
-  reduction = execute("(def! sum (fn* (a b) (+ a b)))\n(sum 1 2)");
+  reduction = execute("(def! sum (fn (a b) (+ a b)))\n(sum 1 2)");
   expectEqlInt(reduction.value->value.integer, 3, "returns correct value");
 
   return report();

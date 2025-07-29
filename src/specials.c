@@ -11,6 +11,7 @@ typedef result_value_ref_t (*special_form_t)(environment_t *,
                                              const node_list_t *);
 
 const char *DEFINE_EXAMPLE = "(def! x (+ 1 2))";
+const char *DEFINE = "def!";
 result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
   assert(nodes->count > 0); // def! is always there
   node_t first = listGet(node_t, nodes, 0);
@@ -50,7 +51,8 @@ result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
   return ok(result_value_ref_t, &nil);
 }
 
-const char *FUNCTION_EXAMPLE = "(fn* (a b) (+ a b))";
+const char *FUNCTION_EXAMPLE = "(fn (a b) (+ a b))";
+const char *FUNCTION = "fn";
 result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
   assert(nodes->count > 0); // fn* is always there
   node_t first = listGet(node_t, nodes, 0);
