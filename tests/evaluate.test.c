@@ -199,8 +199,7 @@ void errors() {
   expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
 }
 
-void specialForms() {
-  case("def!");  
+void defSpecialForm() {
   node_list_t *list = nullptr;
   tryAssertAssign(listCreate(node_t, test_arena, 1), list);
 
@@ -221,8 +220,9 @@ void specialForms() {
 
   expectNotNull(val, "environment is updated");
   expectEqlInt(val->value.integer, 1, "with correct value");
+}
 
-  case("fn");
+void fnSpecialForm() {
   // Test creating a function: (fn (x y) (+ x y))
   node_list_t *fn_list = nullptr;
   tryAssertAssign(listCreate(node_t, test_arena, 3), fn_list);
@@ -263,8 +263,9 @@ void specialForms() {
   assert(fn_reduction.ok);
   expectEqlUint(fn_reduction.value->type, VALUE_TYPE_CLOSURE, "creates closure");
   expectEqlSize(fn_reduction.value->value.closure.arguments.count, 2, "with correct argument count");
+}
 
-  case("let");
+void letSpecialForm() {
   // Test let binding: (let ((a 5) (b 10)) (+ a b))
   node_list_t *let_list = nullptr;
   tryAssertAssign(listCreate(node_t, test_arena, 3), let_list);
@@ -335,7 +336,6 @@ void specialForms() {
 
 int main(void) {
   tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
-
   tryAssertAssign(environmentCreate(test_arena, nullptr), environment);
 
   suite(atoms);
@@ -345,7 +345,9 @@ int main(void) {
   suite(emptyList);
   suite(allocations);
   suite(errors);
-  suite(specialForms);
+  suite(defSpecialForm);
+  suite(fnSpecialForm);
+  suite(letSpecialForm);
 
   arenaDestroy(test_arena);
   return report();
