@@ -1,0 +1,84 @@
+name: Build LIFP
+
+on:
+  push:
+    branches: [ main, c ]
+  pull_request:
+    branches: [ main, c ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          gcc-aarch64-linux-gnu \
+          gcc-mingw-w64-x86-64 \
+          libreadline-dev \
+          clang
+
+    - name: Run tests
+      run: |
+        make test BUILD_TYPE=debug
+
+    - name: Build Linux AMD64
+      run: |
+        make bin/repl CC=gcc BUILD_TYPE=release
+        mv bin/repl lifp-linux-amd64
+        make clean
+
+    - name: Build Linux ARM64
+      run: |
+        make bin/repl CC=aarch64-linux-gnu-gcc BUILD_TYPE=release
+        mv bin/repl lifp-linux-arm64
+        make clean
+
+    - name: Build Windows AMD64
+      run: |
+        make bin/repl CC=x86_64-w64-mingw32-gcc BUILD_TYPE=release LDFLAGS="-static"
+        mv bin/repl lifp-windows-amd64.exe
+        make clean
+
+    - name: Build macOS ARM64
+      run: |
+        make bin/repl CC="clang -target arm64-apple-darwin" BUILD_TYPE=release
+        mv bin/repl lifp-darwin-arm64
+        make clean
+
+    - name: Build macOS AMD64
+      run: |
+        make bin/repl CC="clang -target x86_64-apple-darwin" BUILD_TYPE=release
+        mv bin/repl lifp-darwin-amd64
+        make clean
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: lifp-binaries
+        path: lifp-*
+        retention-days: 30
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: lifp-binaries
+        path: binaries
+
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: binaries/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
