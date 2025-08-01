@@ -22,7 +22,8 @@ static bool isSpecialFormNode(const node_t FIRST_NODE) {
   size_t len = strlen(FIRST_NODE.value.symbol);
   return ((strncmp(FIRST_NODE.value.symbol, DEFINE, 4) == 0 && len == 4) ||
           (strncmp(FIRST_NODE.value.symbol, FUNCTION, 2) == 0 && len == 2) ||
-          (strncmp(FIRST_NODE.value.symbol, LET, 3) == 0 && len == 3)) != 0;
+          (strncmp(FIRST_NODE.value.symbol, LET, 3) == 0 && len == 3) != 0 ||
+          (strncmp(FIRST_NODE.value.symbol, COND, 4) == 0 && len == 4)) != 0;
 }
 
 static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
@@ -98,8 +99,10 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
       tryAssign(result_value_ref_t, define(environment, &list), result);
     } else if (first_node.value.symbol[0] == 'f') {
       tryAssign(result_value_ref_t, function(environment, &list), result);
-    } else {
+    } else if (first_node.value.symbol[0] == 'l') {
       tryAssign(result_value_ref_t, let(environment, &list), result);
+    } else {
+      tryAssign(result_value_ref_t, cond(environment, &list), result);
     }
 
     return ok(result_value_ref_t, result);

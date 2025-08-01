@@ -155,3 +155,45 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
 
   return ok(result_value_ref_t, result);
 }
+
+const char *COND_EXAMPLE = "(cond\n\t((!= x 0) (/ 10 x))\n\t(+ x 10))";
+const char *COND = "cond";
+result_value_ref_t cond(environment_t *env, const node_list_t *nodes) {
+  assert(nodes->count > 0);
+  value_t *result = nullptr;
+
+  for (size_t i = 1; i < nodes->count - 1; i++) {
+    node_t node = listGet(node_t, nodes, i);
+    if (node.type != NODE_TYPE_LIST || node.value.list.count != 2) {
+      error_t error = {.kind = ERROR_KIND_UNEXPECTED_TYPE,
+                       .payload.unexpected_type.actual = (int)node.type,
+                       .payload.unexpected_type.expected = NODE_TYPE_LIST,
+                       .position = node.position,
+                       .example = COND_EXAMPLE};
+      return error(result_value_ref_t, error);
+    }
+
+    node_t condition = listGet(node_t, &node.value.list, 0);
+    tryAssign(result_value_ref_t, evaluate(nodes->arena, &condition, env),
+              result);
+
+    if (result->type != VALUE_TYPE_BOOLEAN) {
+      error_t error = {.kind = ERROR_KIND_UNEXPECTED_TYPE,
+                       .payload.unexpected_type.actual = (int)condition.type,
+                       .payload.unexpected_type.expected = NODE_TYPE_LIST,
+                       .position = condition.position,
+                       .example = COND_EXAMPLE};
+      return error(result_value_ref_t, error);
+    }
+
+    if (result->value.boolean) {
+      node_t form = listGet(node_t, &node.value.list, 1);
+      tryAssign(result_value_ref_t, evaluate(nodes->arena, &form, env), result);
+      return ok(result_value_ref_t, result);
+    }
+  }
+
+  node_t fallback = listGet(node_t, nodes, nodes->count - 1);
+  tryAssign(result_value_ref_t, evaluate(nodes->arena, &fallback, env), result);
+  return ok(result_value_ref_t, result);
+}

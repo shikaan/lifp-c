@@ -11,18 +11,6 @@
 static arena_t *test_arena;
 static environment_t *environment;
 
-#define tryAssertAssign(Action, Destination)                                   \
-  {                                                                            \
-    auto result__LINE__ = (Action);                                            \
-    assert(result__LINE__.ok);                                                 \
-    (Destination) = (result__LINE__.value);                                    \
-  }
-#define tryAssert(Action)                                                      \
-  {                                                                            \
-    auto result__LINE__ = (Action);                                            \
-    assert(result__LINE__.ok);                                                 \
-  }
-
 void expectEqlValueType(value_type_t actual, value_type_t expected,
                         const char *name) {
   char msg[256];
@@ -334,6 +322,59 @@ void letSpecialForm() {
   expectNull(leaked_b, "let binding 'b' doesn't leak to outer scope");
 }
 
+void condSpecialForm() {
+  node_t *cond = nullptr;
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_LIST), cond);
+
+  node_t cond_special = nSym("cond");
+  node_t true_condition = nBool(true);
+  node_t false_condition = nBool(false);
+  node_t true_value = nInt(42);
+  node_t false_value = nInt(22);
+  node_t fallback_value = nInt(99);
+
+  node_t *true_clause = nullptr;
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_LIST), true_clause);
+  tryAssert(listAppend(node_t, &true_clause->value.list, &true_condition));
+  tryAssert(listAppend(node_t, &true_clause->value.list, &true_value));
+
+  tryAssert(listAppend(node_t, &cond->value.list, &cond_special));
+  tryAssert(listAppend(node_t, &cond->value.list, true_clause));
+  tryAssert(listAppend(node_t, &cond->value.list, &fallback_value));
+
+  value_t *result = nullptr;
+  tryAssertAssign(evaluate(test_arena, cond, environment), result);
+  expectEqlUint(result->type, VALUE_TYPE_INTEGER, "returns integer");
+  expectEqlInt(result->value.integer, true_value.value.integer, "evaluates true clause");
+
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_LIST), cond);
+  
+  node_t *false_clause = nullptr;
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_LIST), false_clause);
+  tryAssert(listAppend(node_t, &false_clause->value.list, &false_condition));
+  tryAssert(listAppend(node_t, &false_clause->value.list, &false_value));
+
+  tryAssert(listAppend(node_t, &cond->value.list, &cond_special));
+  tryAssert(listAppend(node_t, &cond->value.list, false_clause));
+  tryAssert(listAppend(node_t, &cond->value.list, &fallback_value));
+
+  tryAssertAssign(evaluate(test_arena, cond, environment), result);
+  expectEqlUint(result->type, VALUE_TYPE_INTEGER, "returns integer");
+  expectEqlInt(result->value.integer, fallback_value.value.integer, "evaluates fallback clause");
+
+  // (cond (false 42) (true 42) 99)
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_LIST), cond);
+   
+  tryAssert(listAppend(node_t, &cond->value.list, &cond_special));
+  tryAssert(listAppend(node_t, &cond->value.list, false_clause));
+  tryAssert(listAppend(node_t, &cond->value.list, true_clause));
+  tryAssert(listAppend(node_t, &cond->value.list, &fallback_value));
+
+  tryAssertAssign(evaluate(test_arena, cond, environment), result);
+  expectEqlUint(result->type, VALUE_TYPE_INTEGER, "returns integer");
+  expectEqlInt(result->value.integer, 42, "evaluates the first true clause");
+}
+
 int main(void) {
   tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
   tryAssertAssign(environmentCreate(test_arena, nullptr), environment);
@@ -348,6 +389,7 @@ int main(void) {
   suite(defSpecialForm);
   suite(fnSpecialForm);
   suite(letSpecialForm);
+  suite(condSpecialForm);
 
   arenaDestroy(test_arena);
   return report();

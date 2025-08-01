@@ -8,6 +8,18 @@
 
 #define arraySize(array) (sizeof(array) / sizeof((array)[0]))
 
+#define _concat_detail(x, y) x##y
+#define _concat(x, y) _concat_detail(x, y)
+
+#define tryAssertAssign(Action, Destination)                                   \
+  auto _concat(result, __LINE__) = (Action);                                   \
+  assert(_concat(result, __LINE__).ok);                                        \
+  (Destination) = (_concat(result, __LINE__).value);
+
+#define tryAssert(Action)                                                      \
+  auto _concat(result, __LINE__) = (Action);                                   \
+  assert(_concat(result, __LINE__).ok);
+
 static inline token_list_t *
 makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
   result_ref_t allocation = listCreate(token_t, arena, capacity);
