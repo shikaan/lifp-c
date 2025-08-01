@@ -24,11 +24,11 @@ jobs:
 
     - name: Run tests
       run: |
-        make test CC=gcc BUILD_TYPE=debug
+        make test CC=clang-18 BUILD_TYPE=debug
 
     - name: Build Linux AMD64
       run: |
-        make bin/repl CC=gcc BUILD_TYPE=release
+        make bin/repl CC=clang-18 BUILD_TYPE=release
         mv bin/repl lifp-linux-amd64
         make clean
 
@@ -46,13 +46,13 @@ jobs:
 
     - name: Build macOS ARM64
       run: |
-        make bin/repl CC="clang -target arm64-apple-darwin" BUILD_TYPE=release
+        make bin/repl CC="clang-18 -target arm64-apple-darwin" BUILD_TYPE=release
         mv bin/repl lifp-darwin-arm64
         make clean
 
     - name: Build macOS AMD64
       run: |
-        make bin/repl CC="clang -target x86_64-apple-darwin" BUILD_TYPE=release
+        make bin/repl CC="clang-18 -target x86_64-apple-darwin" BUILD_TYPE=release
         mv bin/repl lifp-darwin-amd64
         make clean
 
