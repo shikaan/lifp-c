@@ -20,13 +20,11 @@ jobs:
         sudo apt-get install -y \
           gcc-aarch64-linux-gnu \
           gcc-mingw-w64-x86-64 \
-          libreadline-dev \
-          clang
+          libreadline-dev
 
     - name: Run tests
       run: |
-        clang --version
-        make test BUILD_TYPE=debug
+        make test CC=gcc BUILD_TYPE=debug
 
     - name: Build Linux AMD64
       run: |
