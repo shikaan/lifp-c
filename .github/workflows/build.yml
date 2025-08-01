@@ -25,6 +25,7 @@ jobs:
 
     - name: Run tests
       run: |
+        clang --version
         make test BUILD_TYPE=debug
 
     - name: Build Linux AMD64
