@@ -76,20 +76,16 @@ typedef struct {
 #define _result_name(ResultType) _concat(ResultType, __LINE__)
 
 #define tryAssign(ResultType, Action, Destination)                             \
-  {                                                                            \
-    auto _result_name(ResultType) = Action;                                    \
-    if (!_result_name(ResultType).ok) {                                        \
-      return error(ResultType, _result_name(ResultType).error);                \
-    }                                                                          \
-    (Destination) = (_result_name(ResultType).value);                          \
-  }
+  auto _result_name(ResultType) = Action;                                      \
+  if (!_result_name(ResultType).ok) {                                          \
+    return error(ResultType, _result_name(ResultType).error);                  \
+  }                                                                            \
+  (Destination) = (_result_name(ResultType).value);
 
 #define try(ResultType, Action)                                                \
-  {                                                                            \
-    auto _result_name(ResultType) = Action;                                    \
-    if (!_result_name(ResultType).ok) {                                        \
-      return error(ResultType, _result_name(ResultType).error);                \
-    }                                                                          \
+  auto _result_name(ResultType) = Action;                                      \
+  if (!_result_name(ResultType).ok) {                                          \
+    return error(ResultType, _result_name(ResultType).error);                  \
   }
 
 // Helper functions for creating results

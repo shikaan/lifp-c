@@ -25,8 +25,6 @@ result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   environment->parent = parent;
   environment->arena = arena;
 
-  // TODO: the number of values per environnment is very arbitrary because it's
-  //   fixed for now. The hashmap should grow instead
   tryAssign(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
 
 #define setBuiltin(Label, Builtin)                                             \

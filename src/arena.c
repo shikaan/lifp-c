@@ -1,5 +1,7 @@
 #include "arena.h"
+#include "result.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define deallocSafe(DoublePointer)                                             \
   {                                                                            \
@@ -29,11 +31,8 @@ void bytewiseCopy(void *dest, const void *src, size_t size) {
 }
 
 result_ref_t arenaCreate(size_t size) {
-  result_ref_t allocation = allocSafe(sizeof(arena_t) + size);
-  if (!allocation.ok) {
-    return allocation;
-  }
-  arena_t *arena = allocation.value;
+  arena_t *arena = nullptr;
+  tryAssign(result_ref_t, allocSafe(sizeof(arena_t) + size), arena);
   arena->size = size;
   arena->offset = 0;
   return ok(result_ref_t, arena);
@@ -49,6 +48,7 @@ result_ref_t arenaAllocate(arena_t *self, size_t size) {
   }
 
   byte_t *pointer = &self->memory[aligned_offset];
+  memset(pointer, 0, aligned_size);
   self->offset = aligned_offset + aligned_size;
   return ok(result_ref_t, pointer);
 }

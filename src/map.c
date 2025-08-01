@@ -1,5 +1,8 @@
 #include "map.h"
+#include "arena.h"
+#include "result.h"
 #include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -26,34 +29,21 @@ result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
   assert(capacity > 0);
   assert(item_size > 0);
 
-  result_ref_t allocation = arenaAllocate(arena, sizeof(generic_map_t));
-  if (!allocation.ok) {
-    return allocation;
-  }
+  generic_map_t *map = nullptr;
+  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(generic_map_t)), map);
 
-  generic_map_t *map = allocation.value;
   map->count = 0;
   map->capacity = capacity;
   map->item_size = item_size;
   map->arena = arena;
 
-  allocation = arenaAllocate(arena, sizeof(bool) * capacity);
-  if (!allocation.ok)
-    return allocation;
-  map->used = allocation.value;
-  memset(map->used, 0, sizeof(bool) * capacity);
-
-  allocation = arenaAllocate(arena, sizeof(char) * MAX_KEY_LENGTH * capacity);
-  if (!allocation.ok)
-    return allocation;
-  map->keys = allocation.value;
-  memset(map->keys, 0, MAX_KEY_LENGTH * capacity);
-
-  allocation = arenaAllocate(arena, item_size * capacity);
-  if (!allocation.ok)
-    return allocation;
-  map->values = allocation.value;
-  memset(map->values, 0, item_size * capacity);
+  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(bool) * capacity),
+            map->used);
+  tryAssign(result_ref_t,
+            arenaAllocate(arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
+            map->keys);
+  tryAssign(result_ref_t, arenaAllocate(arena, item_size * capacity),
+            map->values);
 
   return ok(result_ref_t, map);
 }
@@ -89,9 +79,30 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
     count++;
 
     if (count == self->capacity) {
-      // TODO: extend and rehash
-      error_t exception = {.kind = ERROR_KIND_ALLOCATION};
-      return error(result_ref_t, exception);
+      auto used = self->used;
+      auto keys = self->keys;
+      auto values = self->values;
+      size_t capacity = self->capacity * 2;
+
+      tryAssign(result_ref_t,
+                arenaAllocate(self->arena, sizeof(bool) * capacity),
+                self->used);
+      tryAssign(
+          result_ref_t,
+          arenaAllocate(self->arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
+          self->keys);
+      tryAssign(result_ref_t,
+                arenaAllocate(self->arena, self->item_size * capacity),
+                self->values);
+      self->capacity = capacity;
+
+      for (size_t i = 0; i < self->capacity; i++) {
+        if (used[i]) {
+          byte_t *destination = (byte_t *)values + (i * self->item_size);
+          genericMapSet(self, keys[i], destination);
+        }
+      }
+      return genericMapSet(self, key, value);
     }
   }
 
