@@ -13,8 +13,9 @@
 
 typedef List(void) generic_list_t;
 
-[[nodiscard]] result_ref_t genericListAlloc(arena_t *arena, size_t capacity,
-                                            size_t list_size, size_t item_size);
+[[nodiscard]] result_ref_t genericListCreate(arena_t *arena, size_t capacity,
+                                             size_t list_size,
+                                             size_t item_size);
 [[nodiscard]] result_ref_t genericListAppend(generic_list_t *self,
                                              const void *item);
 
@@ -24,7 +25,7 @@ typedef List(void) generic_list_t;
                                            generic_list_t *destination);
 
 #define listCreate(ItemType, Arena, Capacity)                                  \
-  genericListAlloc(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))
+  genericListCreate(Arena, (Capacity), sizeof(List(ItemType)), sizeof(ItemType))
 
 // TODO: can this be made typesafe with static asserts?
 #define listAppend(ItemType, List, Item)                                       \

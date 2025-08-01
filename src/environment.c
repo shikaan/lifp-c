@@ -1,22 +1,15 @@
 #include "environment.h"
 #include "arena.h"
 #include "map.h"
+
+// NOLINTSTART
+#include "std/core.c"
+#include "std/flow.c"
+#include "std/list.c"
+#include "std/math.c"
+// NOLINTEND
+
 #include "value.h"
-
-result_void_t sum(value_t *result, value_list_t *values) {
-  result->type = VALUE_TYPE_INTEGER;
-  result->value.integer = 0;
-
-  for (size_t i = 0; i < values->count; i++) {
-    value_t current = listGet(value_t, values, i);
-    // TODO: this should raise an error instead of silently skipping non-numbers
-    if (current.type == VALUE_TYPE_INTEGER) {
-      result->value.integer += current.value.integer;
-    }
-  }
-
-  return (result_void_t){.ok = true};
-}
 
 result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   environment_t *environment = nullptr;
@@ -36,7 +29,26 @@ result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   }
 
   value_t *builtin = nullptr;
-  setBuiltin("+", sum);
+  setBuiltin(SUM, sum);
+  setBuiltin(SUB, subtract);
+  setBuiltin(MUL, multiply);
+  setBuiltin(DIV, divide);
+  setBuiltin(MOD, modulo);
+  setBuiltin(EQUAL, equal);
+  setBuiltin(LESS_THAN, lessThan);
+  setBuiltin(GREATER_THAN, greaterThan);
+  setBuiltin(NEQ, notEqual);
+  setBuiltin(LEQ, lessEqual);
+  setBuiltin(GEQ, greaterEqual);
+  setBuiltin(LOGICAL_AND, logicalAnd);
+  setBuiltin(LOGICAL_OR, logicalOr);
+  setBuiltin(FLOW_SLEEP, flowSleep);
+  setBuiltin(LIST_COUNT, listCount);
+  setBuiltin(LIST_FROM, listFrom);
+  setBuiltin(LIST_NTH, listNth);
+  setBuiltin(MATH_MAX, mathMax);
+  setBuiltin(MATH_MIN, mathMin);
+  setBuiltin(MATH_RANDOM, mathRandom);
 #undef setBuiltin
 
   return ok(result_ref_t, environment);

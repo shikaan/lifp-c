@@ -2,8 +2,8 @@
 #include "arena.h"
 #include <assert.h>
 
-result_ref_t genericListAlloc(arena_t *arena, size_t capacity, size_t list_size,
-                              size_t item_size) {
+result_ref_t genericListCreate(arena_t *arena, size_t capacity,
+                               size_t list_size, size_t item_size) {
   assert(arena);
   generic_list_t *list = nullptr;
   tryAssign(result_ref_t, arenaAllocate(arena, list_size), list);
