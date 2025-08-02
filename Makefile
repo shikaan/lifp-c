@@ -3,26 +3,29 @@ include flags.mk
 .PHONY: all
 all: clean bin/repl
 
-src/lexer.o: src/position.o src/list.o src/arena.o
-src/parser.o: src/lexer.o src/position.o src/list.o src/arena.o src/node.o
-src/list.o: src/arena.o
-src/node.o: src/arena.o
-src/environment.o: src/arena.o src/map.o
-src/evaluate.o: src/arena.o src/environment.o src/map.o
-src/map.o: src/arena.o
+lib/list.o: lib/arena.o
+lib/map.o: lib/arena.o
 
-tests/lexer.test: src/lexer.o src/position.o src/list.o src/arena.o
-tests/parser.test: src/parser.o src/lexer.o src/position.o src/list.o src/node.o src/arena.o
-tests/list.test: src/list.o src/arena.o
-tests/arena.test: src/arena.o
-tests/evaluate.test: src/evaluate.o src/node.o src/list.o src/arena.o src/position.o src/environment.o src/map.o
-tests/map.test: src/arena.o src/map.o
-tests/fmt.test: src/fmt.o src/node.o src/arena.o src/list.o
+lifp/lexer.o: lifp/position.o lib/list.o lib/arena.o
+lifp/parser.o: lifp/lexer.o lifp/position.o lib/list.o lib/arena.o lifp/node.o
+lifp/node.o: lib/arena.o
+lifp/environment.o: lib/arena.o lib/map.o
+lifp/evaluate.o: lib/arena.o lifp/environment.o lib/map.o
 
-tests/integration.test: src/lexer.o src/parser.o src/arena.o src/evaluate.o src/list.o src/map.o src/node.o src/environment.o
+tests/lexer.test: lifp/lexer.o lifp/position.o lib/list.o lib/arena.o
+tests/parser.test: lifp/parser.o lifp/lexer.o lifp/position.o lib/list.o lifp/node.o lib/arena.o
+tests/list.test: lib/list.o lib/arena.o
+tests/arena.test: lib/arena.o
+tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/position.o lifp/environment.o lib/map.o
+tests/map.test: lib/arena.o lib/map.o
+tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o
+
+tests/integration.test: lifp/lexer.o lifp/parser.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o
 
 LDFLAGS := -lreadline
-bin/repl: src/lexer.o src/parser.o src/list.o src/evaluate.o src/node.o src/arena.o src/environment.o src/map.o src/fmt.o
+bin/repl: lifp/lexer.o lifp/parser.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o
+
+bin/test: lib/arena.o lifp/environment.o lib/map.o lib/list.o
 
 .PHONY: run
 run: bin/repl

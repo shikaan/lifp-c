@@ -94,7 +94,6 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
       tryAssign(result_ref_t,
                 arenaAllocate(self->arena, self->item_size * capacity),
                 self->values);
-      self->capacity = capacity;
 
       for (size_t i = 0; i < self->capacity; i++) {
         if (used[i]) {
@@ -102,6 +101,7 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
           genericMapSet(self, keys[i], destination);
         }
       }
+      self->capacity = capacity;
       return genericMapSet(self, key, value);
     }
   }
@@ -132,4 +132,19 @@ void *genericMapGet(generic_map_t *self, const char *key) {
   }
 
   return nullptr;
+}
+
+size_t genericMapSize(generic_map_t *self) {
+  if (self == nullptr) {
+    return 0;
+  }
+
+  size_t total_size = 0;
+
+  total_size += sizeof(generic_map_t);
+  total_size += sizeof(bool) * self->capacity;
+  total_size += sizeof(char) * MAX_KEY_LENGTH * self->capacity;
+  total_size += self->item_size * self->capacity;
+
+  return total_size;
 }

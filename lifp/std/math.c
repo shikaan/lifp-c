@@ -1,4 +1,4 @@
-#include "../result.h"
+#include "../../lib/result.h"
 #include "../value.h"
 #include <stdint.h>
 #include <stdlib.h>

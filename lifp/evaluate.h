@@ -1,6 +1,6 @@
 #pragma once
 
-#include "arena.h"
+#include "../lib/arena.h"
 #include "environment.h"
 #include "node.h"
 #include "value.h"

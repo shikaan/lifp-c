@@ -1,9 +1,9 @@
+#include "../lib/list.h"
+#include "../lib/map.h"
+#include "../lib/result.h"
 #include "environment.h"
 #include "evaluate.h"
-#include "list.h"
-#include "map.h"
 #include "node.h"
-#include "result.h"
 #include "value.h"
 #include <assert.h>
 #include <stddef.h>

@@ -1,8 +1,8 @@
-#include "../src/evaluate.h"
-#include "../src/arena.h"
-#include "../src/environment.h"
-#include "../src/list.h"
-#include "../src/node.h"
+#include "../lifp/evaluate.h"
+#include "../lib/arena.h"
+#include "../lib/list.h"
+#include "../lifp/environment.h"
+#include "../lifp/node.h"
 #include "test.h"
 #include "utils.h"
 #include <assert.h>

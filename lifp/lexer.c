@@ -7,11 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "arena.h"
-#include "list.h"
-#include "position.h"
-#include "result.h"
-
 typedef Result(token_t) result_token_t;
 result_token_t bufferToToken(size_t buffer_len, char buffer[static buffer_len],
                              position_t position) {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "arena.h"
+#include "../lib/arena.h"
+#include "../lib/result.h"
 #include "lexer.h"
 #include "node.h"
-#include "result.h"
 #include <stddef.h>
 #include <stdint.h>
 

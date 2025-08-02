@@ -1,7 +1,7 @@
-#include "../src/parser.h"
+#include "../lifp/parser.h"
 
-#include "./test.h"
-#include "./utils.h"
+#include "test.h"
+#include "utils.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>

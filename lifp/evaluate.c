@@ -1,10 +1,6 @@
 #include "evaluate.h"
-#include "arena.h"
 #include "environment.h"
-#include "list.h"
-#include "map.h"
 #include "node.h"
-#include "result.h"
 #include "value.h"
 
 // NOLINTNEXTLINE

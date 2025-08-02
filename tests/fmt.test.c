@@ -1,7 +1,7 @@
-#include "../src/fmt.h"
-#include "../src/arena.h"
-#include "../src/list.h"
-#include "../src/node.h"
+#include "../lifp/fmt.h"
+#include "../lib/arena.h"
+#include "../lib/list.h"
+#include "../lifp/node.h"
 #include "test.h"
 #include <assert.h>
 #include <stddef.h>

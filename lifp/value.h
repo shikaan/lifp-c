@@ -1,10 +1,10 @@
 #pragma once
 
-#include "arena.h"
-#include "list.h"
+#include "../lib/arena.h"
+#include "../lib/list.h"
+#include "../lib/result.h"
 #include "node.h"
 #include "position.h"
-#include "result.h"
 #include <stdint.h>
 
 typedef struct value_t value_t;

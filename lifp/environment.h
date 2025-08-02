@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arena.h"
-#include "map.h"
+#include "../lib/arena.h"
+#include "../lib/map.h"
 #include "value.h"
 
 typedef struct environment_t {

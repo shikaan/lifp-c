@@ -1,9 +1,6 @@
 #include "parser.h"
-#include "arena.h"
 #include "lexer.h"
-#include "list.h"
 #include "node.h"
-#include "result.h"
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>

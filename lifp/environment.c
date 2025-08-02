@@ -1,8 +1,6 @@
 #include "environment.h"
-#include "arena.h"
-#include "map.h"
 
-// NOLINTSTART
+// NOLINTBEGIN
 #include "std/core.c"
 #include "std/flow.c"
 #include "std/list.c"
@@ -22,13 +20,12 @@ result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
 
 #define setBuiltin(Label, Builtin)                                             \
   {                                                                            \
-    tryAssign(result_ref_t, arenaAllocate(arena, sizeof(value_t)), builtin);   \
-    builtin->type = VALUE_TYPE_BUILTIN;                                        \
-    builtin->value.builtin = Builtin;                                          \
-    mapSet(environment->values, (Label), builtin);                             \
+    builtin.type = VALUE_TYPE_BUILTIN;                                         \
+    builtin.value.builtin = (Builtin);                                         \
+    try(result_ref_t, mapSet(environment->values, (Label), &builtin));         \
   }
 
-  value_t *builtin = nullptr;
+  value_t builtin;
   setBuiltin(SUM, sum);
   setBuiltin(SUB, subtract);
   setBuiltin(MUL, multiply);

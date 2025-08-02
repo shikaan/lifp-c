@@ -157,3 +157,22 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value);
  * @returns {void*} Pointer to the value if found, NULL if not found
  */
 void *genericMapGet(generic_map_t *self, const char *key);
+
+/**
+ * Get the total memory size of a map including all allocated arrays.
+ * @name mapSize
+ * @param {Map(Type)*} Map - Pointer to the map
+ * @returns {size_t} Total size in bytes of the map structure and its data
+ * @example
+ *   size_t total_size = mapSize(map);
+ *   printf("Map uses %zu bytes\n", total_size);
+ */
+#define mapSize(Map) genericMapSize((generic_map_t *)(Map))
+
+/**
+ * Get the total memory size of a generic map including all allocated arrays.
+ * @name genericMapSize
+ * @param {generic_map_t*} self - Pointer to the map
+ * @returns {size_t} Total size in bytes of the map structure and its data
+ */
+size_t genericMapSize(generic_map_t *self);

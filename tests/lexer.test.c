@@ -1,6 +1,6 @@
-#include "../src/lexer.h"
-#include "./test.h"
-#include "./utils.h"
+#include "../lifp/lexer.h"
+#include "test.h"
+#include "utils.h"
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>

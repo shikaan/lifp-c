@@ -1,7 +1,4 @@
 #include "node.h"
-#include "arena.h"
-#include "list.h"
-#include "result.h"
 
 static constexpr size_t INITIAL_SIZE = 8;
 

@@ -1,10 +1,10 @@
-#include "../src/arena.h"
-#include "../src/environment.h"
-#include "../src/evaluate.h"
-#include "../src/fmt.h"
-#include "../src/lexer.h"
-#include "../src/node.h"
-#include "../src/parser.h"
+#include "../lib/arena.h"
+#include "../lifp/environment.h"
+#include "../lifp/evaluate.h"
+#include "../lifp/fmt.h"
+#include "../lifp/lexer.h"
+#include "../lifp/node.h"
+#include "../lifp/parser.h"
 #include <readline/history.h>  //TODO this is platform dependent
 #include <readline/readline.h> //TODO this is platform dependent
 #include <stddef.h>

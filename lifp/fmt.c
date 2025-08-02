@@ -1,6 +1,6 @@
-#include "list.h"
+#include "../lib/list.h"
+#include "../lib/result.h"
 #include "node.h"
-#include "result.h"
 #include "value.h"
 #include <stddef.h>
 #include <stdio.h>

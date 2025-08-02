@@ -1,6 +1,6 @@
 #pragma once
 
-#include "position.h"
+#include "../lifp/position.h"
 #include <stddef.h>
 
 typedef enum {

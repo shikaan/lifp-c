@@ -1,9 +1,9 @@
 #include "test.h"
 
-#include "../src/arena.h"
-#include "../src/evaluate.h"
-#include "../src/lexer.h"
-#include "../src/parser.h"
+#include "../lib/arena.h"
+#include "../lifp/evaluate.h"
+#include "../lifp/lexer.h"
+#include "../lifp/parser.h"
 #include <assert.h>
 #include <stddef.h>
 

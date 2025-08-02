@@ -1,5 +1,5 @@
-#include "../src/map.h"
-#include "../src/arena.h"
+#include "../lib/map.h"
+#include "../lib/arena.h"
 #include "test.h"
 #include <assert.h>
 #include <string.h>
@@ -106,6 +106,22 @@ void allocations() {
   arenaReset(test_arena);
 }
 
+void mapSizeTest() {
+  result_ref_t map_creation = mapCreate(int, test_arena, 8);
+  assert(map_creation.ok);
+  Map(int) *map = map_creation.value;
+
+  size_t expected_size = sizeof(generic_map_t) + 
+                        sizeof(bool) * 8 +  // used array
+                        sizeof(char) * MAX_KEY_LENGTH * 8 + // keys array
+                        sizeof(int) * 8; // values array
+
+  size_t actual_size = mapSize(map);
+  expectEqlSize(actual_size, expected_size, "map size calculation is correct");
+  
+  arenaReset(test_arena);
+}
+
 int main() {
   result_ref_t creation = arenaCreate(1024);
   assert(creation.ok);
@@ -114,6 +130,7 @@ int main() {
   suite(create);
   suite(getSet);
   suite(allocations);
+  suite(mapSizeTest);
 
   arenaDestroy(test_arena);
   return report();

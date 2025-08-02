@@ -1,5 +1,5 @@
-#include "../src/list.h"
-#include "./test.h"
+#include "../lib/list.h"
+#include "test.h"
 #include <assert.h>
 #include <stddef.h>
 

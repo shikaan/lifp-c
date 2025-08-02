@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arena.h"
-#include "list.h"
-#include "result.h"
+#include "../lib/arena.h"
+#include "../lib/list.h"
+#include "../lib/result.h"
 #include <stdint.h>
 
 constexpr char LPAREN = '(';
