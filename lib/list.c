@@ -54,24 +54,23 @@ void *genericListGet(const generic_list_t *self, size_t index) {
   return (byte_t *)self->data + (self->item_size * index);
 }
 
-result_ref_t genericListCopy(const generic_list_t *source,
-                             generic_list_t *destination) {
+result_void_t genericListCopy(const generic_list_t *source,
+                              generic_list_t *destination) {
   assert(source);
   assert(destination);
 
-  if (destination->capacity < source->count) {
-    throw(result_ref_t, LIST_ERROR_DESTINATION_TOO_SMALL,
-          "Destination too small. Capacity %lu, expected: %lu",
-          destination->capacity, source->count);
+  if (destination->item_size != source->item_size) {
+    throw(result_void_t, LIST_ERROR_INCOMPATIBLE_LISTS,
+          "Lists have incompatible item sizes");
   }
 
   destination->item_size = source->item_size;
 
   for (size_t i = 0; i < source->count; i++) {
     void *source_node = genericListGet(source, i);
-    try(result_ref_t, genericListAppend(destination, source_node));
+    try(result_void_t, genericListAppend(destination, source_node));
   }
 
   destination->count = source->count;
-  return ok(result_ref_t, destination);
+  return ok(result_void_t);
 }
