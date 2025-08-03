@@ -61,6 +61,7 @@ int main(void) {
 
   while (true) {
     arenaReset(ast_arena);
+    arenaReset(temp_arena);
     char *input = readline("> ");
 
     token_list_t *tokens = nullptr;
