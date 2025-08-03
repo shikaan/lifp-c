@@ -11,6 +11,8 @@ typedef struct environment_t {
 } environment_t;
 
 result_void_position_t sum(value_t *result, value_list_t *values);
-result_ref_t environmentCreate(arena_t *arena, environment_t *parent);
+
+result_ref_t environmentCreate(environment_t *parent);
+void environmentDestroy(environment_t **self_ref);
 
 value_t *environmentResolveSymbol(environment_t *self, const char *symbol);

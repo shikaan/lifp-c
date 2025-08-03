@@ -57,8 +57,7 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
   }
 
   environment_t *environment = nullptr;
-  tryAssign(result_value_ref_t,
-            environmentCreate(parent_environment->arena, parent_environment),
+  tryAssign(result_value_ref_t, environmentCreate(parent_environment),
             environment, closure_value.position);
 
   // Populate the closure with the values, skipping the closure symbol
@@ -71,6 +70,7 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
   value_t *reduced = nullptr;
   tryAssign(result_value_ref_t, evaluate(arena, &closure.form, environment),
             reduced, closure_value.position);
+  environmentDestroy(&environment);
   return ok(result_value_ref_t, reduced);
 }
 

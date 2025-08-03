@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 static arena_t *test_ast_arena;
-static arena_t *test_vm_arena;
+static arena_t *test_temp_arena;
 
 result_value_ref_t execute(const char *input) {
   char input_copy[1024];
@@ -19,7 +19,7 @@ result_value_ref_t execute(const char *input) {
   result_value_ref_t last_result;
 
   environment_t *env = nullptr;
-  tryAssertAssign(environmentCreate(test_vm_arena, nullptr), env);
+  tryAssertAssign(environmentCreate(nullptr), env);
 
   while (line != NULL) {
     token_list_t *tokens = nullptr;
@@ -31,7 +31,7 @@ result_value_ref_t execute(const char *input) {
     tryAssertAssign(parse(test_ast_arena, tokens, &offset, &depth),
                     syntax_tree);
 
-    result_value_ref_t reduction = evaluate(test_ast_arena, syntax_tree, env);
+    result_value_ref_t reduction = evaluate(test_temp_arena, syntax_tree, env);
     assert(reduction.code == RESULT_OK);
     last_result = reduction;
 
@@ -39,13 +39,13 @@ result_value_ref_t execute(const char *input) {
     arenaReset(test_ast_arena);
   }
 
-  arenaReset(test_vm_arena);
+  arenaReset(test_temp_arena);
   return last_result;
 }
 
 int main() {
   tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_ast_arena);
-  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_vm_arena);
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_temp_arena);
 
   case("number");
   result_value_ref_t reduction = execute("1");

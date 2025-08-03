@@ -375,7 +375,7 @@ void condSpecialForm() {
 
 int main(void) {
   tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
-  tryAssertAssign(environmentCreate(test_arena, nullptr), environment);
+  tryAssertAssign(environmentCreate(nullptr), environment);
 
   suite(atoms);
   suite(listOfElements);
@@ -389,6 +389,7 @@ int main(void) {
   suite(letSpecialForm);
   suite(condSpecialForm);
 
+  environmentDestroy(&environment);
   arenaDestroy(test_arena);
   return report();
 }

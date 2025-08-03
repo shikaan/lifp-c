@@ -57,7 +57,7 @@ static inline result_ref_t valueCreate(arena_t *arena, value_type_t type) {
 
   if (value->type == VALUE_TYPE_CLOSURE) {
     value_list_t *list = nullptr;
-    tryAssign(result_ref_t, listCreate(value_t, arena, VALUE_LIST_INITIAL_SIZE),
+    tryAssign(result_ref_t, listCreate(node_t, arena, VALUE_LIST_INITIAL_SIZE),
               list);
     bytewiseCopy(&value->value.closure.arguments, list, sizeof(value_list_t));
 

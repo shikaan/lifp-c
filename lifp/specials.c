@@ -20,15 +20,13 @@ result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a symbol and a form. Example: %s", DEFINE,
-              DEFINE_EXAMPLE);
+              "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
   }
 
   node_t key = listGet(node_t, nodes, 1);
   if (key.type != NODE_TYPE_SYMBOL) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a symbol and a form. Example: %s", DEFINE,
-              DEFINE_EXAMPLE);
+              "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
   }
 
   // Perform reduction in the AST memory
@@ -57,18 +55,18 @@ const char *FUNCTION_EXAMPLE = "(fn (a b) (+ a b))";
 const char *FUNCTION = "fn";
 result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
   (void)env;
-  assert(nodes->count > 0); // fn* is always there
+  assert(nodes->count > 0); // fn is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a binding list and a form. Example: %s", FUNCTION,
+              "%s requires a binding list and a form. %s", FUNCTION,
               FUNCTION_EXAMPLE);
   }
 
   node_t arguments = listGet(node_t, nodes, 1);
   if (arguments.type != NODE_TYPE_LIST) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, arguments.position,
-              "%s requires a binding list and a form. Example: %s", FUNCTION,
+              "%s requires a binding list and a form. %s", FUNCTION,
               FUNCTION_EXAMPLE);
   }
 
@@ -98,19 +96,19 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list of symbol-form assignments. Example: %s", LET,
+              "%s requires a list of symbol-form assignments. %s", LET,
               LET_EXAMPLE);
   }
 
   node_t couples = listGet(node_t, nodes, 1);
   if (couples.type != NODE_TYPE_LIST) {
     throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couples.position,
-              "%s requires a list of symbol-form assignments. Example: %s", LET,
+              "%s requires a list of symbol-form assignments. %s", LET,
               LET_EXAMPLE);
   }
 
   environment_t *local_env = nullptr;
-  tryAssign(result_value_ref_t, environmentCreate(env->arena, env), local_env,
+  tryAssign(result_value_ref_t, environmentCreate(env), local_env,
             couples.position);
 
   for (size_t i = 0; i < couples.value.list.count; i++) {
@@ -118,15 +116,15 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
 
     if (couple.type != NODE_TYPE_LIST || couple.value.list.count != 2) {
       throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couple.position,
-                "%s requires a list of symbol-form assignments. Example: %s",
-                LET, LET_EXAMPLE);
+                "%s requires a list of symbol-form assignments. %s", LET,
+                LET_EXAMPLE);
     }
 
     node_t symbol = listGet(node_t, &couple.value.list, 0);
     if (symbol.type != NODE_TYPE_SYMBOL) {
       throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, symbol.position,
-                "%s requires a list of symbol-form assignments. Example: %s",
-                LET, LET_EXAMPLE);
+                "%s requires a list of symbol-form assignments. %s", LET,
+                LET_EXAMPLE);
     }
 
     node_t body = listGet(node_t, &couple.value.list, 1);
@@ -143,6 +141,7 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
   tryAssign(result_value_ref_t, evaluate(nodes->arena, &form, local_env),
             result);
 
+  environmentDestroy(&local_env);
   return ok(result_value_ref_t, result);
 }
 
@@ -156,8 +155,8 @@ result_value_ref_t cond(environment_t *env, const node_list_t *nodes) {
     node_t node = listGet(node_t, nodes, i);
     if (node.type != NODE_TYPE_LIST || node.value.list.count != 2) {
       throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
-                "%s requires a list of condition-form assignments. Example: %s",
-                COND, LET_EXAMPLE);
+                "%s requires a list of condition-form assignments. %s", COND,
+                LET_EXAMPLE);
     }
 
     node_t condition = listGet(node_t, &node.value.list, 0);
@@ -166,8 +165,7 @@ result_value_ref_t cond(environment_t *env, const node_list_t *nodes) {
 
     if (result->type != VALUE_TYPE_BOOLEAN) {
       throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
-                "Conditions should resolve to a boolean. Example: %s",
-                LET_EXAMPLE);
+                "Conditions should resolve to a boolean. %s", LET_EXAMPLE);
     }
 
     if (result->value.boolean) {

@@ -8,13 +8,20 @@
 // NOLINTEND
 
 #include "value.h"
+#include <assert.h>
 
-result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
+constexpr size_t ENVIRONMENT_MAX_SIZE = (long)32 * 1024;
+
+result_ref_t environmentCreate(environment_t *parent) {
+  arena_t *arena = nullptr;
+  tryAssign(result_ref_t, arenaCreate(ENVIRONMENT_MAX_SIZE), arena);
+
   environment_t *environment = nullptr;
   tryAssign(result_ref_t, arenaAllocate(arena, sizeof(environment_t)),
             environment);
-  environment->parent = parent;
+
   environment->arena = arena;
+  environment->parent = parent;
 
   tryAssign(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
 
@@ -49,7 +56,16 @@ result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   return ok(result_ref_t, environment);
 }
 
+void environmentDestroy(environment_t **self) {
+  assert(self && *self);
+  // The environment is allocated on its own arena. This frees all the resources
+  arenaDestroy((*self)->arena);
+  // Setting the reference to null for good measure
+  *(self) = nullptr;
+}
+
 value_t *environmentResolveSymbol(environment_t *self, const char *symbol) {
+  assert(self);
   const auto result = mapGet(value_t, self->values, symbol);
   if (!result && self->parent) {
     return environmentResolveSymbol(self->parent, symbol);
