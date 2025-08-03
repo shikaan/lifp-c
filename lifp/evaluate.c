@@ -1,5 +1,6 @@
 #include "evaluate.h"
 #include "environment.h"
+#include "error.h"
 #include "node.h"
 #include "value.h"
 
@@ -30,15 +31,15 @@ static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
   // Prepare argument list with all values except for the symbol
   value_list_t *arguments = nullptr;
   tryAssign(result_value_ref_t,
-            listCreate(value_t, arena, result->value.list.count - 1),
-            arguments);
+            listCreate(value_t, arena, result->value.list.count - 1), arguments,
+            builtin_value.position);
 
   for (size_t i = 1; i < result->value.list.count; i++) {
     value_t argument = listGet(value_t, &result->value.list, i);
     try(result_value_ref_t, listAppend(value_t, arguments, &argument));
   }
 
-  try(result_value_ref_t, builtin(result, arguments));
+  try(result_value_ref_t, builtin(result, arguments), builtin_value.position);
   return ok(result_value_ref_t, result);
 }
 
@@ -49,19 +50,16 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
   closure_t closure = closure_value.value.closure;
 
   if (result->value.list.count - 1 != closure.arguments.count) {
-    error_t error = {
-        .kind = ERROR_KIND_UNEXPECTED_ARITY,
-        .payload.unexpected_arity.actual = result->value.list.count - 1,
-        .payload.unexpected_arity.expected = closure.arguments.count,
-        .position = closure_value.position,
-        .example = nullptr};
-    return error(result_value_ref_t, error);
+    throwMeta(result_value_ref_t, ERROR_CODE_TYPE_UNEXPECTED_ARITY,
+              closure_value.position,
+              "Unexpected arity. Expected %lu arguments, got %lu.",
+              result->value.list.count - 1, closure.arguments.count);
   }
 
   environment_t *environment = nullptr;
   tryAssign(result_value_ref_t,
             environmentCreate(parent_environment->arena, parent_environment),
-            environment);
+            environment, closure_value.position);
 
   // Populate the closure with the values, skipping the closure symbol
   for (size_t i = 1; i < result->value.list.count; i++) {
@@ -72,8 +70,28 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
 
   value_t *reduced = nullptr;
   tryAssign(result_value_ref_t, evaluate(arena, &closure.form, environment),
-            reduced);
+            reduced, closure_value.position);
   return ok(result_value_ref_t, reduced);
+}
+
+static result_value_ref_t invokeSpecialForm(value_t *result, node_t form_node,
+                                            const node_list_t *nodes,
+                                            environment_t *environment) {
+  if (form_node.value.symbol[0] == 'd') {
+    tryAssign(result_value_ref_t, define(environment, nodes), result,
+              form_node.position);
+  } else if (form_node.value.symbol[0] == 'f') {
+    tryAssign(result_value_ref_t, function(environment, nodes), result,
+              form_node.position);
+  } else if (form_node.value.symbol[0] == 'l') {
+    tryAssign(result_value_ref_t, let(environment, nodes), result,
+              form_node.position);
+  } else {
+    tryAssign(result_value_ref_t, cond(environment, nodes), result,
+              form_node.position);
+  }
+
+  return ok(result_value_ref_t, result);
 }
 
 result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
@@ -81,7 +99,8 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
   const auto list = syntax_tree->value.list;
 
   value_t *result = nullptr;
-  tryAssign(result_value_ref_t, valueCreate(arena, VALUE_TYPE_LIST), result);
+  tryAssign(result_value_ref_t, valueCreate(arena, VALUE_TYPE_LIST), result,
+            syntax_tree->position);
   result->position.column = syntax_tree->position.column;
   result->position.line = syntax_tree->position.line;
 
@@ -91,24 +110,16 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
 
   auto first_node = listGet(node_t, &list, 0);
   if (isSpecialFormNode(first_node)) {
-    if (first_node.value.symbol[0] == 'd') {
-      tryAssign(result_value_ref_t, define(environment, &list), result);
-    } else if (first_node.value.symbol[0] == 'f') {
-      tryAssign(result_value_ref_t, function(environment, &list), result);
-    } else if (first_node.value.symbol[0] == 'l') {
-      tryAssign(result_value_ref_t, let(environment, &list), result);
-    } else {
-      tryAssign(result_value_ref_t, cond(environment, &list), result);
-    }
-
-    return ok(result_value_ref_t, result);
+    return invokeSpecialForm(result, first_node, &list, environment);
   }
 
   for (size_t i = 0; i < list.count; i++) {
     auto node = listGet(node_t, &list, i);
     value_t *reduced = nullptr;
-    tryAssign(result_value_ref_t, evaluate(arena, &node, environment), reduced);
-    try(result_value_ref_t, listAppend(value_t, &result->value.list, reduced));
+    tryAssign(result_value_ref_t, evaluate(arena, &node, environment), reduced,
+              node.position);
+    try(result_value_ref_t, listAppend(value_t, &result->value.list, reduced),
+        syntax_tree->position);
   }
 
   value_t first_value = listGet(value_t, &result->value.list, 0);
@@ -127,7 +138,8 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
 result_value_ref_t evaluate(arena_t *arena, node_t *syntax_tree,
                             environment_t *environment) {
   value_t *value = nullptr;
-  tryAssign(result_value_ref_t, valueCreate(arena, VALUE_TYPE_INTEGER), value);
+  tryAssign(result_value_ref_t, valueCreate(arena, VALUE_TYPE_INTEGER), value,
+            syntax_tree->position);
   value->position.column = syntax_tree->position.column;
   value->position.line = syntax_tree->position.line;
 
@@ -152,10 +164,10 @@ result_value_ref_t evaluate(arena_t *arena, node_t *syntax_tree,
         environmentResolveSymbol(environment, syntax_tree->value.symbol);
 
     if (!resolved_value) {
-      error_t error = {.kind = ERROR_KIND_SYMBOL_NOT_FOUND,
-                       .position = syntax_tree->position,
-                       .payload.symbol_not_found = syntax_tree->value.symbol};
-      return error(result_value_ref_t, error);
+      throwMeta(result_value_ref_t, ERROR_CODE_REFERENCE_SYMBOL_NOT_FOUND,
+                syntax_tree->position,
+                "Symbol '%s' cannot be found in the current environment",
+                syntax_tree->value.symbol);
     }
 
     value->type = resolved_value->type;

@@ -28,7 +28,7 @@ result_void_t nodeCopy(const node_t *source, node_t *destination) {
     destination->value = source->value;
   }
 
-  return (result_void_t){.ok = true};
+  return ok(result_void_t);
 }
 
 result_ref_t nodeClone(arena_t *arena, const node_t *source) {

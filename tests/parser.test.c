@@ -1,4 +1,5 @@
 #include "../lifp/parser.h"
+#include "../lifp/error.h"
 
 #include "test.h"
 #include "utils.h"
@@ -75,9 +76,9 @@ void atoms(void) {
     token_list_t *list = makeTokenList(test_arena, &cases[i].input, 1);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(test_arena, list, &offset, &depth);
-    assert(result.ok);
-    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+    node_t *node = nullptr;
+    tryAssertAssign(parse(test_arena, list, &offset, &depth), node);
+    expect(eqlNode(node, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
   }
 }
@@ -123,9 +124,9 @@ void unary(void) {
         makeTokenList(test_arena, cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(test_arena, list, &offset, &depth);
-    assert(result.ok);
-    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+    node_t *node = nullptr;
+    tryAssertAssign(parse(test_arena, list, &offset, &depth), node);
+    expect(eqlNode(node, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
   }
 }
@@ -162,9 +163,9 @@ void complex(void) {
         makeTokenList(test_arena, cases[i].input, cases[i].length);
     size_t depth = 0;
     size_t offset = 0;
-    auto result = parse(test_arena, list, &offset, &depth);
-    assert(result.ok);
-    expect(eqlNode(result.value, &cases[i].expected), cases[i].name,
+    node_t *node = nullptr;
+    tryAssertAssign(parse(test_arena, list, &offset, &depth), node);
+    expect(eqlNode(node, &cases[i].expected), cases[i].name,
            "Expected equal nodes");
   }
 }
@@ -176,18 +177,19 @@ void errors() {
 
   token_t unbalanced_right[4] = {lparen, lparen, integer, rparen};
   token_t unbalanced_left[4] = {lparen, integer, rparen, rparen};
+  token_t dangling[4] = {lparen, integer, rparen, integer};
 
   struct {
     const char *name;
     size_t length;
     token_t *input;
-    error_kind_t expected;
+    int expected;
   } cases[] = {
-      {"no tokens", 0, {}, ERROR_KIND_INVALID_EXPRESSION},
       {"unbalanced parentheses right", 4, unbalanced_right,
-       ERROR_KIND_UNBALANCED_PARENTHESES},
+       ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES},
       {"unbalanced parentheses left", 4, unbalanced_left,
-       ERROR_KIND_INVALID_EXPRESSION},
+       ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES},
+      {"dangling symbols", 4, dangling, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN},
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
@@ -196,16 +198,12 @@ void errors() {
     size_t depth = 0;
     size_t offset = 0;
     auto result = parse(test_arena, list, &offset, &depth);
-    assert(!result.ok);
-    expectEqlUint(result.error.kind, cases[i].expected,
-                  "returns correct exception");
+    expectEqlInt(result.code, cases[i].expected, cases[i].name);
   }
 }
 
 int main(void) {
-  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
-  assert(allocation.ok);
-  test_arena = allocation.value;
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
 
   suite(atoms);
   suite(unary);

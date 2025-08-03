@@ -43,6 +43,7 @@
 #pragma once
 
 #include "arena.h"
+#include "result.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -51,6 +52,11 @@
  * @name MAX_KEY_LENGTH
  */
 constexpr size_t MAX_KEY_LENGTH = 32;
+
+typedef enum {
+  MAP_ERROR_ALLOCATION = ARENA_ERROR_OUT_OF_SPACE,
+  MAP_ERROR_INVALID_KEY,
+} map_error_t;
 
 /**
  * Generic map structure macro.
@@ -147,7 +153,7 @@ result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
  * @param {void*} value - Pointer to the value to store
  * @returns {result_ref_t} Result indicating success or allocation error
  */
-result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value);
+result_void_t genericMapSet(generic_map_t *self, const char *key, void *value);
 
 /**
  * Get a value from a generic map by key.

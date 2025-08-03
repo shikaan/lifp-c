@@ -19,11 +19,9 @@ result_ref_t environmentCreate(arena_t *arena, environment_t *parent) {
   tryAssign(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
 
 #define setBuiltin(Label, Builtin)                                             \
-  {                                                                            \
-    builtin.type = VALUE_TYPE_BUILTIN;                                         \
-    builtin.value.builtin = (Builtin);                                         \
-    try(result_ref_t, mapSet(environment->values, (Label), &builtin));         \
-  }
+  builtin.type = VALUE_TYPE_BUILTIN;                                           \
+  builtin.value.builtin = (Builtin);                                           \
+  try(result_ref_t, mapSet(environment->values, (Label), &builtin));
 
   value_t builtin;
   setBuiltin(SUM, sum);

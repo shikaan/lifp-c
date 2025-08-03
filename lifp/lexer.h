@@ -3,6 +3,7 @@
 #include "../lib/arena.h"
 #include "../lib/list.h"
 #include "../lib/result.h"
+#include "position.h"
 #include <stdint.h>
 
 constexpr char LPAREN = '(';
@@ -31,6 +32,6 @@ typedef struct {
 } token_t;
 
 typedef List(token_t) token_list_t;
-typedef Result(token_list_t *) result_token_list_ref_t;
+typedef Result(token_list_t *, position_t) result_token_list_ref_t;
 
 result_token_list_ref_t tokenize(arena_t *arena, const char *source);

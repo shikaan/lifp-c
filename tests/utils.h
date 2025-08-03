@@ -13,21 +13,20 @@
 
 #define tryAssertAssign(Action, Destination)                                   \
   auto _concat(result, __LINE__) = (Action);                                   \
-  assert(_concat(result, __LINE__).ok);                                        \
+  assert(_concat(result, __LINE__).code == RESULT_OK);                         \
   (Destination) = (_concat(result, __LINE__).value);
 
 #define tryAssert(Action)                                                      \
   auto _concat(result, __LINE__) = (Action);                                   \
-  assert(_concat(result, __LINE__).ok);
+  assert(_concat(result, __LINE__).code == RESULT_OK);
 
 static inline token_list_t *
 makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
-  result_ref_t allocation = listCreate(token_t, arena, capacity);
-  assert(allocation.ok);
-  token_list_t *list = allocation.value;
+  token_list_t *list = nullptr;
+  tryAssertAssign(listCreate(token_t, arena, capacity), list);
+
   for (size_t i = 0; i < capacity; i++) {
-    allocation = listAppend(token_t, list, &elements[i]);
-    assert(allocation.ok);
+    tryAssert(listAppend(token_t, list, &elements[i]));
   }
   return list;
 }

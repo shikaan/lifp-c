@@ -3,6 +3,7 @@
 #include "../lib/list.h"
 #include "../lifp/node.h"
 #include "test.h"
+#include "utils.h"
 #include <assert.h>
 #include <stddef.h>
 
@@ -39,38 +40,31 @@ void values() {
 
   offset = 0;
   arenaReset(test_arena);
-  result_ref_t allocation = valueCreate(test_arena, VALUE_TYPE_LIST);
-  assert(allocation.ok);
-  value_t *list = allocation.value;
+  value_t *list = nullptr;
+  tryAssertAssign(valueCreate(test_arena, VALUE_TYPE_LIST), list);
 
-  allocation = listAppend(value_t, &list->value.list, &integer);
-  assert(allocation.ok);
-  allocation = listAppend(value_t, &list->value.list, &nil);
-  assert(allocation.ok);
+  tryAssert(listAppend(value_t, &list->value.list, &integer));
+  tryAssert(listAppend(value_t, &list->value.list, &nil));
 
   formatValue(list, size, buffer, &offset);
   expectEqlString(buffer, "(123 nil)", 10, "formats lists");
 
   offset = 0;
   arenaReset(test_arena);
-  allocation = valueCreate(test_arena, VALUE_TYPE_CLOSURE);
-  assert(allocation.ok);
-  value_t *closure = allocation.value;
+  value_t *closure = nullptr;
+  tryAssertAssign(valueCreate(test_arena, VALUE_TYPE_CLOSURE), closure);
 
-  allocation = nodeCreate(test_arena, NODE_TYPE_SYMBOL);
-  assert(allocation.ok);
-  node_t *symbol = allocation.value;
+  node_t *symbol = nullptr;
+  tryAssertAssign(nodeCreate(test_arena, NODE_TYPE_SYMBOL), symbol);
   symbol->value.symbol[0] = 'a';
   symbol->value.symbol[1] = 0;
 
-  allocation = listAppend(node_t, &closure->value.closure.arguments, symbol);
-  assert(allocation.ok);
+  tryAssert(listAppend(node_t, &closure->value.closure.arguments, symbol));
 
   closure->value.closure.form.type = NODE_TYPE_LIST;
 
-  allocation =
-      listAppend(node_t, &closure->value.closure.form.value.list, symbol);
-  assert(allocation.ok);
+  tryAssert(
+      listAppend(node_t, &closure->value.closure.form.value.list, symbol));
 
   formatValue(list, size, buffer, &offset);
   expectEqlString(buffer, "(fn* (a) (a))", 10, "formats lambdas");
@@ -80,19 +74,14 @@ void errors() {
   const int size = 128;
   char buffer[size];
   int offset = 0;
-
-  char symbol[10] = "not-found";
-  error_t error = {
-      .kind = ERROR_KIND_SYMBOL_NOT_FOUND,
-      .payload.symbol_not_found = symbol,
-      .position.line = 1,
-      .position.column = 10,
-  };
+  position_t position = {1, 10};
+  message_t message = "message";
 
   const char list_buffer[23] = "(1 2 3 4 not-found 10)";
-  formatError(&error, list_buffer, "file.lifp", size, buffer, &offset);
+  formatErrorMessage(message, position, "file.lifp", list_buffer, size, buffer,
+                     &offset);
   expectEqlString(buffer,
-                  "Error: symbol 'not-found' not found\n"
+                  "Error: message\n"
                   "\n"
                   "  (1 2 3 4 not-found 10)\n"
                   "           ^\n"
@@ -100,22 +89,24 @@ void errors() {
                   95, "puts caret in the right place (list)");
 
   offset = 0;
-  error.position.column = 1;
+  position = (position_t){1, 1};
   const char atom_buffer[10] = "not-found";
-  formatError(&error, atom_buffer, "file.lifp", size, buffer, &offset);
+  formatErrorMessage(message, position, "file.lifp", atom_buffer, size, buffer,
+                     &offset);
   expectEqlString(buffer,
-                  "Error: symbol 'not-found' not found\n"
+                  "Error: message\n"
                   "\n"
                   "  not-found\n"
                   "  ^\n"
                   "  at file.lifp:1:1",
                   72, "puts caret in the right place (atom)");
   offset = 0;
-  error.position.column = 2;
+  position = (position_t){1, 2};
   const char init_list_buffer[12] = "(not-found)";
-  formatError(&error, init_list_buffer, "file.lifp", size, buffer, &offset);
+  formatErrorMessage(message, position, "file.lifp", init_list_buffer, size,
+                     buffer, &offset);
   expectEqlString(buffer,
-                  "Error: symbol 'not-found' not found\n"
+                  "Error: message\n"
                   "\n"
                   "  (not-found)\n"
                   "   ^\n"
@@ -124,10 +115,7 @@ void errors() {
 }
 
 int main() {
-  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
-  assert(allocation.ok);
-  test_arena = allocation.value;
-
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
   suite(values);
   suite(errors);
   return report();

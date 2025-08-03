@@ -6,17 +6,17 @@ all: clean bin/repl
 lib/list.o: lib/arena.o
 lib/map.o: lib/arena.o
 
-lifp/lexer.o: lifp/position.o lib/list.o lib/arena.o
-lifp/parser.o: lifp/lexer.o lifp/position.o lib/list.o lib/arena.o lifp/node.o
+lifp/lexer.o: lib/list.o lib/arena.o
+lifp/parser.o: lifp/lexer.o lib/list.o lib/arena.o lifp/node.o
 lifp/node.o: lib/arena.o
 lifp/environment.o: lib/arena.o lib/map.o
 lifp/evaluate.o: lib/arena.o lifp/environment.o lib/map.o
 
-tests/lexer.test: lifp/lexer.o lifp/position.o lib/list.o lib/arena.o
-tests/parser.test: lifp/parser.o lifp/lexer.o lifp/position.o lib/list.o lifp/node.o lib/arena.o
+tests/lexer.test: lifp/lexer.o lib/list.o lib/arena.o
+tests/parser.test: lifp/parser.o lifp/lexer.o lib/list.o lifp/node.o lib/arena.o
 tests/list.test: lib/list.o lib/arena.o
 tests/arena.test: lib/arena.o
-tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/position.o lifp/environment.o lib/map.o
+tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/environment.o lib/map.o
 tests/map.test: lib/arena.o lib/map.o
 tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o
 
@@ -36,13 +36,19 @@ clean:
 	rm -rf **/*.o **/*.dSYM main *.dSYM *.plist
 	rm -f tests/*.test
 
-.PHONY: test
-test: tests/lexer.test tests/parser.test tests/list.test tests/arena.test tests/evaluate.test tests/map.test tests/integration.test tests/fmt.test
+.PHONY: lifp-test
+lifp-test: tests/lexer.test tests/parser.test tests/evaluate.test tests/integration.test tests/fmt.test
 	tests/lexer.test
 	tests/parser.test
-	tests/list.test
-	tests/arena.test
 	tests/evaluate.test
-	tests/map.test
 	tests/fmt.test
 	tests/integration.test
+
+.PHONY: lib-test
+lib-test: tests/arena.test tests/list.test tests/map.test 
+	tests/arena.test
+	tests/list.test
+	tests/map.test
+
+.PHONY: test
+test: lifp-test lib-test

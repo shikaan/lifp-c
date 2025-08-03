@@ -4,6 +4,7 @@
 #include "../lib/list.h"
 #include "../lib/result.h"
 #include "lexer.h"
+#include "position.h"
 #include <stddef.h>
 
 typedef struct node_t node_t;

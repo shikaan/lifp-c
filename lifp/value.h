@@ -9,8 +9,10 @@
 
 typedef struct value_t value_t;
 typedef List(value_t) value_list_t;
-typedef Result(value_t *) result_value_ref_t;
-typedef result_void_t (*builtin_t)(value_t *result, value_list_t *nodes);
+typedef Result(value_t *, position_t) result_value_ref_t;
+typedef ResultVoid(position_t) result_void_position_t;
+typedef result_void_position_t (*builtin_t)(value_t *result,
+                                            value_list_t *nodes);
 
 typedef enum {
   VALUE_TYPE_BOOLEAN,
@@ -63,7 +65,7 @@ static inline result_ref_t valueCreate(arena_t *arena, value_type_t type) {
     // require less memory. Can we clean this up?
     node_t *form = nullptr;
     tryAssign(result_ref_t, nodeCreate(arena, NODE_TYPE_LIST), form);
-    value->value.closure.form = *form;
+    bytewiseCopy(&value->value.closure.form, form, sizeof(node_t));
   }
 
   return ok(result_ref_t, value);

@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "error.h"
 #include "lexer.h"
 #include "node.h"
 #include <assert.h>
@@ -9,7 +10,8 @@ result_node_ref_t parseAtom(arena_t *arena, token_t token) {
   assert(token.type == TOKEN_TYPE_INTEGER || token.type == TOKEN_TYPE_SYMBOL);
 
   node_t *node = nullptr;
-  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_INTEGER), node);
+  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_INTEGER), node,
+            token.position);
 
   node->position = token.position;
 
@@ -38,7 +40,7 @@ result_node_ref_t parseAtom(arena_t *arena, token_t token) {
     }
 
     node->type = NODE_TYPE_SYMBOL;
-    bytewiseCopy(node->value.symbol, token.value.symbol, SYMBOL_SIZE);
+    memcpy(node->value.symbol, token.value.symbol, SYMBOL_SIZE);
     return ok(result_node_ref_t, node);
   case TOKEN_TYPE_LPAREN:
   case TOKEN_TYPE_RPAREN:
@@ -49,26 +51,30 @@ result_node_ref_t parseAtom(arena_t *arena, token_t token) {
 
 result_node_ref_t parseList(arena_t *arena, const token_list_t *tokens,
                             size_t *offset, size_t *depth) {
-  node_t *node = nullptr;
-  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_LIST), node);
+  token_t first_token = listGet(token_t, tokens, *offset);
 
-  token_t token = listGet(token_t, tokens, *offset);
-  node->position = token.position;
+  node_t *node = nullptr;
+  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_LIST), node,
+            first_token.position);
+
+  node->position = first_token.position;
   node->type = NODE_TYPE_LIST;
   (*depth)++;
   (*offset)++;
 
   for (; *offset < tokens->capacity; (*offset)++) {
-    const token_t tok = listGet(token_t, tokens, *offset);
-    if (tok.type == TOKEN_TYPE_RPAREN) {
+    const token_t token = listGet(token_t, tokens, *offset);
+    if (token.type == TOKEN_TYPE_RPAREN) {
       (*depth)--;
       break;
     }
 
     node_t *sub_node = nullptr;
-    tryAssign(result_node_ref_t, parse(arena, tokens, offset, depth), sub_node);
+    tryAssign(result_node_ref_t, parse(arena, tokens, offset, depth), sub_node,
+              token.position);
 
-    try(result_node_ref_t, listAppend(node_t, &node->value.list, sub_node));
+    try(result_node_ref_t, listAppend(node_t, &node->value.list, sub_node),
+        token.position);
   }
 
   return ok(result_node_ref_t, node);
@@ -77,8 +83,7 @@ result_node_ref_t parseList(arena_t *arena, const token_list_t *tokens,
 result_node_ref_t parse(arena_t *arena, const token_list_t *tokens,
                         size_t *offset, size_t *depth) {
   if (tokens->count == 0) {
-    error_t exception = {.kind = ERROR_KIND_INVALID_EXPRESSION};
-    return error(result_node_ref_t, exception);
+    return ok(result_node_ref_t, nullptr);
   }
 
   const token_t first_token = listGet(token_t, tokens, *offset);
@@ -90,14 +95,21 @@ result_node_ref_t parse(arena_t *arena, const token_list_t *tokens,
 
     // There are left parens that don't match right parens
     if (*depth != initial_depth) {
-      error_t exception = {.kind = ERROR_KIND_UNBALANCED_PARENTHESES};
-      return error(result_node_ref_t, exception);
+      throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
+                first_token.position, "Unbalanced parentheses");
     }
 
     // There are dangling chars after top level list
     if (initial_depth == 0 && *offset != (tokens->count - 1)) {
-      error_t exception = {.kind = ERROR_KIND_INVALID_EXPRESSION};
-      return error(result_node_ref_t, exception);
+      const token_t last_token = listGet(token_t, tokens, *offset + 1);
+
+      if (last_token.type == TOKEN_TYPE_RPAREN) {
+        throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
+                  first_token.position, "Unbalanced parentheses");
+      }
+
+      throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+                last_token.position, "Unexpected token at the end input");
     }
 
     return parse_list_result;

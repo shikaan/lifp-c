@@ -1,4 +1,5 @@
 #include "test.h"
+#include "utils.h"
 
 #include "../lib/arena.h"
 #include "../lifp/evaluate.h"
@@ -17,23 +18,21 @@ result_value_ref_t execute(const char *input) {
   char *line = strtok(input_copy, "\n");
   result_value_ref_t last_result;
 
-  result_ref_t allocation = environmentCreate(test_vm_arena, nullptr);
-  assert(allocation.ok);
-  environment_t *env = allocation.value;
+  environment_t *env = nullptr;
+  tryAssertAssign(environmentCreate(test_vm_arena, nullptr), env);
 
   while (line != NULL) {
-    result_token_list_ref_t tokenization = tokenize(test_ast_arena, line);
-    assert(tokenization.ok);
-    token_list_t *tokens = tokenization.value;
+    token_list_t *tokens = nullptr;
+    tryAssertAssign(tokenize(test_ast_arena, line), tokens);
 
     size_t offset = 0;
     size_t depth = 0;
-    result_node_ref_t parsing = parse(test_ast_arena, tokens, &offset, &depth);
-    assert(parsing.ok);
-    node_t *syntax_tree = parsing.value;
+    node_t *syntax_tree = nullptr;
+    tryAssertAssign(parse(test_ast_arena, tokens, &offset, &depth),
+                    syntax_tree);
 
     result_value_ref_t reduction = evaluate(test_ast_arena, syntax_tree, env);
-    assert(reduction.ok);
+    assert(reduction.code == RESULT_OK);
     last_result = reduction;
 
     line = strtok(nullptr, "\n");
@@ -45,13 +44,8 @@ result_value_ref_t execute(const char *input) {
 }
 
 int main() {
-  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
-  assert(allocation.ok);
-  test_ast_arena = allocation.value;
-
-  allocation = arenaCreate((size_t)(1048 * 1024));
-  assert(allocation.ok);
-  test_vm_arena = allocation.value;
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_ast_arena);
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_vm_arena);
 
   case("number");
   result_value_ref_t reduction = execute("1");

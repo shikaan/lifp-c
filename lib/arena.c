@@ -16,8 +16,8 @@ static result_ref_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
-    const error_t exception = {.kind = ERROR_KIND_ALLOCATION};
-    return error(result_ref_t, exception);
+    throw(result_ref_t, ARENA_ERROR_MALLOC_ERROR,
+          "Unable to allocate size: %lu", size);
   }
 
   return ok(result_ref_t, ptr);
@@ -44,8 +44,9 @@ result_ref_t arenaAllocate(arena_t *self, size_t size) {
   size_t aligned_size = (size + 7U) & ~7U;
 
   if (aligned_offset + aligned_size > self->size) {
-    error_t exception = {.kind = ERROR_KIND_ALLOCATION};
-    return error(result_ref_t, exception);
+    throw(result_ref_t, ARENA_ERROR_OUT_OF_SPACE,
+          "Arena out of memory. Available %lu, requested %lu",
+          self->size - aligned_offset, aligned_size);
   }
 
   byte_t *pointer = &self->memory[aligned_offset];

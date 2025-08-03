@@ -1,0 +1,20 @@
+#pragma once
+
+#include "../lib/arena.h"
+
+typedef enum {
+  ERROR_CODE_ALLOCATION = ARENA_ERROR_OUT_OF_SPACE,
+
+  // Reference Errors
+  ERROR_CODE_REFERENCE_SYMBOL_NOT_FOUND,
+
+  // Type Errors
+  ERROR_CODE_TYPE_UNEXPECTED_ARITY,
+
+  // Syntax Errors
+  ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+  ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
+
+  // Runtime Error
+  ERROR_CODE_RUNTIME_ERROR,
+} error_code_t;

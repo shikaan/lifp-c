@@ -41,12 +41,18 @@
 #include <stddef.h>
 
 typedef unsigned char byte_t;
+typedef char message_t[64];
 
 /**
  * The result of an allocation. It returns a void* to be casted by the caller.
  * @name result_ref_t
  */
 typedef Result(void *) result_ref_t;
+
+typedef enum {
+  ARENA_ERROR_MALLOC_ERROR = 1,
+  ARENA_ERROR_OUT_OF_SPACE,
+} arena_error_t;
 
 /**
  * Arena allocator structure.

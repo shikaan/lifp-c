@@ -2,6 +2,7 @@
 #include "../lib/arena.h"
 #include "../lib/list.h"
 #include "../lifp/environment.h"
+#include "../lifp/error.h"
 #include "../lifp/node.h"
 #include "test.h"
 #include "utils.h"
@@ -167,8 +168,7 @@ void allocations() {
   arenaAllocate(small_arena, 31); // Use up most space
   node_t large_node = nInt(123);
   result_value_ref_t reduction = evaluate(small_arena, &large_node, environment);
-  assert(!reduction.ok);
-  expectEqlUint(reduction.error.kind, ERROR_KIND_ALLOCATION,
+  expectEqlInt(reduction.code, ERROR_CODE_ALLOCATION,
                 "returns allocation error");
 
   arenaDestroy(small_arena);
@@ -183,8 +183,7 @@ void errors() {
   tryAssert(listAppend(node_t, list, &sym));
 
   result_value_ref_t reduction = evaluate(test_arena, &sym, environment);
-  expectFalse(reduction.ok, "fails reduction");
-  expectEqlUint(reduction.error.kind, ERROR_KIND_SYMBOL_NOT_FOUND, "with correct symbol");
+  expectEqlInt(reduction.code, ERROR_CODE_REFERENCE_SYMBOL_NOT_FOUND, "with correct symbol");
 }
 
 void defSpecialForm() {
@@ -202,8 +201,7 @@ void defSpecialForm() {
   node_t list_node = nList(3, list->data);
   list_node.value.list.arena = test_arena;
 
-  result_value_ref_t reduction = evaluate(test_arena, &list_node, environment);
-  assert(reduction.ok); 
+  tryAssert(evaluate(test_arena, &list_node, environment));
   value_t* val = mapGet(value_t, environment->values, "foo");
 
   expectNotNull(val, "environment is updated");
@@ -247,10 +245,10 @@ void fnSpecialForm() {
   node_t fn_node = nList(3, fn_list->data);
   fn_node.value.list.arena = test_arena;
 
-  result_value_ref_t fn_reduction = evaluate(test_arena, &fn_node, environment);
-  assert(fn_reduction.ok);
-  expectEqlUint(fn_reduction.value->type, VALUE_TYPE_CLOSURE, "creates closure");
-  expectEqlSize(fn_reduction.value->value.closure.arguments.count, 2, "with correct argument count");
+  value_t *closure;
+  tryAssertAssign(evaluate(test_arena, &fn_node, environment), closure);
+  expectEqlUint(closure->type, VALUE_TYPE_CLOSURE, "creates closure");
+  expectEqlSize(closure->value.closure.arguments.count, 2, "with correct argument count");
 }
 
 void letSpecialForm() {
@@ -310,10 +308,10 @@ void letSpecialForm() {
   node_t let_node = nList(3, let_list->data);
   let_node.value.list.arena = test_arena;
 
-  result_value_ref_t let_reduction = evaluate(test_arena, &let_node, environment);
-  assert(let_reduction.ok);
-  expectEqlUint(let_reduction.value->type, VALUE_TYPE_INTEGER, "evaluates to integer");
-  expectEqlInt(let_reduction.value->value.integer, 15, "with correct result (5 + 10)");
+  value_t* let;
+  tryAssertAssign(evaluate(test_arena, &let_node, environment), let);
+  expectEqlUint(let->type, VALUE_TYPE_INTEGER, "evaluates to integer");
+  expectEqlInt(let->value.integer, 15, "with correct result (5 + 10)");
 
   // Verify that let bindings don't leak to outer environment
   value_t* leaked_a = mapGet(value_t, environment->values, "a");

@@ -4,7 +4,8 @@ compile_commands.json
 .todo
 
 # build artifacts
-src/*.o
+lifp/*.o
+lib/*.o
 **/*.dSYM
 *.plist
 .cache

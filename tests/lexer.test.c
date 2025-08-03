@@ -1,4 +1,5 @@
 #include "../lifp/lexer.h"
+#include "../lifp/error.h"
 #include "test.h"
 #include "utils.h"
 #include <assert.h>
@@ -6,23 +7,6 @@
 #include <stdlib.h>
 
 static arena_t *test_arena;
-
-void expectEqlError(const error_t *first, const error_t *second) {
-  char msg[128];
-  snprintf(msg, 128, "Expected %u to equal %u\n", first->kind, second->kind);
-  expectEqlUint(first->kind, second->kind, "has correct type");
-  expectEqlSize(first->position.column, second->position.column,
-                "column matches");
-  expectEqlSize(first->position.line, second->position.line, "line matches");
-
-  if (first->kind == ERROR_KIND_UNEXPECTED_TOKEN) {
-    expectEqlString(&first->payload.unexpected_token,
-                    &second->payload.unexpected_token, 1, "payload matches");
-  } else if (first->kind == ERROR_KIND_INVALID_TOKEN_SIZE) {
-    expectEqlSize(first->payload.invalid_token_size,
-                  second->payload.invalid_token_size, "payload matches");
-  }
-}
 
 static bool tokenEql(const token_t *self, const token_t *other) {
   if (self->type != other->type) {
@@ -81,9 +65,9 @@ void atoms() {
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    result_token_list_ref_t list_result = tokenize(test_arena, cases[i].input);
-    assert(list_result.ok);
-    expect(tokenListEql(cases[i].expected, list_result.value), cases[i].name,
+    token_list_t *tokens = nullptr;
+    tryAssertAssign(tokenize(test_arena, cases[i].input), tokens);
+    expect(tokenListEql(cases[i].expected, tokens), cases[i].name,
            "Expected token lists to be equal.");
   }
 }
@@ -116,10 +100,9 @@ void whitespaces() {
   };
 
   for (size_t i = 0; i < arraySize(cases); i++) {
-    auto list_result = tokenize(test_arena, cases[i].input);
-
-    assert(list_result.ok);
-    expect(tokenListEql(cases[i].expected, list_result.value), cases[i].name,
+    token_list_t *tokens = nullptr;
+    tryAssertAssign(tokenize(test_arena, cases[i].input), tokens);
+    expect(tokenListEql(cases[i].expected, tokens), cases[i].name,
            "Expected token lists to be equal.");
   }
 }
@@ -127,38 +110,23 @@ void whitespaces() {
 void errors() {
   struct {
     const char *input;
-    error_t error;
+    size_t column;
+    error_code_t code;
     const char *name;
-  } cases[] = {{"\a",
-                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
-                          .position.column = 1,
-                          .position.line = 1,
-                          .payload.unexpected_token = '\a'},
-                "unexpected character"},
-               {"a\b",
-                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
-                          .position.column = 2,
-                          .position.line = 1,
-                          .payload.unexpected_token = '\b'},
-                "unexpected character with symbol"},
-               {"1\b",
-                (error_t){.kind = ERROR_KIND_UNEXPECTED_TOKEN,
-                          .position.column = 2,
-                          .position.line = 1,
-                          .payload.unexpected_token = '\b'},
-                "unexpected character with integer"},
-               {"symbol_way_too_long",
-                (error_t){.kind = ERROR_KIND_INVALID_TOKEN_SIZE,
-                          .position.column = 1,
-                          .position.line = 1,
-                          .payload.invalid_token_size = 19},
-                "symbol too long"}};
+  } cases[] = {
+      {"\a", 1, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN, "unexpected character"},
+      {"a\b", 2, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+       "unexpected character with symbol"},
+      {"1\b", 2, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+       "unexpected character with integer"},
+      {"symbol_way_too_long", 1, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+       "symbol too long"}};
 
   for (size_t i = 0; i < arraySize(cases); i++) {
     auto result = tokenize(test_arena, cases[i].input);
     case(cases[i].name);
-    expectFalse(result.ok, "should fail");
-    expectEqlError(&result.error, &cases[i].error);
+    expectEqlInt(result.code, (int)cases[i].code, "has correct error code");
+    expectEqlSize(result.meta.column, cases[i].column, "has correct position");
   }
 }
 
@@ -171,29 +139,30 @@ void complex() {
   token_t x_token = tSym("x");
 
   token_t flat_list[4] = {lparen_token, twelve_token, two_token, rparen_token};
-  token_t nested_list[6] = {lparen_token, two_token, lparen_token, twelve_token, rparen_token, rparen_token};
-  token_t whitespaces[5] = {lparen_token, def_token, x_token, two_token, rparen_token};
+  token_t nested_list[6] = {lparen_token, two_token,    lparen_token,
+                            twelve_token, rparen_token, rparen_token};
+  token_t whitespaces[5] = {lparen_token, def_token, x_token, two_token,
+                            rparen_token};
 
-    struct {
+  struct {
     const char *input;
     token_list_t *expected;
     const char *name;
-  } cases[] = {{"(12 2)", makeTokenList(test_arena, flat_list, 4), "flat list"},
-               {"(2 (12))", makeTokenList(test_arena, nested_list, 6), "nested list"},
-               {"(def!\nx 2\n)", makeTokenList(test_arena, whitespaces, 5), "with random whitespaces"}};
+  } cases[] = {
+      {"(12 2)", makeTokenList(test_arena, flat_list, 4), "flat list"},
+      {"(2 (12))", makeTokenList(test_arena, nested_list, 6), "nested list"},
+      {"(def!\nx 2\n)", makeTokenList(test_arena, whitespaces, 5),
+       "with random whitespaces"}};
   for (size_t i = 0; i < arraySize(cases); i++) {
-    result_token_list_ref_t list_result = tokenize(test_arena, cases[i].input);
-
-    assert(list_result.ok);
-    expect(tokenListEql(cases[i].expected, list_result.value),
-                 cases[i].name, "Expected token lists to be equal.");
+    token_list_t *tokens = nullptr;
+    tryAssertAssign(tokenize(test_arena, cases[i].input), tokens);
+    expect(tokenListEql(cases[i].expected, tokens), cases[i].name,
+           "Expected token lists to be equal.");
   }
 }
 
 int main(void) {
-  result_ref_t allocation = arenaCreate((size_t)(1024 * 1024));
-  assert(allocation.ok);
-  test_arena = allocation.value;
+  tryAssertAssign(arenaCreate((size_t)(1024 * 1024)), test_arena);
 
   suite(atoms);
   suite(complex);

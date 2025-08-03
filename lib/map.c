@@ -55,12 +55,16 @@ void rawValueSet(generic_map_t *self, size_t index, const void *value) {
   memcpy(destination, value, self->item_size);
 }
 
-result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
+result_void_t genericMapSet(generic_map_t *self, const char *key, void *value) {
   size_t key_length = strlen(key);
   if (key_length >= MAX_KEY_LENGTH) {
-    error_t exception = {.kind = ERROR_KIND_KEY_TOO_LONG,
-                         .payload.key_too_long = key_length};
-    return error(result_ref_t, exception);
+    throw(result_void_t, MAP_ERROR_INVALID_KEY,
+          "Map key too long. Expected <= %lu, got %lu", MAX_KEY_LENGTH,
+          key_length);
+  }
+
+  if (key_length == 0) {
+    throw(result_void_t, MAP_ERROR_INVALID_KEY, "Map key cannot be empy");
   }
 
   size_t index = makeKey(self, key);
@@ -72,7 +76,7 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
 
     if (is_same_key) {
       rawValueSet(self, index, value);
-      return (result_ref_t){.ok = true};
+      return ok(result_void_t);
     }
 
     index = (index + 1) % self->capacity;
@@ -84,14 +88,14 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
       auto values = self->values;
       size_t capacity = self->capacity * 2;
 
-      tryAssign(result_ref_t,
+      tryAssign(result_void_t,
                 arenaAllocate(self->arena, sizeof(bool) * capacity),
                 self->used);
       tryAssign(
-          result_ref_t,
+          result_void_t,
           arenaAllocate(self->arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
           self->keys);
-      tryAssign(result_ref_t,
+      tryAssign(result_void_t,
                 arenaAllocate(self->arena, self->item_size * capacity),
                 self->values);
 
@@ -112,7 +116,7 @@ result_ref_t genericMapSet(generic_map_t *self, const char *key, void *value) {
   rawValueSet(self, index, value);
   self->count++;
 
-  return (result_ref_t){.ok = true};
+  return ok(result_void_t);
 }
 
 void *genericMapGet(generic_map_t *self, const char *key) {

@@ -1,6 +1,7 @@
 #include "../lib/map.h"
 #include "../lib/arena.h"
 #include "test.h"
+#include "utils.h"
 #include <assert.h>
 #include <string.h>
 
@@ -11,7 +12,7 @@ static arena_t *test_arena;
 
 void create() {
   result_ref_t creation = mapCreate(int, test_arena, 8);
-  expectTrue(creation.ok, "map allocation succeeds");
+  expectTrue(creation.code == 0, "map allocation succeeds");
   generic_map_t *map = creation.value;
 
   expectEqlSize(map->count, 0, "initial count is 0");
@@ -22,7 +23,7 @@ void create() {
 
 void getSet() {
   result_ref_t map_creation = mapCreate(int, test_arena, 8);
-  assert(map_creation.ok);
+  assert(map_creation.code == RESULT_OK);
   generic_map_t *map = map_creation.value;
 
   case("empty map");
@@ -30,8 +31,8 @@ void getSet() {
     
   case("new item");
   int value = 42;
-  result_ref_t setting = mapSet(map, "test", &value);
-  expectTrue(setting.ok, "sets successfully");
+  result_void_t setting = mapSet(map, "test", &value);
+  expectTrue(setting.code == RESULT_OK, "sets successfully");
   expectEqlSize(map->count, 1, "count increases");
   int* item = mapGet(int, map, "test");
   expectEqlInt(*item, value, "value is correct");
@@ -39,19 +40,19 @@ void getSet() {
   
   case("update");
   map_creation = mapCreate(int, test_arena, 8);
-  assert(map_creation.ok);
+  assert(map_creation.code == RESULT_OK);
   map = map_creation.value;
 
   int value2 = 43;
 
   setting = mapSet(map, "test", &value);
-  assert(setting.ok);
+  assert(setting.code == RESULT_OK);
   expectEqlSize(map->count, 1, "count is 1 after first set");
   item = mapGet(int, map, "test");
   expectEqlInt(*item, value, "value is correct");
   
   setting = mapSet(map, "test", &value2);
-  expectTrue(setting.ok, "updates the record");
+  expectTrue(setting.code == RESULT_OK, "updates the record");
   expectEqlSize(map->count, 1, "count remains 1 after update");
   item = mapGet(int, map, "test");
   expectEqlInt(*item, value2, "retrieves the updated element");
@@ -59,7 +60,7 @@ void getSet() {
 
   case("collision");
   map_creation = mapCreate(int, test_arena, 8);
-  assert(map_creation.ok);
+  assert(map_creation.code == RESULT_OK);
   map = map_creation.value;
 
   // These two strings are known to clash in FNV-1
@@ -67,10 +68,10 @@ void getSet() {
   const char* key2 = "costarring";
 
   setting = mapSet(map, key1, &value);
-  assert(setting.ok);
+  assert(setting.code == RESULT_OK);
 
   setting = mapSet(map, key2, &value2);
-  assert(setting.ok);
+  assert(setting.code == RESULT_OK);
 
   expectEqlSize(map->count, 2, "increases count");
   item = mapGet(int, map, key1);
@@ -80,12 +81,12 @@ void getSet() {
   expectEqlInt(*another_item, value2, "retrieves correct other value");
 
   map_creation = mapCreate(int, test_arena, 1);
-  assert(map_creation.ok);
+  assert(map_creation.code == RESULT_OK);
   map = map_creation.value;
 
   // setting with key1 and trying to retrieve with colliding key2
   setting = mapSet(map, key1, &value);
-  assert(setting.ok);
+  assert(setting.code == RESULT_OK);
   expectNull(mapGet(int, map, key2), "doesn't return item from colliding key");
   
   arenaReset(test_arena);
@@ -93,28 +94,27 @@ void getSet() {
 
 void allocations() {
   result_ref_t allocation = mapCreate(int, test_arena, 1);
-  assert(allocation.ok);
+  assert(allocation.code == RESULT_OK);
   Map(int) *map = allocation.value;
 
   int value = 1;
-  allocation = mapSet(map, "key", &value);
-  assert(allocation.ok);
+  tryAssert(mapSet(map, "key", &value));
   
-  allocation = mapSet(map, "another", &value);
-  expectTrue(allocation.ok, "allocates over capacity");
+  result_void_t setting = mapSet(map, "another", &value);
+  expectTrue(setting.code == RESULT_OK, "allocates over capacity");
   expectEqlSize(map->capacity, 2, "updates capacity");
   arenaReset(test_arena);
 }
 
 void mapSizeTest() {
   result_ref_t map_creation = mapCreate(int, test_arena, 8);
-  assert(map_creation.ok);
+  assert(map_creation.code == RESULT_OK);
   Map(int) *map = map_creation.value;
 
   size_t expected_size = sizeof(generic_map_t) + 
-                        sizeof(bool) * 8 +  // used array
-                        sizeof(char) * MAX_KEY_LENGTH * 8 + // keys array
-                        sizeof(int) * 8; // values array
+                        (sizeof(bool) * 8) +  // used array
+                        (sizeof(char) * MAX_KEY_LENGTH * 8) + // keys array
+                        (sizeof(int) * 8); // values array
 
   size_t actual_size = mapSize(map);
   expectEqlSize(actual_size, expected_size, "map size calculation is correct");
@@ -124,7 +124,7 @@ void mapSizeTest() {
 
 int main() {
   result_ref_t creation = arenaCreate(1024);
-  assert(creation.ok);
+  assert(creation.code == RESULT_OK);
   test_arena = creation.value;
 
   suite(create);

@@ -1,5 +1,6 @@
 #include "list.h"
 #include "arena.h"
+#include "result.h"
 #include <assert.h>
 
 result_ref_t genericListCreate(arena_t *arena, size_t capacity,
@@ -18,16 +19,17 @@ result_ref_t genericListCreate(arena_t *arena, size_t capacity,
   return ok(result_ref_t, list);
 }
 
-result_ref_t genericListAppend(generic_list_t *self, const void *item) {
+result_void_t genericListAppend(generic_list_t *self, const void *item) {
   assert(self);
-  if (!item)
-    return (result_ref_t){.ok = true};
+  if (!item) {
+    return ok(result_void_t);
+  }
 
   if (self->count >= self->capacity) {
     size_t new_capacity = self->capacity * 2;
 
     void *new_data = nullptr;
-    tryAssign(result_ref_t,
+    tryAssign(result_void_t,
               arenaAllocate(self->arena, self->item_size * new_capacity),
               new_data);
 
@@ -41,7 +43,7 @@ result_ref_t genericListAppend(generic_list_t *self, const void *item) {
   bytewiseCopy(destination, item, self->item_size);
   self->count++;
 
-  return (result_ref_t){.ok = true};
+  return ok(result_void_t);
 }
 
 void *genericListGet(const generic_list_t *self, size_t index) {
@@ -58,8 +60,9 @@ result_ref_t genericListCopy(const generic_list_t *source,
   assert(destination);
 
   if (destination->capacity < source->count) {
-    const error_t error = {.kind = ERROR_KIND_ALLOCATION};
-    return error(result_ref_t, error);
+    throw(result_ref_t, LIST_ERROR_DESTINATION_TOO_SMALL,
+          "Destination too small. Capacity %lu, expected: %lu",
+          destination->capacity, source->count);
   }
 
   destination->item_size = source->item_size;
