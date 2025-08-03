@@ -8,13 +8,6 @@
 // stores all data in an arena allocator for efficient bulk deallocation.
 // Keys are limited to 32 characters and stored as fixed-length strings.
 //
-// Key features:
-// - Type-safe generic interface using C macros
-// - Arena-based memory allocation for cache locality
-// - Linear probing hash table with open addressing
-// - Fixed maximum key length for predictable memory usage
-// - O(1) average case insertion and lookup
-//
 // ```c
 // result_ref_t arena_result = arenaCreate(1024);
 // if (arena_result.ok) {
@@ -67,6 +60,7 @@ typedef enum {
  *   Map(int) *int_map;
  *   Map(char*) *string_map;
  */
+// NOLINTBEGIN - Type cannot be put in parentheses
 #define Map(Type)                                                              \
   struct {                                                                     \
     size_t count;                                                              \
@@ -77,6 +71,7 @@ typedef enum {
     Type *values;                                                              \
     arena_t *arena;                                                            \
   }
+// NOLINTEND
 
 typedef Map(void) generic_map_t;
 
@@ -86,8 +81,7 @@ typedef Map(void) generic_map_t;
  * @param {Type} ItemType - The type of values to store in the map
  * @param {arena_t*} Arena - Arena allocator to use for memory allocation
  * @param {size_t} Capacity - Initial capacity of the map (should be power of 2)
- * @returns {result_ref_t} Result containing the map pointer on success, or
- * allocation error
+ * @returns {result_ref_t} Map pointer on success, or allocation error
  * @example
  *   result_ref_t result = mapCreate(int, arena, 16);
  *   if (result.ok) {
@@ -104,10 +98,10 @@ typedef Map(void) generic_map_t;
  * @param {Map(Type)*} Map - Pointer to the map to modify
  * @param {const char*} Key - Key string (max 31 characters + null terminator)
  * @param {Type*} Value - Pointer to the value to store
- * @returns {result_ref_t} Result indicating success or allocation error
+ * @returns {result_ref_t} Success, allocation error, invalid key error
  * @example
  *   int value = 42;
- *   result_ref_t result = mapSet(map, "key", &value);
+ *   result_void_t result = mapSet(map, "key", &value);
  *   if (!result.ok) {
  *       // Handle error
  *   }
@@ -121,7 +115,7 @@ typedef Map(void) generic_map_t;
  * @param {Type} ItemType - The type of values stored in the map
  * @param {Map(Type)*} Map - Pointer to the map to search
  * @param {const char*} Key - Key string to search for
- * @returns {Type*} Pointer to the value if found, NULL if not found
+ * @returns {Type*} Pointer to the value if found, nullptr if not found
  * @example
  *   int *value = mapGet(int, map, "key");
  *   if (value) {
@@ -133,52 +127,10 @@ typedef Map(void) generic_map_t;
 #define mapGet(ItemType, Map, Key)                                             \
   (ItemType *)genericMapGet((generic_map_t *)(Map), Key)
 
-/**
- * Create a new generic map with the specified capacity and item size.
- * @name genericMapCreate
- * @param {arena_t*} arena - Arena allocator to use for memory allocation
- * @param {size_t} capacity - Initial capacity of the map
- * @param {size_t} item_size - Size in bytes of each value item
- * @returns {result_ref_t} Result containing the map pointer on success, or
- * allocation error
- */
 result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
                               size_t item_size);
 
-/**
- * Set a key-value pair in a generic map.
- * @name genericMapSet
- * @param {generic_map_t*} self - Pointer to the map to modify
- * @param {const char*} key - Key string (max 31 characters + null terminator)
- * @param {void*} value - Pointer to the value to store
- * @returns {result_ref_t} Result indicating success or allocation error
- */
-result_void_t genericMapSet(generic_map_t *self, const char *key, void *value);
+result_void_t genericMapSet(generic_map_t self[static 1], const char *key,
+                            void *value);
 
-/**
- * Get a value from a generic map by key.
- * @name genericMapGet
- * @param {generic_map_t*} self - Pointer to the map to search
- * @param {const char*} key - Key string to search for
- * @returns {void*} Pointer to the value if found, NULL if not found
- */
-void *genericMapGet(generic_map_t *self, const char *key);
-
-/**
- * Get the total memory size of a map including all allocated arrays.
- * @name mapSize
- * @param {Map(Type)*} Map - Pointer to the map
- * @returns {size_t} Total size in bytes of the map structure and its data
- * @example
- *   size_t total_size = mapSize(map);
- *   printf("Map uses %zu bytes\n", total_size);
- */
-#define mapSize(Map) genericMapSize((generic_map_t *)(Map))
-
-/**
- * Get the total memory size of a generic map including all allocated arrays.
- * @name genericMapSize
- * @param {generic_map_t*} self - Pointer to the map
- * @returns {size_t} Total size in bytes of the map structure and its data
- */
-size_t genericMapSize(generic_map_t *self);
+void *genericMapGet(generic_map_t self[static 1], const char *key);

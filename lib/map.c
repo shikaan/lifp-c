@@ -25,7 +25,7 @@ size_t makeKey(generic_map_t *self, const char *key) {
 
 result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
                               size_t item_size) {
-  assert(arena != nullptr);
+  assert(arena);
   assert(capacity > 0);
   assert(item_size > 0);
 
@@ -49,6 +49,7 @@ result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
 }
 
 void rawValueSet(generic_map_t *self, size_t index, const void *value) {
+  assert(self);
   byte_t *destination = (byte_t *)self->values + (index * self->item_size);
   // memcpy on nullptr causes undefined behaviour
   assert(destination != nullptr);
@@ -56,6 +57,7 @@ void rawValueSet(generic_map_t *self, size_t index, const void *value) {
 }
 
 result_void_t genericMapSet(generic_map_t *self, const char *key, void *value) {
+  assert(self);
   size_t key_length = strlen(key);
   if (key_length >= MAX_KEY_LENGTH) {
     throw(result_void_t, MAP_ERROR_INVALID_KEY,
@@ -120,6 +122,7 @@ result_void_t genericMapSet(generic_map_t *self, const char *key, void *value) {
 }
 
 void *genericMapGet(generic_map_t *self, const char *key) {
+  assert(self);
   if (self->count == 0)
     return nullptr;
 
@@ -136,19 +139,4 @@ void *genericMapGet(generic_map_t *self, const char *key) {
   }
 
   return nullptr;
-}
-
-size_t genericMapSize(generic_map_t *self) {
-  if (self == nullptr) {
-    return 0;
-  }
-
-  size_t total_size = 0;
-
-  total_size += sizeof(generic_map_t);
-  total_size += sizeof(bool) * self->capacity;
-  total_size += sizeof(char) * MAX_KEY_LENGTH * self->capacity;
-  total_size += self->item_size * self->capacity;
-
-  return total_size;
 }
