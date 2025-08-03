@@ -16,9 +16,14 @@
   assert(_concat(result, __LINE__).code == RESULT_OK);                         \
   (Destination) = (_concat(result, __LINE__).value);
 
+// Prevent unused value warnings when built in RELEASE mode
+#ifdef NODEBUG
 #define tryAssert(Action)                                                      \
   auto _concat(result, __LINE__) = (Action);                                   \
   assert(_concat(result, __LINE__).code == RESULT_OK);
+#else
+#define tryAssert(Action) (void)(Action);
+#endif
 
 static inline token_list_t *
 makeTokenList(arena_t *arena, const token_t *elements, size_t capacity) {
@@ -110,17 +115,6 @@ static inline node_t nSym(const char symbol[]) {
                   .value.symbol[14] = (char)(len > 14 ? symbol[14] : '\0'),
                   .value.symbol[15] = (char)(len > 15 ? symbol[15] : '\0')};
 }
-
-#define pList(Count, Data)                                                     \
-  {                                                                            \
-      .type = VALUE_TYPE_LIST,                                                 \
-      .position.column = 1,                                                    \
-      .position.line = 1,                                                      \
-      .value.list.item_size = sizeof(node_t),                                  \
-      .value.list.count = (Count),                                             \
-      .value.list.capacity = (Count),                                          \
-      .value.list.data = (Data),                                               \
-  }
 
 #define nList(Count, Data)                                                     \
   {                                                                            \
