@@ -68,6 +68,15 @@ result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
           FUNCTION_EXAMPLE);
   }
 
+  for (size_t i = 0; i < arguments.value.list.count; i++) {
+    node_t argument = listGet(node_t, &arguments.value.list, i);
+    if (argument.type != NODE_TYPE_SYMBOL) {
+      throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, argument.position,
+            "%s requires a binding list of symbols. %s", FUNCTION,
+            FUNCTION_EXAMPLE);
+    }
+  }
+
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *closure = nullptr;

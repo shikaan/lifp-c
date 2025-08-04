@@ -249,6 +249,40 @@ void fnSpecialForm() {
   tryAssertAssign(evaluate(test_arena, &fn_node, environment), closure);
   expectEqlUint(closure->type, VALUE_TYPE_CLOSURE, "creates closure");
   expectEqlSize(closure->value.closure.arguments.count, 2, "with correct argument count");
+  expectEqlUint(closure->value.closure.form.type, NODE_TYPE_LIST, "with correct form type");
+ 
+  case("not using symbols for arguments");
+  node_list_t *fn_no_symbol = nullptr;
+  tryAssertAssign(listCreate(node_t, test_arena, 3), fn_no_symbol);
+ 
+  // Create argument list (x 1)
+  tryAssertAssign(listCreate(node_t, test_arena, 2), args_list);
+  node_t arg_one = nInt(1);
+  tryAssert(listAppend(node_t, args_list, &arg_x));
+  tryAssert(listAppend(node_t, args_list, &arg_one));
+  args_node.value.list.data = args_list->data;
+
+  // Assemble the fn form
+  tryAssert(listAppend(node_t, fn_no_symbol, &fn_special));
+  tryAssert(listAppend(node_t, fn_no_symbol, &args_node));
+  tryAssert(listAppend(node_t, fn_no_symbol, &body_x));
+
+  fn_node.value.list.data = fn_no_symbol->data;
+  result_value_ref_t evaluation = evaluate(test_arena, &fn_node, environment);
+  expectEqlInt(evaluation.code, ERROR_CODE_RUNTIME_ERROR, "throws a syntax error"); 
+  
+  case("not using lists for arguments");
+  node_list_t *fn_bad_bindings = nullptr;
+  tryAssertAssign(listCreate(node_t, test_arena, 3), fn_bad_bindings);
+ 
+  // Assemble the fn form
+  tryAssert(listAppend(node_t, fn_bad_bindings, &fn_special));
+  tryAssert(listAppend(node_t, fn_bad_bindings, &arg_one));
+  tryAssert(listAppend(node_t, fn_bad_bindings, &body_x));
+
+  fn_node.value.list.data = fn_bad_bindings->data;
+  evaluation = evaluate(test_arena, &fn_node, environment);
+  expectEqlInt(evaluation.code, ERROR_CODE_RUNTIME_ERROR, "throws a syntax error"); 
 }
 
 void letSpecialForm() {
