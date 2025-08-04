@@ -1,6 +1,6 @@
 {
   "configurations": {
-    "launch": {
+    "repl": {
       "adapter": "CodeLLDB",
       "configuration": {
         "request": "launch",
@@ -9,6 +9,17 @@
         "cwd": "${workspaceRoot}",
         "stopAtEntry": true
       }
+    },
+    "test": {
+      "adapter": "CodeLLDB",
+      "configuration": {
+        "request": "launch",
+        "program":  "${workspaceFolder}/${fileDirnameBasename}/${fileBasenameNoExtension}",
+        "args": [],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": true
+      }
     }
+
   }
 }
