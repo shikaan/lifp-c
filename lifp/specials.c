@@ -19,29 +19,27 @@ result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
   assert(nodes->count > 0); // def! is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
   }
 
   node_t key = listGet(node_t, nodes, 1);
   if (key.type != NODE_TYPE_SYMBOL) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a symbol and a form. %s", DEFINE, DEFINE_EXAMPLE);
   }
 
   // Perform reduction in the AST memory
   value_t *result = nullptr;
   node_t value = listGet(node_t, nodes, 2);
-  tryAssign(result_value_ref_t, evaluate(nodes->arena, &value, env), result,
-            value.position);
+  try(result_value_ref_t, evaluate(nodes->arena, &value, env), result);
 
   // If reduction is successful, we can move the closure to VM memory
   value_t *copy = nullptr;
-  tryAssign(result_value_ref_t, valueClone(env->arena, result), copy,
-            value.position);
-
-  try(result_value_ref_t, mapSet(env->values, key.value.symbol, copy),
-      value.position);
+  tryWithMeta(result_value_ref_t, valueClone(env->arena, result),
+              value.position, copy);
+  tryWithMeta(result_value_ref_t, mapSet(env->values, key.value.symbol, copy),
+              value.position);
 
   value_t nil = {
       .type = VALUE_TYPE_NIL,
@@ -58,33 +56,33 @@ result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
   assert(nodes->count > 0); // fn is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a binding list and a form. %s", FUNCTION,
-              FUNCTION_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a binding list and a form. %s", FUNCTION,
+          FUNCTION_EXAMPLE);
   }
 
   node_t arguments = listGet(node_t, nodes, 1);
   if (arguments.type != NODE_TYPE_LIST) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, arguments.position,
-              "%s requires a binding list and a form. %s", FUNCTION,
-              FUNCTION_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, arguments.position,
+          "%s requires a binding list and a form. %s", FUNCTION,
+          FUNCTION_EXAMPLE);
   }
 
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *closure = nullptr;
-  tryAssign(result_value_ref_t, valueCreate(nodes->arena, VALUE_TYPE_CLOSURE),
-            closure, form.position);
+  tryWithMeta(result_value_ref_t, valueCreate(nodes->arena, VALUE_TYPE_CLOSURE),
+              form.position, closure);
 
   closure->position.column = first.position.column;
   closure->position.line = first.position.line;
 
-  try(result_value_ref_t,
-      listCopy(node_t, &arguments.value.list,
-               &closure->value.closure.arguments),
-      form.position);
-  try(result_value_ref_t, nodeCopy(&form, &closure->value.closure.form),
-      form.position);
+  tryWithMeta(result_value_ref_t,
+              listCopy(node_t, &arguments.value.list,
+                       &closure->value.closure.arguments),
+              form.position);
+  tryWithMeta(result_value_ref_t, nodeCopy(&form, &closure->value.closure.form),
+              form.position);
 
   return ok(result_value_ref_t, closure);
 }
@@ -95,51 +93,51 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
   assert(nodes->count > 0); // let is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list of symbol-form assignments. %s", LET,
-              LET_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list of symbol-form assignments. %s", LET,
+          LET_EXAMPLE);
   }
 
   node_t couples = listGet(node_t, nodes, 1);
   if (couples.type != NODE_TYPE_LIST) {
-    throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couples.position,
-              "%s requires a list of symbol-form assignments. %s", LET,
-              LET_EXAMPLE);
+    throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couples.position,
+          "%s requires a list of symbol-form assignments. %s", LET,
+          LET_EXAMPLE);
   }
 
   environment_t *local_env = nullptr;
-  tryAssign(result_value_ref_t, environmentCreate(env), local_env,
-            couples.position);
+  tryWithMeta(result_value_ref_t, environmentCreate(env), couples.position,
+              local_env);
 
   for (size_t i = 0; i < couples.value.list.count; i++) {
     node_t couple = listGet(node_t, &couples.value.list, i);
 
     if (couple.type != NODE_TYPE_LIST || couple.value.list.count != 2) {
-      throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couple.position,
-                "%s requires a list of symbol-form assignments. %s", LET,
-                LET_EXAMPLE);
+      throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couple.position,
+            "%s requires a list of symbol-form assignments. %s", LET,
+            LET_EXAMPLE);
     }
 
     node_t symbol = listGet(node_t, &couple.value.list, 0);
     if (symbol.type != NODE_TYPE_SYMBOL) {
-      throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, symbol.position,
-                "%s requires a list of symbol-form assignments. %s", LET,
-                LET_EXAMPLE);
+      throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, symbol.position,
+            "%s requires a list of symbol-form assignments. %s", LET,
+            LET_EXAMPLE);
     }
 
     node_t body = listGet(node_t, &couple.value.list, 1);
     value_t *evaluated = nullptr;
-    tryAssign(result_value_ref_t, evaluate(nodes->arena, &body, local_env),
-              evaluated);
-    try(result_value_ref_t,
-        mapSet(local_env->values, symbol.value.symbol, evaluated));
+    try(result_value_ref_t, evaluate(nodes->arena, &body, local_env),
+        evaluated);
+    tryWithMeta(result_value_ref_t,
+                mapSet(local_env->values, symbol.value.symbol, evaluated),
+                evaluated->position);
   }
 
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *result = nullptr;
-  tryAssign(result_value_ref_t, evaluate(nodes->arena, &form, local_env),
-            result);
+  try(result_value_ref_t, evaluate(nodes->arena, &form, local_env), result);
 
   environmentDestroy(&local_env);
   return ok(result_value_ref_t, result);
@@ -154,29 +152,27 @@ result_value_ref_t cond(environment_t *env, const node_list_t *nodes) {
   for (size_t i = 1; i < nodes->count - 1; i++) {
     node_t node = listGet(node_t, nodes, i);
     if (node.type != NODE_TYPE_LIST || node.value.list.count != 2) {
-      throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
-                "%s requires a list of condition-form assignments. %s", COND,
-                LET_EXAMPLE);
+      throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
+            "%s requires a list of condition-form assignments. %s", COND,
+            LET_EXAMPLE);
     }
 
     node_t condition = listGet(node_t, &node.value.list, 0);
-    tryAssign(result_value_ref_t, evaluate(nodes->arena, &condition, env),
-              result, condition.position);
+    try(result_value_ref_t, evaluate(nodes->arena, &condition, env), result);
 
     if (result->type != VALUE_TYPE_BOOLEAN) {
-      throwMeta(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
-                "Conditions should resolve to a boolean. %s", LET_EXAMPLE);
+      throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
+            "Conditions should resolve to a boolean. %s", LET_EXAMPLE);
     }
 
     if (result->value.boolean) {
       node_t form = listGet(node_t, &node.value.list, 1);
-      tryAssign(result_value_ref_t, evaluate(nodes->arena, &form, env), result,
-                form.position);
+      try(result_value_ref_t, evaluate(nodes->arena, &form, env), result);
       return ok(result_value_ref_t, result);
     }
   }
 
   node_t fallback = listGet(node_t, nodes, nodes->count - 1);
-  tryAssign(result_value_ref_t, evaluate(nodes->arena, &fallback, env), result);
+  try(result_value_ref_t, evaluate(nodes->arena, &fallback, env), result);
   return ok(result_value_ref_t, result);
 }

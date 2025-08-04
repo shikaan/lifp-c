@@ -7,14 +7,14 @@ result_ref_t genericListCreate(arena_t *arena, size_t capacity,
                                size_t list_size, size_t item_size) {
   assert(arena);
   generic_list_t *list = nullptr;
-  tryAssign(result_ref_t, arenaAllocate(arena, list_size), list);
+  try(result_ref_t, arenaAllocate(arena, list_size), list);
 
   list->count = 0;
   list->capacity = capacity;
   list->item_size = item_size;
   list->arena = arena;
-  tryAssign(result_ref_t, arenaAllocate(arena, item_size * list->capacity),
-            list->data);
+  try(result_ref_t, arenaAllocate(arena, item_size * list->capacity),
+      list->data);
 
   return ok(result_ref_t, list);
 }
@@ -29,9 +29,8 @@ result_void_t genericListAppend(generic_list_t *self, const void *item) {
     size_t new_capacity = self->capacity * 2;
 
     void *new_data = nullptr;
-    tryAssign(result_void_t,
-              arenaAllocate(self->arena, self->item_size * new_capacity),
-              new_data);
+    try(result_void_t,
+        arenaAllocate(self->arena, self->item_size * new_capacity), new_data);
 
     bytewiseCopy(new_data, self->data, self->item_size * self->count);
 
@@ -60,7 +59,7 @@ result_void_t genericListCopy(const generic_list_t *source,
   assert(destination);
 
   if (destination->item_size != source->item_size) {
-    throw(result_void_t, LIST_ERROR_INCOMPATIBLE_LISTS,
+    throw(result_void_t, LIST_ERROR_INCOMPATIBLE_LISTS, nullptr,
           "Lists have incompatible item sizes");
   }
 

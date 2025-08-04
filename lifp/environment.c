@@ -14,16 +14,15 @@ constexpr size_t ENVIRONMENT_MAX_SIZE = (long)32 * 1024;
 
 result_ref_t environmentCreate(environment_t *parent) {
   arena_t *arena = nullptr;
-  tryAssign(result_ref_t, arenaCreate(ENVIRONMENT_MAX_SIZE), arena);
+  try(result_ref_t, arenaCreate(ENVIRONMENT_MAX_SIZE), arena);
 
   environment_t *environment = nullptr;
-  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(environment_t)),
-            environment);
+  try(result_ref_t, arenaAllocate(arena, sizeof(environment_t)), environment);
 
   environment->arena = arena;
   environment->parent = parent;
 
-  tryAssign(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
+  try(result_ref_t, mapCreate(value_t, arena, 32), environment->values);
 
 #define setBuiltin(Label, Builtin)                                             \
   builtin.type = VALUE_TYPE_BUILTIN;                                           \

@@ -9,22 +9,20 @@
 const char *MATH_MAX = "math.max";
 result_void_position_t mathMax(value_t *result, value_list_t *values) {
   if (values->count != 1) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 1 argument. Got %zu",
-              MATH_MAX, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 1 argument. Got %zu", MATH_MAX, values->count);
   }
 
   value_t list_value = listGet(value_t, values, 0);
   if (list_value.type != VALUE_TYPE_LIST) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a list. Got type %u", MATH_MAX,
-              list_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a list. Got type %u", MATH_MAX, list_value.type);
   }
 
   value_list_t *list = &list_value.value.list;
   if (list->count == 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a non-empty list", MATH_MAX);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a non-empty list", MATH_MAX);
   }
 
   // Find the maximum value
@@ -32,9 +30,9 @@ result_void_position_t mathMax(value_t *result, value_list_t *values) {
   for (size_t i = 0; i < list->count; i++) {
     value_t current = listGet(value_t, list, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s requires a list of integers. Got type %u",
-                MATH_MAX, current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s requires a list of integers. Got type %u", MATH_MAX,
+            current.type);
     }
 
     if (current.value.integer > max_value) {
@@ -52,22 +50,20 @@ result_void_position_t mathMax(value_t *result, value_list_t *values) {
 const char *MATH_MIN = "math.min";
 result_void_position_t mathMin(value_t *result, value_list_t *values) {
   if (values->count != 1) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 1 argument. Got %zu",
-              MATH_MIN, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 1 argument. Got %zu", MATH_MIN, values->count);
   }
 
   value_t list_value = listGet(value_t, values, 0);
   if (list_value.type != VALUE_TYPE_LIST) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a list. Got type %u", MATH_MIN,
-              list_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a list. Got type %u", MATH_MIN, list_value.type);
   }
 
   value_list_t *list = &list_value.value.list;
   if (list->count == 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a non-empty list", MATH_MIN);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a non-empty list", MATH_MIN);
   }
 
   // Find the minimum value
@@ -75,9 +71,9 @@ result_void_position_t mathMin(value_t *result, value_list_t *values) {
   for (size_t i = 0; i < list->count; i++) {
     value_t current = listGet(value_t, list, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s requires a list of integers. Got type %u",
-                MATH_MIN, current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s requires a list of integers. Got type %u", MATH_MIN,
+            current.type);
     }
 
     if (current.value.integer < min_value) {
@@ -95,9 +91,8 @@ result_void_position_t mathMin(value_t *result, value_list_t *values) {
 const char *MATH_RANDOM = "math.random";
 result_void_position_t mathRandom(value_t *result, value_list_t *values) {
   if (values->count != 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires no arguments. Got %zu",
-              MATH_RANDOM, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires no arguments. Got %zu", MATH_RANDOM, values->count);
   }
 
   // Initialize random number generator on first call

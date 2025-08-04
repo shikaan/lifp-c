@@ -7,16 +7,14 @@
 const char *LIST_COUNT = "list.count";
 result_void_position_t listCount(value_t *result, value_list_t *values) {
   if (values->count != 1) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 1 argument. Got %zu",
-              LIST_COUNT, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 1 argument. Got %zu", LIST_COUNT, values->count);
   }
 
   value_t list_value = listGet(value_t, values, 0);
   if (list_value.type != VALUE_TYPE_LIST) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a list. Got type %u",
-              LIST_COUNT, list_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a list. Got type %u", LIST_COUNT, list_value.type);
   }
 
   result->type = VALUE_TYPE_INTEGER;
@@ -31,16 +29,18 @@ result_void_position_t listFrom(value_t *result, value_list_t *values) {
   result->type = VALUE_TYPE_LIST;
 
   value_list_t *new_list = nullptr;
-  tryAssign(result_void_position_t,
-            listCreate(value_t, values->arena, values->count), new_list);
+  tryWithMeta(result_void_position_t,
+              listCreate(value_t, values->arena, values->count),
+              result->position, new_list);
   result->value.list = *new_list;
 
   if (values->count > 0) {
     // Copy all values to the new list
     for (size_t i = 0; i < values->count; i++) {
       value_t source = listGet(value_t, values, i);
-      try(result_void_position_t,
-          listAppend(value_t, &result->value.list, &source));
+      tryWithMeta(result_void_position_t,
+                  listAppend(value_t, &result->value.list, &source),
+                  source.position);
     }
   } else {
     new_list->data = nullptr;
@@ -54,24 +54,22 @@ result_void_position_t listFrom(value_t *result, value_list_t *values) {
 const char *LIST_NTH = "list.nth";
 result_void_position_t listNth(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              LIST_NTH, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", LIST_NTH, values->count);
   }
 
   value_t index_value = listGet(value_t, values, 0);
   value_t list_value = listGet(value_t, values, 1);
 
   if (index_value.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              index_value.position, "%s requires an integer index. Got type %u",
-              LIST_NTH, index_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
+          index_value.position, "%s requires an integer index. Got type %u",
+          LIST_NTH, index_value.type);
   }
 
   if (list_value.type != VALUE_TYPE_LIST) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              list_value.position, "%s requires a list. Got type %u", LIST_NTH,
-              list_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, list_value.position,
+          "%s requires a list. Got type %u", LIST_NTH, list_value.type);
   }
 
   int32_t index = index_value.value.integer;

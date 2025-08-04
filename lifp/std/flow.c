@@ -15,23 +15,20 @@ const char *FLOW_SLEEP = "flow.sleep";
 
 result_void_position_t flowSleep(value_t *result, value_list_t *values) {
   if (values->count != 1) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 1 argument. Got %zu",
-              FLOW_SLEEP, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 1 argument. Got %zu", FLOW_SLEEP, values->count);
   }
 
   value_t ms_value = listGet(value_t, values, 0);
   if (ms_value.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              ms_value.position, "%s requires an integer. Got type %u",
-              FLOW_SLEEP, ms_value.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, ms_value.position,
+          "%s requires an integer. Got type %u", FLOW_SLEEP, ms_value.type);
   }
 
   int32_t milliseconds = ms_value.value.integer;
   if (milliseconds < 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              ms_value.position, "%s requires a non-negative integer",
-              FLOW_SLEEP);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, ms_value.position,
+          "%s requires a non-negative integer", FLOW_SLEEP);
   }
 
   // Perform the sleep operation

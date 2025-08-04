@@ -5,10 +5,11 @@ typedef char message_t[64];
 
 constexpr int RESULT_OK = 0;
 
+#define _metaType(type, ...) type meta
 #define Result(ValueType, ...)                                                 \
   struct {                                                                     \
     int code;                                                                  \
-    __VA_OPT__(__VA_ARGS__ meta);                                              \
+    _metaType(__VA_OPT__(__VA_ARGS__, ) void *);                               \
     union {                                                                    \
       ValueType value;                                                         \
       message_t message;                                                       \
@@ -18,11 +19,13 @@ constexpr int RESULT_OK = 0;
 #define ResultVoid(...)                                                        \
   struct {                                                                     \
     int code;                                                                  \
-    __VA_OPT__(__VA_ARGS__ meta);                                              \
+    _metaType(__VA_OPT__(__VA_ARGS__, ) void *);                               \
     message_t message;                                                         \
   }
 
 typedef ResultVoid() result_void_t;
+
+typedef Result(int) test_t;
 
 #define _concat_detail(x, y) x##y
 #define _concat(x, y) _concat_detail(x, y)
@@ -30,35 +33,25 @@ typedef ResultVoid() result_void_t;
 #define _error(ResultType) _concat(error_, _concat(ResultType, __LINE__))
 
 #define ok(T, ...)                                                             \
-  (T) { .code = 0 __VA_OPT__(, .value =) __VA_ARGS__ }
-
-#define tryAssign(ResultType, Action, Destination, ...)                        \
-  auto _result(ResultType) = Action;                                           \
-  if (_result(ResultType).code != RESULT_OK) {                                 \
-    _concat(throw, __VA_OPT__(Meta))(ResultType, _result(ResultType).code,     \
-                                     __VA_OPT__(__VA_ARGS__, ) "%s",           \
-                                     _result(ResultType).message);             \
-  }                                                                            \
-  (Destination) = (_result(ResultType).value);
+  (T) { .code = RESULT_OK __VA_OPT__(, .value =) __VA_ARGS__ }
 
 #define try(ResultType, Action, ...)                                           \
   auto _result(ResultType) = Action;                                           \
   if (_result(ResultType).code != RESULT_OK) {                                 \
-    _concat(throw, __VA_OPT__(Meta))(ResultType, _result(ResultType).code,     \
-                                     __VA_OPT__(__VA_ARGS__, ) "%s",           \
-                                     _result(ResultType).message);             \
-  }
+    throw(ResultType, _result(ResultType).code, _result(ResultType).meta,      \
+          "%s", _result(ResultType).message);                                  \
+  }                                                                            \
+  __VA_OPT__(__VA_ARGS__ = (_result(ResultType).value));
 
-#define throw(ResultType, Code, Fmt, ...)                                      \
-  {                                                                            \
-    ResultType _error(ResultType);                                             \
-    _error(ResultType).code = Code;                                            \
-    snprintf(_error(ResultType).message, sizeof(message_t),                    \
-             Fmt __VA_OPT__(, ) __VA_ARGS__);                                  \
-    return _error(ResultType);                                                 \
-  }
+#define tryWithMeta(ResultType, Action, Meta, ...)                             \
+  auto _result(ResultType) = Action;                                           \
+  if (_result(ResultType).code != RESULT_OK) {                                 \
+    throw(ResultType, _result(ResultType).code, Meta, "%s",                    \
+          _result(ResultType).message);                                        \
+  }                                                                            \
+  __VA_OPT__(__VA_ARGS__ = (_result(ResultType).value));
 
-#define throwMeta(ResultType, Code, Meta, Fmt, ...)                            \
+#define throw(ResultType, Code, Meta, Fmt, ...)                                \
   {                                                                            \
     ResultType _error(ResultType);                                             \
     _error(ResultType).code = Code;                                            \

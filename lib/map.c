@@ -30,20 +30,18 @@ result_ref_t genericMapCreate(arena_t *arena, size_t capacity,
   assert(item_size > 0);
 
   generic_map_t *map = nullptr;
-  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(generic_map_t)), map);
+  try(result_ref_t, arenaAllocate(arena, sizeof(generic_map_t)), map);
 
   map->count = 0;
   map->capacity = capacity;
   map->item_size = item_size;
   map->arena = arena;
 
-  tryAssign(result_ref_t, arenaAllocate(arena, sizeof(bool) * capacity),
-            map->used);
-  tryAssign(result_ref_t,
-            arenaAllocate(arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
-            map->keys);
-  tryAssign(result_ref_t, arenaAllocate(arena, item_size * capacity),
-            map->values);
+  try(result_ref_t, arenaAllocate(arena, sizeof(bool) * capacity), map->used);
+  try(result_ref_t,
+      arenaAllocate(arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
+      map->keys);
+  try(result_ref_t, arenaAllocate(arena, item_size * capacity), map->values);
 
   return ok(result_ref_t, map);
 }
@@ -60,13 +58,14 @@ result_void_t genericMapSet(generic_map_t *self, const char *key, void *value) {
   assert(self);
   size_t key_length = strlen(key);
   if (key_length >= MAX_KEY_LENGTH) {
-    throw(result_void_t, MAP_ERROR_INVALID_KEY,
+    throw(result_void_t, MAP_ERROR_INVALID_KEY, nullptr,
           "Map key too long. Expected <= %lu, got %lu", MAX_KEY_LENGTH,
           key_length);
   }
 
   if (key_length == 0) {
-    throw(result_void_t, MAP_ERROR_INVALID_KEY, "Map key cannot be empy");
+    throw(result_void_t, MAP_ERROR_INVALID_KEY, nullptr,
+          "Map key cannot be empy");
   }
 
   size_t index = makeKey(self, key);
@@ -90,16 +89,13 @@ result_void_t genericMapSet(generic_map_t *self, const char *key, void *value) {
       auto values = self->values;
       size_t capacity = self->capacity * 2;
 
-      tryAssign(result_void_t,
-                arenaAllocate(self->arena, sizeof(bool) * capacity),
-                self->used);
-      tryAssign(
-          result_void_t,
+      try(result_void_t, arenaAllocate(self->arena, sizeof(bool) * capacity),
+          self->used);
+      try(result_void_t,
           arenaAllocate(self->arena, sizeof(char) * MAX_KEY_LENGTH * capacity),
           self->keys);
-      tryAssign(result_void_t,
-                arenaAllocate(self->arena, self->item_size * capacity),
-                self->values);
+      try(result_void_t, arenaAllocate(self->arena, self->item_size * capacity),
+          self->values);
 
       for (size_t i = 0; i < self->capacity; i++) {
         if (used[i]) {

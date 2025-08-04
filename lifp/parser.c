@@ -10,8 +10,8 @@ result_node_ref_t parseAtom(arena_t *arena, token_t token) {
   assert(token.type == TOKEN_TYPE_INTEGER || token.type == TOKEN_TYPE_SYMBOL);
 
   node_t *node = nullptr;
-  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_INTEGER), node,
-            token.position);
+  tryWithMeta(result_node_ref_t, nodeCreate(arena, NODE_TYPE_INTEGER),
+              token.position, node);
 
   node->position = token.position;
 
@@ -54,8 +54,8 @@ result_node_ref_t parseList(arena_t *arena, const token_list_t *tokens,
   token_t first_token = listGet(token_t, tokens, *offset);
 
   node_t *node = nullptr;
-  tryAssign(result_node_ref_t, nodeCreate(arena, NODE_TYPE_LIST), node,
-            first_token.position);
+  tryWithMeta(result_node_ref_t, nodeCreate(arena, NODE_TYPE_LIST),
+              first_token.position, node);
 
   node->position = first_token.position;
   node->type = NODE_TYPE_LIST;
@@ -70,11 +70,10 @@ result_node_ref_t parseList(arena_t *arena, const token_list_t *tokens,
     }
 
     node_t *sub_node = nullptr;
-    tryAssign(result_node_ref_t, parse(arena, tokens, offset, depth), sub_node,
-              token.position);
-
-    try(result_node_ref_t, listAppend(node_t, &node->value.list, sub_node),
-        token.position);
+    try(result_node_ref_t, parse(arena, tokens, offset, depth), sub_node);
+    tryWithMeta(result_node_ref_t,
+                listAppend(node_t, &node->value.list, sub_node),
+                token.position);
   }
 
   return ok(result_node_ref_t, node);
@@ -95,8 +94,8 @@ result_node_ref_t parse(arena_t *arena, const token_list_t *tokens,
 
     // There are left parens that don't match right parens
     if (*depth != initial_depth) {
-      throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
-                first_token.position, "Unbalanced parentheses");
+      throw(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
+            first_token.position, "Unbalanced parentheses");
     }
 
     // There are dangling chars after top level list
@@ -104,12 +103,12 @@ result_node_ref_t parse(arena_t *arena, const token_list_t *tokens,
       const token_t last_token = listGet(token_t, tokens, *offset + 1);
 
       if (last_token.type == TOKEN_TYPE_RPAREN) {
-        throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
-                  first_token.position, "Unbalanced parentheses");
+        throw(result_node_ref_t, ERROR_CODE_SYNTAX_UNBALANCED_PARENTHESES,
+              first_token.position, "Unbalanced parentheses");
       }
 
-      throwMeta(result_node_ref_t, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
-                last_token.position, "Unexpected token at the end input");
+      throw(result_node_ref_t, ERROR_CODE_SYNTAX_UNEXPECTED_TOKEN,
+            last_token.position, "Unexpected token at the end input");
     }
 
     return parse_list_result;

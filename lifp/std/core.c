@@ -9,9 +9,8 @@ result_void_position_t sum(value_t *result, value_list_t *values) {
   for (size_t i = 0; i < values->count; i++) {
     value_t current = listGet(value_t, values, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s requires a list numbers. Got type %u",
-                SUM, current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s requires a list numbers. Got type %u", SUM, current.type);
     }
 
     sum += current.value.integer;
@@ -26,14 +25,14 @@ result_void_position_t sum(value_t *result, value_list_t *values) {
 const char *SUB = "-";
 result_void_position_t subtract(value_t *result, value_list_t *values) {
   if (values->count == 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires a non-empty list of numbers", SUB);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires a non-empty list of numbers", SUB);
   }
 
   value_t first = listGet(value_t, values, 0);
   if (first.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list numbers. Got type %u", SUB, first.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list numbers. Got type %u", SUB, first.type);
   }
 
   int32_t result_value = first.value.integer;
@@ -41,9 +40,8 @@ result_void_position_t subtract(value_t *result, value_list_t *values) {
   for (size_t i = 1; i < values->count; i++) {
     value_t current = listGet(value_t, values, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                first.position, "%s requires a list numbers. Got type %u", SUB,
-                current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+            "%s requires a list numbers. Got type %u", SUB, current.type);
     }
 
     result_value -= current.value.integer;
@@ -61,9 +59,8 @@ result_void_position_t multiply(value_t *result, value_list_t *values) {
   for (size_t i = 0; i < values->count; i++) {
     value_t current = listGet(value_t, values, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s requires a list numbers. Got type %u",
-                MUL, current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s requires a list numbers. Got type %u", MUL, current.type);
     }
 
     product *= current.value.integer;
@@ -78,14 +75,14 @@ result_void_position_t multiply(value_t *result, value_list_t *values) {
 const char *DIV = "/";
 result_void_position_t divide(value_t *result, value_list_t *values) {
   if (values->count == 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires a non-empty list of numbers", DIV);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires a non-empty list of numbers", DIV);
   }
 
   value_t first = listGet(value_t, values, 0);
   if (first.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list numbers. Got type %u", DIV, first.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list numbers. Got type %u", DIV, first.type);
   }
 
   int32_t result_value = first.value.integer;
@@ -93,14 +90,13 @@ result_void_position_t divide(value_t *result, value_list_t *values) {
   for (size_t i = 1; i < values->count; i++) {
     value_t current = listGet(value_t, values, i);
     if (current.type != VALUE_TYPE_INTEGER) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s requires a list numbers. Got type %u",
-                DIV, current.type);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s requires a list numbers. Got type %u", DIV, current.type);
     }
 
     if (current.value.integer == 0) {
-      throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-                current.position, "%s division by zero", DIV);
+      throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, current.position,
+            "%s division by zero", DIV);
     }
 
     result_value /= current.value.integer;
@@ -115,27 +111,26 @@ result_void_position_t divide(value_t *result, value_list_t *values) {
 const char *MOD = "%";
 result_void_position_t modulo(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu", MOD,
-              values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", MOD, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
   value_t second = listGet(value_t, values, 1);
 
   if (first.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list numbers. Got type %u", MOD, first.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list numbers. Got type %u", MOD, first.type);
   }
 
   if (second.type != VALUE_TYPE_INTEGER) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
-              "%s requires a list numbers. Got type %u", MOD, second.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
+          "%s requires a list numbers. Got type %u", MOD, second.type);
   }
 
   if (second.value.integer == 0) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
-              "%s modulo by zero", MOD);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
+          "%s modulo by zero", MOD);
   }
 
   result->type = VALUE_TYPE_INTEGER;
@@ -147,9 +142,8 @@ result_void_position_t modulo(value_t *result, value_list_t *values) {
 const char *EQUAL = "=";
 result_void_position_t equal(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              EQUAL, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", EQUAL, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -185,9 +179,8 @@ result_void_position_t equal(value_t *result, value_list_t *values) {
 const char *LESS_THAN = "<";
 result_void_position_t lessThan(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              LESS_THAN, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", LESS_THAN, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -198,8 +191,8 @@ result_void_position_t lessThan(value_t *result, value_list_t *values) {
         first.type != VALUE_TYPE_INTEGER ? first.position : second.position;
     value_type_t error_type =
         first.type != VALUE_TYPE_INTEGER ? first.type : second.type;
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
-              "%s requires a list numbers. Got type %u", LESS_THAN, error_type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
+          "%s requires a list numbers. Got type %u", LESS_THAN, error_type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
@@ -211,9 +204,9 @@ result_void_position_t lessThan(value_t *result, value_list_t *values) {
 const char *GREATER_THAN = ">";
 result_void_position_t greaterThan(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              GREATER_THAN, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", GREATER_THAN,
+          values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -224,9 +217,8 @@ result_void_position_t greaterThan(value_t *result, value_list_t *values) {
         first.type != VALUE_TYPE_INTEGER ? first.position : second.position;
     value_type_t error_type =
         first.type != VALUE_TYPE_INTEGER ? first.type : second.type;
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
-              "%s requires a list numbers. Got type %u", GREATER_THAN,
-              error_type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
+          "%s requires a list numbers. Got type %u", GREATER_THAN, error_type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
@@ -238,9 +230,8 @@ result_void_position_t greaterThan(value_t *result, value_list_t *values) {
 const char *NEQ = "!=";
 result_void_position_t notEqual(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu", NEQ,
-              values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", NEQ, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -277,9 +268,8 @@ result_void_position_t notEqual(value_t *result, value_list_t *values) {
 const char *LEQ = "<=";
 result_void_position_t lessEqual(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu", LEQ,
-              values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", LEQ, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -290,8 +280,8 @@ result_void_position_t lessEqual(value_t *result, value_list_t *values) {
         first.type != VALUE_TYPE_INTEGER ? first.position : second.position;
     value_type_t error_type =
         first.type != VALUE_TYPE_INTEGER ? first.type : second.type;
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
-              "%s requires a list numbers. Got type %u", LEQ, error_type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
+          "%s requires a list numbers. Got type %u", LEQ, error_type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
@@ -303,9 +293,8 @@ result_void_position_t lessEqual(value_t *result, value_list_t *values) {
 const char *GEQ = ">=";
 result_void_position_t greaterEqual(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu", GEQ,
-              values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", GEQ, values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
@@ -316,8 +305,8 @@ result_void_position_t greaterEqual(value_t *result, value_list_t *values) {
         first.type != VALUE_TYPE_INTEGER ? first.position : second.position;
     value_type_t error_type =
         first.type != VALUE_TYPE_INTEGER ? first.type : second.type;
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
-              "%s requires a list numbers. Got type %u", GEQ, error_type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, error_pos,
+          "%s requires a list numbers. Got type %u", GEQ, error_type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
@@ -329,24 +318,22 @@ result_void_position_t greaterEqual(value_t *result, value_list_t *values) {
 const char *LOGICAL_AND = "and";
 result_void_position_t logicalAnd(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              LOGICAL_AND, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", LOGICAL_AND,
+          values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
   value_t second = listGet(value_t, values, 1);
 
   if (first.type != VALUE_TYPE_BOOLEAN) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list booleans. Got type %u", LOGICAL_AND,
-              first.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list booleans. Got type %u", LOGICAL_AND, first.type);
   }
 
   if (second.type != VALUE_TYPE_BOOLEAN) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
-              "%s requires a list booleans. Got type %u", LOGICAL_AND,
-              second.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
+          "%s requires a list booleans. Got type %u", LOGICAL_AND, second.type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
@@ -362,24 +349,22 @@ result_void_position_t logicalAnd(value_t *result, value_list_t *values) {
 const char *LOGICAL_OR = "or";
 result_void_position_t logicalOr(value_t *result, value_list_t *values) {
   if (values->count != 2) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR,
-              result->position, "%s requires exactly 2 arguments. Got %zu",
-              LOGICAL_OR, values->count);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, result->position,
+          "%s requires exactly 2 arguments. Got %zu", LOGICAL_OR,
+          values->count);
   }
 
   value_t first = listGet(value_t, values, 0);
   value_t second = listGet(value_t, values, 1);
 
   if (first.type != VALUE_TYPE_BOOLEAN) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
-              "%s requires a list booleans. Got type %u", LOGICAL_OR,
-              first.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, first.position,
+          "%s requires a list booleans. Got type %u", LOGICAL_OR, first.type);
   }
 
   if (second.type != VALUE_TYPE_BOOLEAN) {
-    throwMeta(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
-              "%s requires a list booleans. Got type %u", LOGICAL_OR,
-              second.type);
+    throw(result_void_position_t, ERROR_CODE_RUNTIME_ERROR, second.position,
+          "%s requires a list booleans. Got type %u", LOGICAL_OR, second.type);
   }
 
   result->type = VALUE_TYPE_BOOLEAN;
