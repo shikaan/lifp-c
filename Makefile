@@ -27,12 +27,8 @@ tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o
 tests/integration.test: lifp/lexer.o lifp/parser.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o
 
 bin/repl: lifp/lexer.o lifp/parser.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o linenoise.o
+bin/run: lifp/lexer.o lifp/parser.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o
 
-bin/test: lib/arena.o lifp/environment.o lib/map.o lib/list.o
-
-.PHONY: run
-run: bin/repl
-	bin/repl
 
 .PHONY: clean
 clean:
