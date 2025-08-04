@@ -3,6 +3,10 @@ include flags.mk
 .PHONY: all
 all: clean bin/repl
 
+linenoise.o: CFLAGS = -Wall -W -Os
+linenoise.o: vendor/linenoise/linenoise.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 lib/list.o: lib/arena.o
 lib/map.o: lib/arena.o
 
@@ -22,8 +26,7 @@ tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o
 
 tests/integration.test: lifp/lexer.o lifp/parser.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o
 
-LDFLAGS := -lreadline
-bin/repl: lifp/lexer.o lifp/parser.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o
+bin/repl: lifp/lexer.o lifp/parser.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o linenoise.o
 
 bin/test: lib/arena.o lifp/environment.o lib/map.o lib/list.o
 
@@ -45,7 +48,7 @@ lifp-test: tests/lexer.test tests/parser.test tests/evaluate.test tests/integrat
 	tests/integration.test
 
 .PHONY: lib-test
-lib-test: tests/arena.test tests/list.test tests/map.test 
+lib-test: tests/arena.test tests/list.test tests/map.test
 	tests/arena.test
 	tests/list.test
 	tests/map.test

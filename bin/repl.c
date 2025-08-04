@@ -5,8 +5,7 @@
 #include "../lifp/lexer.h"
 #include "../lifp/node.h"
 #include "../lifp/parser.h"
-#include <readline/history.h>  //TODO this is platform dependent
-#include <readline/readline.h> //TODO this is platform dependent
+#include "../vendor/linenoise/linenoise.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -57,18 +56,24 @@ int main(void) {
   tryCLI(environmentCreate(nullptr), global_environment,
          "unable to allocate virtual machine memory");
 
-  using_history();
+  linenoiseSetMultiLine(1);
 
   while (true) {
     arenaReset(ast_arena);
     arenaReset(temp_arena);
-    char *input = readline("> ");
+    char *input = linenoise("> ");
+
+    if (!input)
+      break;
+
+    if (strlen(input) == 0)
+      continue;
 
     token_list_t *tokens = nullptr;
     tryREPL(tokenize(ast_arena, input), tokens);
 
     // Add to history only if the string can be tokenized
-    add_history(input);
+    linenoiseHistoryAdd(input);
 
     size_t offset = 0;
     size_t depth = 0;
