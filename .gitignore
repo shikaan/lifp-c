@@ -2,6 +2,7 @@
 .vscode
 compile_commands.json
 .todo
+.vimspector.session
 
 # build artifacts
 **/*.o
