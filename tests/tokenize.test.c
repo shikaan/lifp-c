@@ -1,4 +1,4 @@
-#include "../lifp/lexer.h"
+#include "../lifp/tokenize.h"
 #include "../lifp/error.h"
 #include "test.h"
 #include "utils.h"

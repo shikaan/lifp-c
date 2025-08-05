@@ -1,7 +1,7 @@
 #include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
-#include "../lifp/lexer.h"
 #include "../lifp/parser.h"
+#include "../lifp/tokenize.h"
 
 #include <fcntl.h> // open
 #include <stddef.h>

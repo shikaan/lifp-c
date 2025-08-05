@@ -2,9 +2,9 @@
 
 #include "../lib/arena.h"
 #include "../lib/result.h"
-#include "lexer.h"
 #include "node.h"
 #include "position.h"
+#include "tokenize.h"
 #include <stddef.h>
 #include <stdint.h>
 

@@ -2,9 +2,9 @@
 #include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
 #include "../lifp/fmt.h"
-#include "../lifp/lexer.h"
 #include "../lifp/node.h"
 #include "../lifp/parser.h"
+#include "../lifp/tokenize.h"
 #include "../vendor/linenoise/linenoise.h"
 #include <stddef.h>
 #include <stdio.h>

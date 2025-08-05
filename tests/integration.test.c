@@ -3,8 +3,8 @@
 
 #include "../lib/arena.h"
 #include "../lifp/evaluate.h"
-#include "../lifp/lexer.h"
 #include "../lifp/parser.h"
+#include "../lifp/tokenize.h"
 #include <assert.h>
 #include <stddef.h>
 
