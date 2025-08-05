@@ -3,7 +3,7 @@
 #include "../lifp/evaluate.h"
 #include "../lifp/fmt.h"
 #include "../lifp/node.h"
-#include "../lifp/parser.h"
+#include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
 #include "../vendor/linenoise/linenoise.h"
 #include <stddef.h>
