@@ -121,7 +121,7 @@ void formatValue(const value_t *value, int size,
     return;
   }
   case VALUE_TYPE_CLOSURE:
-    append(size, output_buffer, offset, "(fn* (");
+    append(size, output_buffer, offset, "(fn (");
     node_list_t arguments = value->value.closure.arguments;
 
     if (arguments.count > 0) {
