@@ -32,8 +32,27 @@ the module that performs tokenization whose output type is a `token_t`.
 
 **Entities** are the basic structures that make up the domain. They map to a
 type and have a few methods to manage them. Typically they feature a
-`nameOfTheEntitycreate` method a `...copy` and a `...clone` method.
+`nameOfTheEntityCreate` method a `...copy` and a `...clone` method.
 
 Modules are names after the type they expose; for exampe, `node.h` for `node_t`.
+
+## Error Handling
+
+Happens by means of the `result.h` module: each action that can fail is wrapped
+in a `Result` type that the caller needs to handle. Error are surfaced by the
+`throw` macro, and handled with the `try...` macros.
+
+Errors thrown by the files in `lifp/*` all feature a `position_t` meta object,
+for the error renderer to give a pointer on where the exception occurred.
+
+Errors thrown from anywhere else will not have a position, and need to be
+enriched with metadata in the call site. For example:
+
+```c
+// ... code
+
+ tryWithMeta(result_type_t, listCreate(...)) // enriches the error with meta
+
+```
 
 ; vim: tw=80 cc=+1
