@@ -1,7 +1,6 @@
+#include "parse.h"
 #include "error.h"
 #include "node.h"
-#include "parse.h"
-#include "tokenize.h"
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>

@@ -4,7 +4,7 @@
 #include "../lib/result.h"
 #include "node.h"
 #include "position.h"
-#include "tokenize.h"
+#include "token.h"
 #include <stddef.h>
 #include <stdint.h>
 
