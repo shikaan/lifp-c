@@ -67,7 +67,7 @@ void values() {
       listAppend(node_t, &closure->value.closure.form.value.list, symbol));
 
   formatValue(list, size, buffer, &offset);
-  expectEqlString(buffer, "(fn* (a) (a))", 10, "formats lambdas");
+  expectEqlString(buffer, "(fn (a) (a))", 10, "formats lambdas");
 }
 
 void errors() {
