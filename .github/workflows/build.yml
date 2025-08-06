@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux
+            arch: amd64
+            cc: clang-21
+            setup_cmd: |
+              wget https://apt.llvm.org/llvm.sh
+              chmod +x llvm.sh
+              sudo ./llvm.sh 21
+              sudo apt-get install -y clang-21
+
+          - os: ubuntu-22.04-arm
+            platform: linux
+            arch: arm64
+            cc: clang-21
+            setup_cmd: |
+              wget https://apt.llvm.org/llvm.sh
+              chmod +x llvm.sh
+              sudo ./llvm.sh 21
+              sudo apt-get install -y clang-21
+
+          # TODO: add amd63 cross compilation 
+          - os: macos-14
+            platform: darwin
+            arch: arm64
+            cc: /opt/homebrew/opt/llvm/bin/clang
+            setup_cmd: |
+              brew install llvm
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install C23-compatible compiler
+      run: ${{ matrix.setup_cmd }}
+    
+    - name: Run tests
+      run: |
+        make CC=${{ matrix.cc }} clean test
+      env:
+        UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
+
+    - name: Build project
+      run: |
+        make CC=${{ matrix.cc }} BUILD_TYPE=release clean all
+      env:
+        UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
+
+    - name: Prepare artifacts
+      run: |
+        mkdir -p artifacts
+        cp bin/repl artifacts/repl-${{ matrix.platform }}-${{ matrix.arch }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: lifp-${{ matrix.platform }}-${{ matrix.arch }}
+        path: artifacts/
+        retention-days: 30
+
+  release:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release-artifacts
+
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release-artifacts/**/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

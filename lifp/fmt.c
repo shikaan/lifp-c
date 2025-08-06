@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "fmt.h"
 #include "../lib/list.h"
 #include "node.h"
