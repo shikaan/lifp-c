@@ -13,21 +13,22 @@ lib/map.o: lib/arena.o
 lifp/tokenize.o: lib/list.o lib/arena.o
 lifp/parse.o: lifp/tokenize.o lib/list.o lib/arena.o lifp/node.o
 lifp/node.o: lib/arena.o
-lifp/environment.o: lib/arena.o lib/map.o
-lifp/evaluate.o: lib/arena.o lifp/environment.o lib/map.o
+lifp/value.o: lib/arena.o lifp/node.o
+lifp/environment.o: lib/arena.o lib/map.o lifp/value.o
+lifp/evaluate.o: lib/arena.o lifp/environment.o lib/map.o lifp/value.o
 
 tests/tokenize.test: lifp/tokenize.o lib/list.o lib/arena.o
 tests/parser.test: lifp/parse.o lifp/tokenize.o lib/list.o lifp/node.o lib/arena.o
 tests/list.test: lib/list.o lib/arena.o
 tests/arena.test: lib/arena.o
-tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/environment.o lib/map.o
+tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/environment.o lib/map.o lifp/value.o
 tests/map.test: lib/arena.o lib/map.o
-tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o
+tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o lifp/value.o
 
-tests/integration.test: lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o
+tests/integration.test: lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o lifp/value.o
 
-bin/repl: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o linenoise.o
-bin/run: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o
+bin/repl: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o linenoise.o
+bin/run: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o
 
 
 .PHONY: clean
