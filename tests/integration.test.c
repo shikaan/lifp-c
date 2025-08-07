@@ -39,6 +39,7 @@ result_value_ref_t execute(const char *input) {
     arenaReset(test_ast_arena);
   }
 
+  environmentDestroy(&env);
   arenaReset(test_temp_arena);
   return last_result;
 }
@@ -75,5 +76,7 @@ int main() {
   reduction = execute("(def! sum (fn (a b) (+ a b)))\n(sum 1 2)");
   expectEqlInt(reduction.value->value.integer, 3, "returns correct value");
 
+  arenaDestroy(test_ast_arena);
+  arenaDestroy(test_temp_arena);
   return report();
 }

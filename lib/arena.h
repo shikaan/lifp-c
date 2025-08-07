@@ -37,17 +37,11 @@
 
 #pragma once
 
-#include "result.h"
-#include <stddef.h>
+#include "alloc.h"
+#include <stdlib.h>
 
 typedef unsigned char byte_t;
 typedef char message_t[64];
-
-/**
- * The result of an allocation. It returns a void* to be casted by the caller.
- * @name result_ref_t
- */
-typedef Result(void *) result_ref_t;
 
 typedef enum {
   ARENA_ERROR_MALLOC_ERROR = 1,
@@ -115,16 +109,3 @@ void arenaDestroy(arena_t *self);
  *   arenaReset(arena);  // All memory now available again
  */
 void arenaReset(arena_t *self);
-
-/**
- * Copy bytes from source to destination memory locations.
- * @name bytewiseCopy
- * @param {void*} dest - Pointer to the destination memory location
- * @param {const void*} src - Pointer to the source memory location to copy from
- * @param {size_t} size - Number of bytes to copy
- * @example
- *   char source[] = "Hello";
- *   char dest[6];
- *   bytewiseCopy(dest, source, 6);  // dest now contains "Hello"
- */
-void bytewiseCopy(void *dest, const void *src, size_t size);

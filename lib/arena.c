@@ -1,35 +1,9 @@
 #include "arena.h"
+#include "alloc.h"
 #include "result.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define deallocSafe(DoublePointer)                                             \
-  {                                                                            \
-    if (*(DoublePointer) != nullptr) {                                         \
-      free((void *)*(DoublePointer));                                          \
-      *(DoublePointer) = nullptr;                                              \
-    }                                                                          \
-  }
-
-static result_ref_t allocSafe(size_t size) {
-  void *ptr = malloc(size);
-
-  if (ptr == nullptr) {
-    throw(result_ref_t, ARENA_ERROR_MALLOC_ERROR, nullptr,
-          "Unable to allocate size: %lu", size);
-  }
-
-  return ok(result_ref_t, ptr);
-}
-
-void bytewiseCopy(void *dest, const void *src, size_t size) {
-  const auto dest_bytes = (unsigned char *)dest;
-  const auto src_bytes = (const unsigned char *)src;
-  for (size_t i = 0; i < size; i++) {
-    dest_bytes[i] = src_bytes[i];
-  }
-}
 
 result_ref_t arenaCreate(size_t size) {
   arena_t *arena = nullptr;
