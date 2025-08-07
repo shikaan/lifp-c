@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   release:
-    types: [ published ]
+    types: [ created ]
 
 jobs:
   build:
@@ -57,7 +57,15 @@ jobs:
 
     - name: Install C23-compatible compiler
       run: ${{ matrix.setup_cmd }}
-    
+
+    - name: Compute version string
+      id: version
+      run: |
+        VERSION="${GITHUB_REF#refs/tags/}"
+        [[ "$GITHUB_REF" != refs/tags/* ]] && VERSION="dev"
+        VERSION_STRING="${VERSION} (${GITHUB_SHA:0:7})"
+        echo "VERSION_STRING=$VERSION_STRING" >> $GITHUB_OUTPUT
+
     - name: Run tests
       run: |
         make CC="${{ matrix.cc }}" clean test
@@ -68,7 +76,7 @@ jobs:
       run: |
         mkdir -p artifacts
         make CC="${{ matrix.cc }}" BUILD_TYPE=release clean all
-        cp bin/repl artifacts/repl-${{ matrix.platform }}-${{ matrix.arch }}
+        cp bin/repl artifacts/lifp-${{ matrix.platform }}-${{ matrix.arch }}
       env:
         UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
 
@@ -77,22 +85,14 @@ jobs:
       with:
         name: lifp-${{ matrix.platform }}-${{ matrix.arch }}
         path: artifacts/
-        retention-days: 30
-
-  release:
-    if: github.event_name == 'release'
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: release-artifacts
+        retention-days: 7
 
     - name: Upload release assets
+      if: github.event_name == 'release'
       uses: softprops/action-gh-release@v1
       with:
-        files: release-artifacts/**/*
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        files: |
+          artifacts/lifp-darwin-amd64
+          artifacts/lifp-darwin-arm64
+          artifacts/lifp-linux-amd64
+          artifacts/lifp-linux-arm64
