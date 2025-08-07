@@ -48,6 +48,8 @@ void alignment() {
     uintptr_t pointer = (uintptr_t)allocation.value;
     expectEqlUint(pointer % 8, 0, "address is 8-aligned");
   }
+
+  arenaDestroy(arena);
 }
 
 int main() {
