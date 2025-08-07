@@ -39,6 +39,7 @@
 
 #include "result.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 typedef unsigned char byte_t;
 typedef char message_t[64];
@@ -128,3 +129,12 @@ void arenaReset(arena_t *self);
  *   bytewiseCopy(dest, source, 6);  // dest now contains "Hello"
  */
 void bytewiseCopy(void *dest, const void *src, size_t size);
+
+// TODO: add documentation
+#define deallocSafe(DoublePointer)                                             \
+  {                                                                            \
+    if (*(DoublePointer) != nullptr) {                                         \
+      free((void *)*(DoublePointer));                                          \
+      *(DoublePointer) = nullptr;                                              \
+    }                                                                          \
+  }

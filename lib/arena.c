@@ -4,14 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define deallocSafe(DoublePointer)                                             \
-  {                                                                            \
-    if (*(DoublePointer) != nullptr) {                                         \
-      free((void *)*(DoublePointer));                                          \
-      *(DoublePointer) = nullptr;                                              \
-    }                                                                          \
-  }
-
 static result_ref_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 

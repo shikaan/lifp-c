@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "fmt.h"
+#include "../lib/arena.h"
 #include "../lib/list.h"
 #include "node.h"
 #include "position.h"
@@ -31,6 +32,7 @@ static void formatCurrentLine(position_t caret, const char *input_buffer,
   append(size, output_buffer, offset, "\n\n%s%s", indent, line);
   append(size, output_buffer, offset, "\n%*c^\n",
          (int)caret.column - 1 + (int)strlen(indent), ' ');
+  deallocSafe(&copy);
 }
 
 static void formatNode(const node_t *node, int size, char buffer[static size],
