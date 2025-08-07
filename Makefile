@@ -33,7 +33,7 @@ bin/run: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib
 
 .PHONY: clean
 clean:
-	rm -rf **/*.o **/*.dSYM main *.dSYM *.plist
+	rm -rf *.o **/*.o **/*.dSYM main *.dSYM *.plist
 	rm -f tests/*.test
 
 .PHONY: lifp-test

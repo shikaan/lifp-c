@@ -33,11 +33,17 @@ jobs:
               sudo ./llvm.sh 21
               sudo apt-get install -y clang-21
 
-          # TODO: add amd63 cross compilation 
           - os: macos-14
             platform: darwin
             arch: arm64
             cc: /opt/homebrew/opt/llvm/bin/clang
+            setup_cmd: |
+              brew install llvm
+          
+          - os: macos-14
+            platform: darwin
+            arch: amd64
+            cc: /opt/homebrew/opt/llvm/bin/clang -arch x86_64
             setup_cmd: |
               brew install llvm
 
@@ -54,20 +60,17 @@ jobs:
     
     - name: Run tests
       run: |
-        make CC=${{ matrix.cc }} clean test
+        make CC="${{ matrix.cc }}" clean test
       env:
         UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
 
-    - name: Build project
-      run: |
-        make CC=${{ matrix.cc }} BUILD_TYPE=release clean all
-      env:
-        UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
-
-    - name: Prepare artifacts
+    - name: Build binary
       run: |
         mkdir -p artifacts
+        make CC="${{ matrix.cc }}" BUILD_TYPE=release clean all
         cp bin/repl artifacts/repl-${{ matrix.platform }}-${{ matrix.arch }}
+      env:
+        UNAME_S: ${{ matrix.platform == 'linux' && 'Linux' || 'Darwin' }}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
