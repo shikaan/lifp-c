@@ -1,5 +1,4 @@
 #include "../lifp/fmt.h"
-#include "../lib/arena.h"
 #include "../lib/list.h"
 #include "../lifp/node.h"
 #include "test.h"
