@@ -4,6 +4,69 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#ifdef ALLOC_PROFILE
+#include <string.h>
+constexpr long MAX_SEGMENTS = 1024;
+
+extern unsigned long allocated;
+extern long segments_count;
+extern void *pointers[MAX_SEGMENTS];
+extern size_t sizes[MAX_SEGMENTS];
+extern char labels[16][MAX_SEGMENTS];
+
+static inline void _allocationProfileReport(void) {
+  size_t frees = 0;
+  for (long i = 0; i < segments_count; i++) {
+    if (sizes[i] == 0)
+      frees++;
+  }
+
+  printf(" === Memory Profiler: Malloc ===\n");
+  printf("    # malloc: %lu\n", segments_count);
+  printf("      # free: %lu\n", frees);
+  printf("   allocated: %lu bytes\n", allocated);
+}
+
+#define allocationProfileInit()                                                \
+  unsigned long allocated = 0;                                                 \
+  long segments_count = 0;                                                     \
+  void *pointers[MAX_SEGMENTS] = {};                                           \
+  size_t sizes[MAX_SEGMENTS] = {};                                             \
+  char labels[16][MAX_SEGMENTS] = {};
+
+#define allocationProfileStart(Pointer, Size, Label)                           \
+  {                                                                            \
+    if (segments_count < MAX_SEGMENTS) {                                       \
+      pointers[segments_count] = Pointer;                                      \
+      sizes[segments_count] = Size;                                            \
+      memcpy(labels[segments_count], Label, strlen(Label));                    \
+      segments_count++;                                                        \
+      allocated += (Size);                                                     \
+    }                                                                          \
+  }
+
+#define allocationProfileEnd(DoublePointer)                                    \
+  {                                                                            \
+    for (long i = 0; i < segments_count; i++) {                                \
+      if (*(DoublePointer) == pointers[i]) {                                   \
+        allocated -= sizes[i];                                                 \
+        sizes[i] = 0;                                                          \
+        pointers[i] = nullptr;                                                 \
+      }                                                                        \
+    }                                                                          \
+  }
+
+#define allocationProfileReport() _allocationProfileReport()
+
+#else
+
+#define allocationProfileInit()
+#define allocationProfileStart(Pointer, Size, Label)
+#define allocationProfileEnd(DoublePointer)
+#define allocationProfileReport()
+
+#endif
+
 typedef enum {
   ALLOC_ERROR_MALLOC_ERROR = 1,
 } alloc_error_t;
@@ -37,7 +100,8 @@ static inline void bytewiseCopy(void *dest, const void *src, size_t size) {
  * Safely allocate memory with error handling.
  * @name allocSafe
  * @param {size_t} size - Number of bytes to allocate
- * @returns {result_ref_t} Result containing allocated memory pointer on success, or error on failure
+ * @returns {result_ref_t} Result containing allocated memory pointer on
+ * success, or error on failure
  * @example
  *   result_ref_t result = allocSafe(100);
  *   if (isOk(result)) {
@@ -45,13 +109,17 @@ static inline void bytewiseCopy(void *dest, const void *src, size_t size) {
  *     // Use allocated memory
  *   }
  */
-static inline result_ref_t allocSafe(size_t size) {
+#define allocSafe(Size) _allocSafe(Size, __FUNCTION__)
+static inline result_ref_t _allocSafe(size_t size,
+                                      [[maybe_unused]] const char *label) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
     throw(result_ref_t, ALLOC_ERROR_MALLOC_ERROR, nullptr,
           "Unable to allocate size: %lu", size);
   }
+
+  allocationProfileStart(ptr, size, label);
 
   return ok(result_ref_t, ptr);
 }
@@ -67,6 +135,7 @@ static inline result_ref_t allocSafe(size_t size) {
 #define deallocSafe(DoublePointer)                                             \
   {                                                                            \
     if (*(DoublePointer) != nullptr) {                                         \
+      allocationProfileEnd(DoublePointer);                                     \
       free((void *)*(DoublePointer));                                          \
       *(DoublePointer) = nullptr;                                              \
     }                                                                          \

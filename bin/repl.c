@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 
+allocationProfileInit();
+
 // Size of the output buffer
 constexpr size_t BUFFER_SIZE = 4096;
 
@@ -58,6 +60,8 @@ int main(void) {
 
   linenoiseSetMultiLine(1);
 
+  allocationProfileReport();
+
   while (true) {
     arenaReset(ast_arena);
     arenaReset(temp_arena);
@@ -88,10 +92,12 @@ int main(void) {
     printf("~> %s\n", buffer);
 
     memset(buffer, 0, BUFFER_SIZE);
+    allocationProfileReport();
   }
   environmentDestroy(&global_environment);
   arenaDestroy(temp_arena);
   arenaDestroy(ast_arena);
+  allocationProfileReport();
   return 0;
 }
 
