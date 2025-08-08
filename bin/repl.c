@@ -89,8 +89,9 @@ int main(void) {
 
     memset(buffer, 0, BUFFER_SIZE);
   }
-  arenaDestroy(ast_arena);
   environmentDestroy(&global_environment);
+  arenaDestroy(temp_arena);
+  arenaDestroy(ast_arena);
   return 0;
 }
 
