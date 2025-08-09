@@ -166,14 +166,23 @@ void printSpan(const span_t *span, int indentation) {
 }
 
 void printArenas(void) {
+  size_t freed = 0;
   for (size_t i = 0; i < arena_metrics.arenas_count; i++) {
     arena_t *arena = arena_metrics.arenas[i];
-    if (!arena_metrics.freed[i]) {
-      printf("   arena[%lu]: %lu/%lu bytes (%0.2f%%)\n", i, arena->offset,
+    if (arena_metrics.freed[i]) {
+      freed++;
+    } else {
+      printf("    arena[%lu]: %lu/%lu bytes (%0.2f%%)\n", i, arena->offset,
              arena->size,
              (double)(arena->offset * 100) / (double)(arena->size));
     }
   }
+
+  printf("\n"
+         "    Stats:\n"
+         "      tracked:   %lu arenas\n"
+         "      destroyed: %lu arenas\n",
+         arena_metrics.arenas_count, freed);
 }
 
 void profileReport(void) {
