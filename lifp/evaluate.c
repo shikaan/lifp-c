@@ -1,4 +1,5 @@
 #include "evaluate.h"
+#include "../lib/profile.h"
 #include "environment.h"
 #include "error.h"
 #include "node.h"
@@ -47,6 +48,8 @@ static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
 static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
                                         arena_t *arena,
                                         environment_t *parent_environment) {
+  profileAllocations();
+
   assert(closure_value.type == VALUE_TYPE_CLOSURE);
   closure_t closure = closure_value.value.closure;
 
@@ -134,6 +137,8 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
 
 result_value_ref_t evaluate(arena_t *arena, node_t *syntax_tree,
                             environment_t *environment) {
+  profileAllocations();
+
   value_t *value = nullptr;
   tryWithMeta(result_value_ref_t, valueCreate(arena, VALUE_TYPE_INTEGER),
               syntax_tree->position, value);
