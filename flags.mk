@@ -3,7 +3,7 @@
 ### A minimalistic C23 flags.mk with strict flags.
 ### 
 ### ```sh
-### make main               			# debug build (default)
+### make main               		# debug build (default)
 ### make BUILD_TYPE=debug main  	# debug build
 ### make BUILD_TYPE=release main	# release build
 ### ```

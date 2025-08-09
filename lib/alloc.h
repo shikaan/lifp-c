@@ -1,69 +1,49 @@
 #pragma once
 
 #include "./result.h"
-#include <stddef.h>
 #include <stdlib.h>
 
-#ifdef ALLOC_PROFILE
-#include <string.h>
+#ifdef MEMORY_PROFILE
 constexpr long MAX_SEGMENTS = 1024;
 
-extern unsigned long allocated;
-extern long segments_count;
-extern void *pointers[MAX_SEGMENTS];
-extern size_t sizes[MAX_SEGMENTS];
-extern char labels[16][MAX_SEGMENTS];
+typedef struct {
+  unsigned long bytes;
+  unsigned long segments_count;
+  void *pointers[MAX_SEGMENTS];
+  size_t sizes[MAX_SEGMENTS];
+  bool freed[MAX_SEGMENTS];
+} alloc_metrics_t;
 
-static inline void _allocationProfileReport(void) {
-  size_t frees = 0;
-  for (long i = 0; i < segments_count; i++) {
-    if (sizes[i] == 0)
-      frees++;
+extern alloc_metrics_t metrics;
+extern bool init;
+
+#define allocProfileStart(Pointer, Size)                                         \
+  if (metrics.segments_count < MAX_SEGMENTS) {                                 \
+    metrics.pointers[metrics.segments_count] = Pointer;                        \
+    metrics.sizes[metrics.segments_count] = Size;                              \
+    metrics.freed[metrics.segments_count] = false;                             \
+    metrics.segments_count++;                                                  \
+    metrics.bytes += (Size);                                                   \
   }
 
-  printf(" === Memory Profiler: Malloc ===\n");
-  printf("    # malloc: %lu\n", segments_count);
-  printf("      # free: %lu\n", frees);
-  printf("   allocated: %lu bytes\n", allocated);
-}
-
-#define allocationProfileInit()                                                \
-  unsigned long allocated = 0;                                                 \
-  long segments_count = 0;                                                     \
-  void *pointers[MAX_SEGMENTS] = {};                                           \
-  size_t sizes[MAX_SEGMENTS] = {};                                             \
-  char labels[16][MAX_SEGMENTS] = {};
-
-#define allocationProfileStart(Pointer, Size, Label)                           \
-  {                                                                            \
-    if (segments_count < MAX_SEGMENTS) {                                       \
-      pointers[segments_count] = Pointer;                                      \
-      sizes[segments_count] = Size;                                            \
-      memcpy(labels[segments_count], Label, strlen(Label));                    \
-      segments_count++;                                                        \
-      allocated += (Size);                                                     \
+#define allocProfileEnd(DoublePointer)                                           \
+  for (unsigned long i = 0; i < metrics.segments_count; i++) {                 \
+    if (*(DoublePointer) == metrics.pointers[i] && !metrics.freed[i]) {        \
+      metrics.bytes -= metrics.sizes[i];                                       \
+      metrics.freed[i] = true;                                                 \
     }                                                                          \
   }
 
-#define allocationProfileEnd(DoublePointer)                                    \
-  {                                                                            \
-    for (long i = 0; i < segments_count; i++) {                                \
-      if (*(DoublePointer) == pointers[i]) {                                   \
-        allocated -= sizes[i];                                                 \
-        sizes[i] = 0;                                                          \
-        pointers[i] = nullptr;                                                 \
-      }                                                                        \
-    }                                                                          \
-  }
+#define allocGetMetrics() metrics
 
-#define allocationProfileReport() _allocationProfileReport()
+#define allocMetricsInit() alloc_metrics_t metrics = {}
 
 #else
 
-#define allocationProfileInit()
-#define allocationProfileStart(Pointer, Size, Label)
-#define allocationProfileEnd(DoublePointer)
-#define allocationProfileReport()
+#define allocProfileStart(Pointer, Size)
+#define allocProfileEnd(DoublePointer)
+#define allocProfileGetMetrics()
+#define allocMetricsInit()
 
 #endif
 
@@ -72,7 +52,7 @@ typedef enum {
 } alloc_error_t;
 
 /**
- * The result of an allocation. It returns a void* to be casted by the caller.
+ * The result of an allocation. It returns a void* to be cast by the caller.
  * @name result_ref_t
  */
 typedef Result(void *) result_ref_t;
@@ -105,13 +85,11 @@ static inline void bytewiseCopy(void *dest, const void *src, size_t size) {
  * @example
  *   result_ref_t result = allocSafe(100);
  *   if (isOk(result)) {
- *     void *ptr = unwrap(result);
+ *     my_type_t *ptr = result.value;
  *     // Use allocated memory
  *   }
  */
-#define allocSafe(Size) _allocSafe(Size, __FUNCTION__)
-static inline result_ref_t _allocSafe(size_t size,
-                                      [[maybe_unused]] const char *label) {
+static inline result_ref_t allocSafe(size_t size) {
   void *ptr = malloc(size);
 
   if (ptr == nullptr) {
@@ -119,7 +97,7 @@ static inline result_ref_t _allocSafe(size_t size,
           "Unable to allocate size: %lu", size);
   }
 
-  allocationProfileStart(ptr, size, label);
+  allocProfileStart(ptr, size);
 
   return ok(result_ref_t, ptr);
 }
@@ -135,7 +113,7 @@ static inline result_ref_t _allocSafe(size_t size,
 #define deallocSafe(DoublePointer)                                             \
   {                                                                            \
     if (*(DoublePointer) != nullptr) {                                         \
-      allocationProfileEnd(DoublePointer);                                     \
+      allocProfileEnd(DoublePointer);                                          \
       free((void *)*(DoublePointer));                                          \
       *(DoublePointer) = nullptr;                                              \
     }                                                                          \
