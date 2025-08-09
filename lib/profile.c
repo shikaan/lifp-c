@@ -72,8 +72,13 @@ span_t *spanStart(const char *label) {
 
   if (!span) {
     span = spanCreate(label);
-    CURRENT_SPAN->subspans[CURRENT_SPAN->subspans_count] = span;
-    CURRENT_SPAN->subspans_count++;
+    if (CURRENT_SPAN->subspans_count < MAX_SUBSPAN) {
+      CURRENT_SPAN->subspans[CURRENT_SPAN->subspans_count] = span;
+      CURRENT_SPAN->subspans_count++;
+    } else {
+      printf("cannot allocate new profiling span\n");
+      return nullptr;
+    }
   }
 
   span->hits++;
