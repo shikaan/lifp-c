@@ -85,10 +85,11 @@ span_t *spanStart(const char *label) {
 
 void spanEnd(span_t **span_double_ref) {
   span_t *span = *span_double_ref;
-  span->total += getCurrentMemory() - span->last;
+  unsigned long delta = getCurrentMemory() - span->last;
+  span->total += delta;
 
   if (span->parent) {
-    span->parent->total += span->total;
+    span->parent->total += delta;
   }
 
   CURRENT_SPAN = span->parent;

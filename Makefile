@@ -1,6 +1,8 @@
 include flags.mk
 
-CFLAGS := $(CFLAGS) -DMEMORY_PROFILE=$(PROFILE)
+ifeq ($(PROFILE),1)
+	CFLAGS := $(CFLAGS) -DMEMORY_PROFILE
+endif
 
 .PHONY: all
 all: clean bin/repl
