@@ -12,37 +12,37 @@ typedef struct {
   void *pointers[MAX_SEGMENTS];
   size_t sizes[MAX_SEGMENTS];
   bool freed[MAX_SEGMENTS];
-} alloc_metrics_t;
+} safe_alloc_metrics_t;
 
-extern alloc_metrics_t metrics;
-extern bool init;
+extern safe_alloc_metrics_t safe_alloc_metrics;
 
-#define allocProfileStart(Pointer, Size)                                         \
-  if (metrics.segments_count < MAX_SEGMENTS) {                                 \
-    metrics.pointers[metrics.segments_count] = Pointer;                        \
-    metrics.sizes[metrics.segments_count] = Size;                              \
-    metrics.freed[metrics.segments_count] = false;                             \
-    metrics.segments_count++;                                                  \
-    metrics.bytes += (Size);                                                   \
+#define allocProfileStart(Pointer, Size)                                       \
+  if (safe_alloc_metrics.segments_count < MAX_SEGMENTS) {                      \
+    safe_alloc_metrics.pointers[safe_alloc_metrics.segments_count] = Pointer;  \
+    safe_alloc_metrics.sizes[safe_alloc_metrics.segments_count] = Size;        \
+    safe_alloc_metrics.freed[safe_alloc_metrics.segments_count] = false;       \
+    safe_alloc_metrics.segments_count++;                                       \
+    safe_alloc_metrics.bytes += (Size);                                        \
   }
 
-#define allocProfileEnd(DoublePointer)                                           \
-  for (unsigned long i = 0; i < metrics.segments_count; i++) {                 \
-    if (*(DoublePointer) == metrics.pointers[i] && !metrics.freed[i]) {        \
-      metrics.bytes -= metrics.sizes[i];                                       \
-      metrics.freed[i] = true;                                                 \
+#define allocProfileEnd(DoublePointer)                                         \
+  for (unsigned long i = 0; i < safe_alloc_metrics.segments_count; i++) {      \
+    if (*(DoublePointer) == safe_alloc_metrics.pointers[i] &&                  \
+        !safe_alloc_metrics.freed[i]) {                                        \
+      safe_alloc_metrics.bytes -= safe_alloc_metrics.sizes[i];                 \
+      safe_alloc_metrics.freed[i] = true;                                      \
     }                                                                          \
   }
 
-#define allocGetMetrics() metrics
+#define allocGetMetrics() safe_alloc_metrics
 
-#define allocMetricsInit() alloc_metrics_t metrics = {}
+#define allocMetricsInit() safe_alloc_metrics_t safe_alloc_metrics = {}
 
 #else
 
 #define allocProfileStart(Pointer, Size)
 #define allocProfileEnd(DoublePointer)
-#define allocProfileGetMetrics()
+#define allocGetMetrics()
 #define allocMetricsInit()
 
 #endif

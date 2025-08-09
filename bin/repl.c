@@ -62,6 +62,7 @@ int main(void) {
 
   profileInit();
   while (true) {
+    profileReport();
     arenaReset(ast_arena);
     arenaReset(temp_arena);
     char *input = linenoise("> ");
@@ -91,7 +92,6 @@ int main(void) {
     printf("~> %s\n", buffer);
 
     memset(buffer, 0, BUFFER_SIZE);
-    profileReport();
   }
   profileEnd();
   environmentDestroy(&global_environment);
