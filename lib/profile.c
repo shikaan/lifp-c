@@ -86,7 +86,8 @@ span_t *safeAllocSpanStart(const char *label) {
           ->subspans[CURRENT_SAFE_ALLOC_SPAN->subspans_count] = span;
       CURRENT_SAFE_ALLOC_SPAN->subspans_count++;
     } else {
-      printf("cannot allocate new profiling span\n");
+      printf("Profiling error: Maximum subspans (%lu) reached for span '%s'\n",
+             MAX_SUBSPAN, CURRENT_SAFE_ALLOC_SPAN->label);
       return nullptr;
     }
   }
@@ -115,7 +116,8 @@ span_t *arenaSpanStart(arena_t *arena, const char *label) {
       CURRENT_ARENA_SPAN->subspans[CURRENT_ARENA_SPAN->subspans_count] = span;
       CURRENT_ARENA_SPAN->subspans_count++;
     } else {
-      printf("cannot allocate new profiling span\n");
+      printf("Profiling error: Maximum subspans (%lu) reached for span '%s'\n",
+             MAX_SUBSPAN, CURRENT_SAFE_ALLOC_SPAN->label);
       return nullptr;
     }
   }
