@@ -1,4 +1,5 @@
 #include "../lib/arena.h"
+#include "../lib/profile.h"
 #include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
 #include "../lifp/fmt.h"
@@ -6,9 +7,10 @@
 #include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
 #include "../vendor/linenoise/linenoise.h"
-#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
+
+allocMetricsInit();
 
 // Size of the output buffer
 constexpr size_t BUFFER_SIZE = 4096;
@@ -58,6 +60,7 @@ int main(void) {
 
   linenoiseSetMultiLine(1);
 
+  profileInit();
   while (true) {
     arenaReset(ast_arena);
     arenaReset(temp_arena);
@@ -88,7 +91,9 @@ int main(void) {
     printf("~> %s\n", buffer);
 
     memset(buffer, 0, BUFFER_SIZE);
+    profileReport();
   }
+  profileEnd();
   environmentDestroy(&global_environment);
   arenaDestroy(temp_arena);
   arenaDestroy(ast_arena);

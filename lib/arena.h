@@ -38,7 +38,6 @@
 #pragma once
 
 #include "alloc.h"
-#include <stdlib.h>
 
 typedef unsigned char byte_t;
 typedef char message_t[64];

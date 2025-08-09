@@ -16,14 +16,14 @@
 static void formatCurrentLine(position_t caret, const char *input_buffer,
                               int size, char output_buffer[static size],
                               int *offset) {
-  const char *sepatator = "\n";
+  const char *separator = "\n";
   char *brkt = nullptr;
   char *line = nullptr;
   char *copy = strdup(input_buffer);
   size_t current_line = 1;
 
-  for (line = strtok_r(copy, sepatator, &brkt); line;
-       line = strtok_r(nullptr, sepatator, &brkt)) {
+  for (line = strtok_r(copy, separator, &brkt); line;
+       line = strtok_r(nullptr, separator, &brkt)) {
     if (caret.line == current_line)
       break;
   }
@@ -142,9 +142,7 @@ void formatValue(const value_t *value, int size,
 
     formatNode(&value->value.closure.form, size, output_buffer, offset);
     append(size, output_buffer, offset, ")");
-    return;
   default:
-    return;
   }
 }
 
