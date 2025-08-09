@@ -29,6 +29,8 @@ result_ref_t arenaAllocate(arena_t *self, size_t size) {
   return ok(result_ref_t, pointer);
 }
 
-void arenaDestroy(arena_t *self) { deallocSafe(&self); }
+void arenaDestroy(arena_t **self) {
+  arenaProfileEnd(*self);
+}
 
 void arenaReset(arena_t *self) { self->offset = 0; }

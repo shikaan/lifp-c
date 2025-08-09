@@ -60,8 +60,9 @@ result_ref_t environmentCreate(environment_t *parent) {
 
 void environmentDestroy(environment_t **self) {
   assert(self && *self);
+  arena_t *arena = (*self)->arena;
   // The environment is allocated on its own arena. This frees all the resources
-  arenaDestroy((*self)->arena);
+  arenaDestroy(&arena);
   // Setting the reference to null for good measure
   *(self) = nullptr;
 }

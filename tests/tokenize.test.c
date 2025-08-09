@@ -169,6 +169,6 @@ int main(void) {
   suite(whitespaces);
   suite(errors);
 
-  arenaDestroy(test_arena);
+  arenaDestroy(&test_arena);
   return report();
 }

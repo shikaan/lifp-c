@@ -171,7 +171,7 @@ void allocations() {
   expectEqlInt(reduction.code, ERROR_CODE_ALLOCATION,
                 "returns allocation error");
 
-  arenaDestroy(small_arena);
+  arenaDestroy(&small_arena);
 }
 
 void errors() {
@@ -424,6 +424,6 @@ int main(void) {
   suite(condSpecialForm);
 
   environmentDestroy(&environment);
-  arenaDestroy(test_arena);
+  arenaDestroy(&test_arena);
   return report();
 }

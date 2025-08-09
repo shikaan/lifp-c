@@ -96,7 +96,7 @@ result_ref_t arenaAllocate(arena_t *self, size_t size);
  * @example
  *   arenaDestroy(arena);  // arena pointer becomes invalid
  */
-void arenaDestroy(arena_t *self);
+void arenaDestroy(arena_t **self);
 
 /**
  * Reset the arena to empty state.

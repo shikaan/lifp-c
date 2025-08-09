@@ -52,6 +52,6 @@ int main(void) {
   result = listCopy(int, list, different);
   expectEqlInt(result.code, LIST_ERROR_INCOMPATIBLE_LISTS, "throws error");
 
-  arenaDestroy(test_arena);
+  arenaDestroy(&test_arena);
   return report();
 }

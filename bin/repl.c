@@ -95,8 +95,8 @@ int main(void) {
   }
   profileEnd();
   environmentDestroy(&global_environment);
-  arenaDestroy(temp_arena);
-  arenaDestroy(ast_arena);
+  arenaDestroy(&temp_arena);
+  arenaDestroy(&ast_arena);
   return 0;
 }
 
