@@ -6,6 +6,7 @@
 // NOLINTBEGIN
 #include "std/core.c"
 #include "std/flow.c"
+#include "std/io.c"
 #include "std/list.c"
 #include "std/math.c"
 // NOLINTEND
@@ -53,6 +54,7 @@ result_ref_t environmentCreate(environment_t *parent) {
   setBuiltin(MATH_MAX, mathMax);
   setBuiltin(MATH_MIN, mathMin);
   setBuiltin(MATH_RANDOM, mathRandom);
+  setBuiltin(IO_PRINT, ioPrint);
 #undef setBuiltin
 
   return ok(result_ref_t, environment);
