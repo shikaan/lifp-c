@@ -119,7 +119,7 @@ span_t *arenaSpanStart(arena_t *arena, const char *label) {
       CURRENT_ARENA_SPAN->subspans_count++;
     } else {
       printf("Profiling error: Maximum subspans (%lu) reached for span '%s'\n",
-             MAX_SUBSPAN, CURRENT_SAFE_ALLOC_SPAN->label);
+             MAX_SUBSPAN, CURRENT_ARENA_SPAN->label);
       return nullptr;
     }
   }
