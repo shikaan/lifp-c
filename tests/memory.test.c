@@ -1,3 +1,4 @@
+#ifdef MEMORY_PROFILE
 #include "../lib/arena.h"
 #include "../lib/profile.h"
 #include "../lib/result.h"
@@ -11,24 +12,9 @@
 #include <stddef.h>
 allocMetricsInit();
 
-#ifdef MEMORY_PROFILE
 static arena_t *test_ast_arena;
 static arena_t *test_temp_arena;
 static environment_t *global;
-
-/* result_node_ref_t getSyntaxTree(const char *input) { */
-/*   token_list_t *tokens = nullptr; */
-/*   tryAssertAssign(tokenize(test_ast_arena, input), tokens); */
-
-/*   size_t offset = 0; */
-/*   size_t depth = 0; */
-/*   node_t *syntax_tree = nullptr; */
-/*   tryAssertAssign(parse(test_ast_arena, tokens, &offset, &depth),
- * syntax_tree); */
-
-/*   arenaReset(test_ast_arena); */
-/*   return ok(result_node_ref_t, syntax_tree); */
-/* } */
 
 result_value_ref_t execute(const char *input) {
   char input_copy[1024];

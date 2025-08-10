@@ -74,4 +74,6 @@ lib-test: tests/arena.test tests/list.test tests/map.test
 .PHONY: test
 test: lifp-test lib-test
 	# Memory tests can only be run with the profiler on
-	make PROFILE=1 clean tests/memory.test && tests/memory.test
+	make PROFILE=1 clean tests/memory.test
+	tests/memory.test
+	make clean

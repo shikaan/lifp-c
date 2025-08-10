@@ -12,9 +12,10 @@ result_void_position_t ioPrint(value_t *result, value_list_t *values) {
 
   value_t value = listGet(value_t, values, 0);
 
-  char buffer[1024];
+  constexpr static size_t BUFFER_SIZE = 1024;
+  char buffer[BUFFER_SIZE];
   int offset = 0;
-  formatValue(&value, 1024, buffer, &offset);
+  formatValue(&value, BUFFER_SIZE, buffer, &offset);
   printf("%s\n", buffer);
 
   result->type = VALUE_TYPE_NIL;
