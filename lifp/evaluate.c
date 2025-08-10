@@ -68,12 +68,16 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
   for (size_t i = 1; i < result->value.list.count; i++) {
     auto argument = listGet(node_t, &closure.arguments, i - 1);
     auto value = listGet(value_t, &result->value.list, i);
-    mapSet(environment->values, argument.value.symbol, &value);
+    tryWithCleanupMeta(
+        result_value_ref_t,
+        mapSet(environment->values, argument.value.symbol, &value),
+        environmentDestroy(&environment), value.position);
   }
 
   value_t *reduced = nullptr;
-  tryWithMeta(result_value_ref_t, evaluate(arena, &closure.form, environment),
-              closure_value.position, reduced);
+  tryWithCleanupMeta(
+      result_value_ref_t, evaluate(arena, &closure.form, environment),
+      environmentDestroy(&environment), closure_value.position, reduced);
   environmentDestroy(&environment);
   return ok(result_value_ref_t, reduced);
 }

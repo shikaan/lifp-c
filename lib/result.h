@@ -51,6 +51,24 @@ typedef Result(int) test_t;
   }                                                                            \
   __VA_OPT__(__VA_ARGS__ = (_result(ResultType).value));
 
+#define tryWithCleanup(ResultType, Action, Cleanup, ...)                       \
+  auto _result(ResultType) = Action;                                           \
+  if (_result(ResultType).code != RESULT_OK) {                                 \
+    Cleanup;                                                                   \
+    throw(ResultType, _result(ResultType).code, _result(ResultType).meta,      \
+          "%s", _result(ResultType).message);                                  \
+  }                                                                            \
+  __VA_OPT__(__VA_ARGS__ = (_result(ResultType).value));
+
+#define tryWithCleanupMeta(ResultType, Action, Cleanup, Meta, ...)             \
+  auto _result(ResultType) = Action;                                           \
+  if (_result(ResultType).code != RESULT_OK) {                                 \
+    Cleanup;                                                                   \
+    throw(ResultType, _result(ResultType).code, Meta, "%s",                    \
+          _result(ResultType).message);                                        \
+  }                                                                            \
+  __VA_OPT__(__VA_ARGS__ = (_result(ResultType).value));
+
 #define throw(ResultType, Code, Meta, Fmt, ...)                                \
   {                                                                            \
     ResultType _error(ResultType);                                             \
