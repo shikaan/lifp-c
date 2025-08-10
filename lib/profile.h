@@ -1,5 +1,49 @@
 #pragma once
 
+// Profile (v0.0.1)
+//
+// Span-based memory profilers to catch leaks and track allocations.
+//
+// !!! All profilers must be able to be compiled away with a flag !!!
+//
+// In this case, the flag is `MEMORY_PROFILE`.
+//
+// There are two profilers here: `safeAlloc` and `arena`.
+//
+// `safeAlloc` tracks the usage of the `safeAlloc` util, which we use
+// to allocate memory instead of barebone `malloc`/`free`. It tracks
+// allocations by diffing the safeAlloc-ed memory at the beginning and
+// at the end of the span.
+//
+// ```c
+// void myFunction() {
+//   // Profile the whole function
+//   profileSafeAlloc();
+//
+//   // Profile a specific section
+//   span_t *span = safeAllocSpanStart("label");
+//     // profiled code
+//   safeAllocSpanEnd(&span);
+// }
+// ```
+//
+// `arena` tracks arena utilization. Arenas by definition cannot leak,
+// so this profiler is just there to see where memory gets allocated.
+// Tracking is done by checking the arena offset across the span
+//
+// ```c
+// void myFunction(arena_t *arena) {
+//   // Profile the whole function
+//   profileArena(arena);
+//
+//   // Profile a specific section
+//   span_t span = arenaSpanStart(arena, "label");
+//     // profiled code
+//   arenaSpanEnd(&span);
+// }
+// ```
+//
+
 #ifdef MEMORY_PROFILE
 #include "arena.h"
 #include "result.h"
