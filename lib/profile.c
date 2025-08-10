@@ -190,16 +190,18 @@ void printArenas(void) {
 }
 
 void profileReport(void) {
-  assert(CURRENT_SAFE_ALLOC_SPAN);
+  if (ROOT_SAFE_ALLOC_SPAN) {
+    printf("\n === Memory Metrics: Leaked safeAlloc ===\n");
+    printSpan(ROOT_SAFE_ALLOC_SPAN, 0);
+  }
 
-  printf("\n === Memory Metrics: Leaked safeAlloc ===\n");
-  printSpan(ROOT_SAFE_ALLOC_SPAN, 0);
+  if (ROOT_ARENA_SPAN) {
+    printf("\n === Memory Metrics: Arena Allocations ===\n");
+    printSpan(ROOT_ARENA_SPAN, 0);
 
-  printf("\n === Memory Metrics: Arena Allocations ===\n");
-  printSpan(ROOT_ARENA_SPAN, 0);
-
-  printf("\n === Memory Metrics: Arena Saturation ===\n");
-  printArenas();
+    printf("\n === Memory Metrics: Arena Saturation ===\n");
+    printArenas();
+  }
 }
 
 void profileEnd(void) {
