@@ -1,0 +1,38 @@
+BUGS
+---
+  * [ ] `listGet` allows you to go out of bound
+  * [ ] When `def!` reallocates the same symbol, it leaks memory (old symbol is not evicted)
+  * [ ] `def!` does not return nil when compiled in release mode
+
+FEATURES
+---
+  * [ ] Implement CLI
+    * [ ] Welcome text in REPL with version as `lifp`
+    * [ ] REPL and run as commands
+    * [ ] Set memory boundaries with CLI flags (e.g., `--max-ast-memory=1024`)
+  * [ ] Compile AST to bytecode
+  * [ ] Implement double/float methods in stdlib (math.floor, math.ceil)
+  * [ ] Implement string methods in stdlib (string.length, string.join, string.slice, string.includes, string.trim)
+  * [ ] Decouple validation from execution
+  * [ ] Enforce naming conventions for functions
+    * [ ] effectful functions should terminate with !
+    * [ ] functions ending in ? should return bool
+  * [ ] Enforce immutability
+  * [ ] Resizable arena, to allow resizable environments
+  * [ ] Tail call optimization
+  * [ ] Lexer should know about comments (and discard them)
+  * [ ] Auto-generated documentation for standard library
+
+REFACTORING
+---
+  * [ ] Special forms should live in the environment like values and closures
+  * [ ] Make list methods (and hashmap methods) typesafe (now you can (append
+       `node_t` to a `value_list_t` without errors)
+  * [ ] Value and Node allocations are pessimistic: we always assume it's a list
+       (worse case scenario) to shield the consumer from the allocation concerns.
+  * [ ] Use [`libuv`](https://libuv.org) for non-blocking io
+  * [ ] Std should be instantiated only once and pointed around instead of being cloned
+
+OPEN STUFF
+---
+* Should std and core (e.g., keywords) be split to allow using lifp without std?
