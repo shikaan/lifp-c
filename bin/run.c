@@ -3,6 +3,8 @@
 #include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
 
+#include "../lib/profile.h"
+
 #include <fcntl.h> // open
 #include <stddef.h>
 #include <stdio.h> // sprint
@@ -30,6 +32,7 @@ constexpr size_t TEMP_MEMORY = (size_t)(1024 * 64);
   auto _concat(result, __LINE__) = Action;                                     \
   if (_concat(result, __LINE__).code != RESULT_OK) {                           \
     error("%s", _concat(result, __LINE__).message);                            \
+    profileReport();                                                           \
     return 1;                                                                  \
   }                                                                            \
   (Destination) = _concat(result, __LINE__).value;
@@ -81,6 +84,8 @@ void readLine(ssize_t size, char line_buffer[static size],
   }
 }
 
+allocMetricsInit();
+
 int main(int argc, char **argv) {
   if (argc != 2) {
     error("'run' takes one argument");
@@ -112,6 +117,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  profileInit();
   arena_t *ast_arena = nullptr;
   tryCLI(arenaCreate(AST_MEMORY), ast_arena,
          "unable to allocate interpreter memory");
@@ -142,6 +148,8 @@ int main(int argc, char **argv) {
     value_t *reduced = nullptr;
     tryRun(evaluate(temp_arena, syntax_tree, global_environment), reduced);
   } while (strlen(line_buffer) > 0);
+
+  profileReport();
 
   environmentDestroy(&global_environment);
   arenaDestroy(&temp_arena);

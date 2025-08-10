@@ -1,0 +1,19 @@
+; This example is here to show how poorly we handle tail recursion
+; (not at all!) so anything more than `(fibonacci 3)` with the
+; default memory (64kb for parsing and 32kb per environment) will
+; crash
+
+(def! fibonacci
+  (fn (a)
+    (cond
+      ((< a 1) 0)
+      ((= a 1) 1)
+      ((= a 2) 2)
+      (let (
+        (last (fibonacci (- a 1)))
+        (current (fibonacci (- a 2))))
+        (+ last current)))))
+
+(io.print! (fibonacci 3))
+
+; vim syntax=lisp

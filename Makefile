@@ -22,17 +22,32 @@ lifp/environment.o: lib/arena.o lib/map.o lifp/value.o
 lifp/evaluate.o: lib/arena.o lifp/environment.o lib/map.o lifp/value.o
 
 tests/tokenize.test: lifp/tokenize.o lib/list.o lib/arena.o
-tests/parser.test: lifp/parse.o lifp/tokenize.o lib/list.o lifp/node.o lib/arena.o
+tests/parser.test: \
+	lifp/parse.o lifp/tokenize.o lib/list.o lifp/node.o lib/arena.o
 tests/list.test: lib/list.o lib/arena.o
 tests/arena.test: lib/arena.o
-tests/evaluate.test: lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/environment.o lib/map.o lifp/value.o
+tests/evaluate.test: \
+	lifp/evaluate.o lifp/node.o lib/list.o lib/arena.o lifp/environment.o \
+	lib/map.o lifp/value.o lifp/fmt.o
 tests/map.test: lib/arena.o lib/map.o
 tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o lifp/value.o
 
-tests/integration.test: lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o lifp/value.o
+tests/integration.test: \
+	lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o \
+	lib/map.o lifp/node.o lifp/environment.o lifp/value.o lifp/fmt.o
 
-bin/repl: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lib/profile.o lifp/fmt.o lifp/value.o linenoise.o
-bin/run: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o
+tests/memory.test: \
+	lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o \
+	lib/map.o lifp/node.o lifp/environment.o lifp/value.o lifp/fmt.o lib/profile.o
+
+bin/repl: \
+	lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o \
+	lib/arena.o lifp/environment.o lib/map.o lib/profile.o lifp/fmt.o \
+	lifp/value.o linenoise.o
+
+bin/run: \
+	lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o \
+	lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o lib/profile.o
 
 
 .PHONY: clean
@@ -41,7 +56,9 @@ clean:
 	rm -f tests/*.test
 
 .PHONY: lifp-test
-lifp-test: tests/tokenize.test tests/parser.test tests/evaluate.test tests/integration.test tests/fmt.test
+lifp-test: \
+	tests/tokenize.test tests/parser.test tests/evaluate.test \
+	tests/integration.test tests/fmt.test
 	tests/tokenize.test
 	tests/parser.test
 	tests/evaluate.test
@@ -56,3 +73,7 @@ lib-test: tests/arena.test tests/list.test tests/map.test
 
 .PHONY: test
 test: lifp-test lib-test
+	# Memory tests can only be run with the profiler on
+	make PROFILE=1 clean tests/memory.test
+	tests/memory.test
+	make clean

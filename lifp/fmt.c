@@ -10,8 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#define pos(n) (size_t)(n < 0 ? 0 : n)
+
 #define append(Size, Buffer, Offset, ...)                                      \
-  *Offset += snprintf(Buffer + *Offset, (size_t)(Size - *Offset), __VA_ARGS__);
+  *Offset += snprintf(Buffer + *Offset, pos(Size - *Offset), __VA_ARGS__);
 
 static void formatCurrentLine(position_t caret, const char *input_buffer,
                               int size, char output_buffer[static size],

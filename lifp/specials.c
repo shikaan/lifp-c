@@ -122,6 +122,7 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
     node_t couple = listGet(node_t, &couples.value.list, i);
 
     if (couple.type != NODE_TYPE_LIST || couple.value.list.count != 2) {
+      environmentDestroy(&local_env);
       throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, couple.position,
             "%s requires a list of symbol-form assignments. %s", LET,
             LET_EXAMPLE);
@@ -129,6 +130,7 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
 
     node_t symbol = listGet(node_t, &couple.value.list, 0);
     if (symbol.type != NODE_TYPE_SYMBOL) {
+      environmentDestroy(&local_env);
       throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, symbol.position,
             "%s requires a list of symbol-form assignments. %s", LET,
             LET_EXAMPLE);
@@ -136,17 +138,19 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
 
     node_t body = listGet(node_t, &couple.value.list, 1);
     value_t *evaluated = nullptr;
-    try(result_value_ref_t, evaluate(nodes->arena, &body, local_env),
-        evaluated);
-    tryWithMeta(result_value_ref_t,
-                mapSet(local_env->values, symbol.value.symbol, evaluated),
-                evaluated->position);
+    tryWithCleanup(result_value_ref_t, evaluate(nodes->arena, &body, local_env),
+                   environmentDestroy(&local_env), evaluated);
+    tryWithCleanupMeta(
+        result_value_ref_t,
+        mapSet(local_env->values, symbol.value.symbol, evaluated),
+        environmentDestroy(&local_env), evaluated->position);
   }
 
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *result = nullptr;
-  try(result_value_ref_t, evaluate(nodes->arena, &form, local_env), result);
+  tryWithCleanup(result_value_ref_t, evaluate(nodes->arena, &form, local_env),
+                 environmentDestroy(&local_env), result);
 
   environmentDestroy(&local_env);
   return ok(result_value_ref_t, result);
