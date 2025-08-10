@@ -21,7 +21,7 @@ void basic() {
   result_ref_t reallocation = arenaAllocate(arena, 1024);
   expectTrue(reallocation.code == 0, "can reallocate memory after a reset");
   
-  arenaDestroy(arena);
+  arenaDestroy(&arena);
 }
 
 void overflow() {
@@ -34,7 +34,7 @@ void overflow() {
   expectFalse(allocation.code == 0, "fails oversized allocation");
   expectEqlString(allocation.message, "Arena out of memory. Available 100, requested 200", 64, "throws correct exception");
   
-  arenaDestroy(arena);
+  arenaDestroy(&arena);
 }
 
 void alignment() {
@@ -49,7 +49,7 @@ void alignment() {
     expectEqlUint(pointer % 8, 0, "address is 8-aligned");
   }
 
-  arenaDestroy(arena);
+  arenaDestroy(&arena);
 }
 
 int main() {

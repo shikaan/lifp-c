@@ -209,6 +209,6 @@ int main(void) {
   suite(unary);
   suite(complex);
   suite(errors);
-  arenaDestroy(test_arena);
+  arenaDestroy(&test_arena);
   return report();
 }

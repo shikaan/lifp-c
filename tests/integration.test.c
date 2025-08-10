@@ -76,7 +76,7 @@ int main() {
   reduction = execute("(def! sum (fn (a b) (+ a b)))\n(sum 1 2)");
   expectEqlInt(reduction.value->value.integer, 3, "returns correct value");
 
-  arenaDestroy(test_ast_arena);
-  arenaDestroy(test_temp_arena);
+  arenaDestroy(&test_ast_arena);
+  arenaDestroy(&test_temp_arena);
   return report();
 }

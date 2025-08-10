@@ -38,7 +38,6 @@
 #pragma once
 
 #include "alloc.h"
-#include <stdlib.h>
 
 typedef unsigned char byte_t;
 typedef char message_t[64];
@@ -57,6 +56,18 @@ typedef struct {
   size_t offset;   // Current allocation offset within the buffer
   byte_t memory[]; // Flexible array member containing the actual memory buffer
 } arena_t;
+
+#ifdef MEMORY_PROFILE
+constexpr size_t MAX_PROFILED_ARENAS = 128;
+
+typedef struct {
+  arena_t *arenas[MAX_PROFILED_ARENAS];
+  bool freed[MAX_PROFILED_ARENAS];
+  size_t arenas_count;
+} arena_metrics_t;
+
+extern arena_metrics_t arena_metrics;
+#endif
 
 /**
  * Create a new arena with the specified size.
@@ -97,7 +108,7 @@ result_ref_t arenaAllocate(arena_t *self, size_t size);
  * @example
  *   arenaDestroy(arena);  // arena pointer becomes invalid
  */
-void arenaDestroy(arena_t *self);
+void arenaDestroy(arena_t **self);
 
 /**
  * Reset the arena to empty state.

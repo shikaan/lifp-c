@@ -143,8 +143,9 @@ int main(int argc, char **argv) {
     tryRun(evaluate(temp_arena, syntax_tree, global_environment), reduced);
   } while (strlen(line_buffer) > 0);
 
-  arenaDestroy(ast_arena);
   environmentDestroy(&global_environment);
+  arenaDestroy(&temp_arena);
+  arenaDestroy(&ast_arena);
   return 0;
 }
 

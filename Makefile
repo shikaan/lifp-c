@@ -1,5 +1,9 @@
 include flags.mk
 
+ifeq ($(PROFILE),1)
+	CFLAGS := $(CFLAGS) -DMEMORY_PROFILE
+endif
+
 .PHONY: all
 all: clean bin/repl
 
@@ -27,7 +31,7 @@ tests/fmt.test: lifp/fmt.o lifp/node.o lib/arena.o lib/list.o lifp/value.o
 
 tests/integration.test: lifp/tokenize.o lifp/parse.o lib/arena.o lifp/evaluate.o lib/list.o lib/map.o lifp/node.o lifp/environment.o lifp/value.o
 
-bin/repl: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o linenoise.o
+bin/repl: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lib/profile.o lifp/fmt.o lifp/value.o linenoise.o
 bin/run: lifp/tokenize.o lifp/parse.o lib/list.o lifp/evaluate.o lifp/node.o lib/arena.o lifp/environment.o lib/map.o lifp/fmt.o lifp/value.o
 
 

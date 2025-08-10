@@ -28,7 +28,7 @@
 //         }
 //     }
 //
-//     arenaDestroy(arena);
+//     arenaDestroy(&arena);
 // }
 // ```
 
