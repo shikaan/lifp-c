@@ -43,6 +43,11 @@ void arenaSpanEnd(span_t **span_double_ref);
 #define profileInit()
 #define profileEnd()
 
+#define safeAllocSpanStart(Label)
+#define safeAllocSpanEnd(Span)
+#define arenaSpanStart(Arena, Label)
+#define arenaSpanEnd(Span)
+
 #define profileSafeAlloc()
 #define profileArena(Arena)
 

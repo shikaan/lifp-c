@@ -15,16 +15,16 @@ span_t *ROOT_SAFE_ALLOC_SPAN = nullptr;
 span_t *CURRENT_ARENA_SPAN = nullptr;
 span_t *ROOT_ARENA_SPAN = nullptr;
 
-static unsigned long getCurrentMemory(void) { return allocGetMetrics().bytes; }
+static unsigned long getAllocatedBytes(void) { return allocGetMetrics().bytes; }
 
 static unsigned long hash(const char *key) {
-  static constexpr unsigned long prime = 1099511628211U;
+  static constexpr unsigned long PRIME = 1099511628211U;
   unsigned long hash = 14695981039346656037U;
   const size_t len = strlen(key);
 
   for (size_t i = 0; i < len; i++) {
     hash ^= (unsigned long)(unsigned char)key[i];
-    hash *= prime;
+    hash *= PRIME;
   }
 
   return hash;
@@ -74,8 +74,9 @@ span_t *safeAllocSpanStart(const char *label) {
 
   span_t *span = nullptr;
   for (unsigned long i = 0; i < CURRENT_SAFE_ALLOC_SPAN->subspans_count; i++) {
-    if (CURRENT_SAFE_ALLOC_SPAN->subspans[i]->span_id == span_id) {
-      span = CURRENT_SAFE_ALLOC_SPAN->subspans[i];
+    span_t *subspan = CURRENT_SAFE_ALLOC_SPAN->subspans[i];
+    if (subspan->span_id == span_id && strcmp(label, subspan->label) == 0) {
+      span = subspan;
     }
   }
 
@@ -93,7 +94,7 @@ span_t *safeAllocSpanStart(const char *label) {
   }
 
   span->hits++;
-  span->last = getCurrentMemory();
+  span->last = getAllocatedBytes();
   span->parent = CURRENT_SAFE_ALLOC_SPAN;
   CURRENT_SAFE_ALLOC_SPAN = span;
   return span;
@@ -105,8 +106,9 @@ span_t *arenaSpanStart(arena_t *arena, const char *label) {
 
   span_t *span = nullptr;
   for (unsigned long i = 0; i < CURRENT_ARENA_SPAN->subspans_count; i++) {
-    if (CURRENT_ARENA_SPAN->subspans[i]->span_id == span_id) {
-      span = CURRENT_ARENA_SPAN->subspans[i];
+    span_t *subspan = CURRENT_ARENA_SPAN->subspans[i];
+    if (subspan->span_id == span_id && strcmp(label, subspan->label) == 0) {
+      span = subspan;
     }
   }
 
@@ -132,7 +134,7 @@ span_t *arenaSpanStart(arena_t *arena, const char *label) {
 
 void safeAllocSpanEnd(span_t **span_double_ref) {
   span_t *span = *span_double_ref;
-  unsigned long delta = getCurrentMemory() - span->last;
+  unsigned long delta = getAllocatedBytes() - span->last;
   span->total += delta;
 
   if (span->parent) {
