@@ -10,12 +10,13 @@
 #include <stddef.h>
 #include <string.h>
 
-typedef result_value_ref_t (*special_form_t)(environment_t *,
+typedef result_value_ref_t (*special_form_t)(arena_t *, environment_t *,
                                              const node_list_t *);
 
 const char *DEFINE_EXAMPLE = "(def! x (+ 1 2))";
 const char *DEFINE = "def!";
-result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
+result_value_ref_t define(arena_t *arena, environment_t *env,
+                          const node_list_t *nodes) {
   assert(nodes->count > 0); // def! is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
@@ -32,7 +33,7 @@ result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
   // Perform reduction in the AST memory
   value_t *result = nullptr;
   node_t value = listGet(node_t, nodes, 2);
-  try(result_value_ref_t, evaluate(nodes->arena, &value, env), result);
+  try(result_value_ref_t, evaluate(arena, &value, env), result);
 
   // If reduction is successful, we can move the closure to VM memory
   value_t *copy = nullptr;
@@ -51,7 +52,8 @@ result_value_ref_t define(environment_t *env, const node_list_t *nodes) {
 
 const char *FUNCTION_EXAMPLE = "(fn (a b) (+ a b))";
 const char *FUNCTION = "fn";
-result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
+result_value_ref_t function(arena_t *arena, environment_t *env,
+                            const node_list_t *nodes) {
   (void)env;
   assert(nodes->count > 0); // fn is always there
   node_t first = listGet(node_t, nodes, 0);
@@ -80,7 +82,7 @@ result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *closure = nullptr;
-  tryWithMeta(result_value_ref_t, valueCreate(nodes->arena, VALUE_TYPE_CLOSURE),
+  tryWithMeta(result_value_ref_t, valueCreate(arena, VALUE_TYPE_CLOSURE),
               form.position, closure);
 
   closure->position.column = first.position.column;
@@ -98,7 +100,8 @@ result_value_ref_t function(environment_t *env, const node_list_t *nodes) {
 
 const char *LET_EXAMPLE = "(let ((a 1) (b 2)) (+ a b))";
 const char *LET = "let";
-result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
+result_value_ref_t let(arena_t *arena, environment_t *env,
+                       const node_list_t *nodes) {
   assert(nodes->count > 0); // let is always there
   node_t first = listGet(node_t, nodes, 0);
   if (nodes->count != 3) {
@@ -138,7 +141,7 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
 
     node_t body = listGet(node_t, &couple.value.list, 1);
     value_t *evaluated = nullptr;
-    tryWithCleanup(result_value_ref_t, evaluate(nodes->arena, &body, local_env),
+    tryWithCleanup(result_value_ref_t, evaluate(arena, &body, local_env),
                    environmentDestroy(&local_env), evaluated);
     tryWithCleanupMeta(
         result_value_ref_t,
@@ -149,43 +152,46 @@ result_value_ref_t let(environment_t *env, const node_list_t *nodes) {
   node_t form = listGet(node_t, nodes, 2);
 
   value_t *result = nullptr;
-  tryWithCleanup(result_value_ref_t, evaluate(nodes->arena, &form, local_env),
+  tryWithCleanup(result_value_ref_t, evaluate(arena, &form, local_env),
                  environmentDestroy(&local_env), result);
 
   environmentDestroy(&local_env);
   return ok(result_value_ref_t, result);
 }
 
-const char *COND_EXAMPLE = "(cond\n\t((!= x 0) (/ 10 x))\n\t(+ x 10))";
+const char *COND_EXAMPLE = "\n  (cond\n    ((!= x 0) (/ 10 x))\n    (+ x 10))";
 const char *COND = "cond";
-result_value_ref_t cond(environment_t *env, const node_list_t *nodes) {
+result_value_ref_t cond(arena_t *arena, environment_t *env,
+                        const node_list_t *nodes) {
   assert(nodes->count > 0);
   value_t *result = nullptr;
 
+  size_t offset = arena->offset;
   for (size_t i = 1; i < nodes->count - 1; i++) {
     node_t node = listGet(node_t, nodes, i);
     if (node.type != NODE_TYPE_LIST || node.value.list.count != 2) {
       throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
             "%s requires a list of condition-form assignments. %s", COND,
-            LET_EXAMPLE);
+            COND_EXAMPLE);
     }
 
     node_t condition = listGet(node_t, &node.value.list, 0);
-    try(result_value_ref_t, evaluate(nodes->arena, &condition, env), result);
+    try(result_value_ref_t, evaluate(arena, &condition, env), result);
 
     if (result->type != VALUE_TYPE_BOOLEAN) {
       throw(result_value_ref_t, ERROR_CODE_RUNTIME_ERROR, node.position,
-            "Conditions should resolve to a boolean. %s", LET_EXAMPLE);
+            "Conditions should resolve to a boolean. %s", COND_EXAMPLE);
     }
 
     if (result->value.boolean) {
       node_t form = listGet(node_t, &node.value.list, 1);
-      try(result_value_ref_t, evaluate(nodes->arena, &form, env), result);
+      try(result_value_ref_t, evaluate(arena, &form, env), result);
       return ok(result_value_ref_t, result);
     }
+    arena->offset = offset;
   }
 
   node_t fallback = listGet(node_t, nodes, nodes->count - 1);
-  try(result_value_ref_t, evaluate(nodes->arena, &fallback, env), result);
+  try(result_value_ref_t, evaluate(arena, &fallback, env), result);
   return ok(result_value_ref_t, result);
 }

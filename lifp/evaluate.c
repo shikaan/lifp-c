@@ -26,6 +26,7 @@ static bool isSpecialFormNode(const node_t FIRST_NODE) {
 
 static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
                                         arena_t *arena) {
+  profileArena(arena);
   assert(builtin_value.type == VALUE_TYPE_BUILTIN);
   builtin_t builtin = builtin_value.value.builtin;
 
@@ -48,8 +49,7 @@ static result_value_ref_t invokeBuiltin(value_t *result, value_t builtin_value,
 static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
                                         arena_t *arena,
                                         environment_t *parent_environment) {
-  profileSafeAlloc();
-
+  profileArena(arena);
   assert(closure_value.type == VALUE_TYPE_CLOSURE);
   closure_t closure = closure_value.value.closure;
 
@@ -82,17 +82,18 @@ static result_value_ref_t invokeClosure(value_t *result, value_t closure_value,
   return ok(result_value_ref_t, reduced);
 }
 
-static result_value_ref_t invokeSpecialForm(value_t *result, node_t form_node,
+static result_value_ref_t invokeSpecialForm(arena_t *arena, value_t *result,
+                                            node_t form_node,
                                             const node_list_t *nodes,
                                             environment_t *environment) {
   if (form_node.value.symbol[0] == 'd') {
-    try(result_value_ref_t, define(environment, nodes), result);
+    try(result_value_ref_t, define(arena, environment, nodes), result);
   } else if (form_node.value.symbol[0] == 'f') {
-    try(result_value_ref_t, function(environment, nodes), result);
+    try(result_value_ref_t, function(arena, environment, nodes), result);
   } else if (form_node.value.symbol[0] == 'l') {
-    try(result_value_ref_t, let(environment, nodes), result);
+    try(result_value_ref_t, let(arena, environment, nodes), result);
   } else {
-    try(result_value_ref_t, cond(environment, nodes), result);
+    try(result_value_ref_t, cond(arena, environment, nodes), result);
   }
 
   return ok(result_value_ref_t, result);
@@ -100,6 +101,7 @@ static result_value_ref_t invokeSpecialForm(value_t *result, node_t form_node,
 
 result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
                                 environment_t *environment) {
+  profileArena(arena);
   const auto list = syntax_tree->value.list;
 
   value_t *result = nullptr;
@@ -114,7 +116,7 @@ result_value_ref_t evaluateList(arena_t *arena, node_t *syntax_tree,
 
   auto first_node = listGet(node_t, &list, 0);
   if (isSpecialFormNode(first_node)) {
-    return invokeSpecialForm(result, first_node, &list, environment);
+    return invokeSpecialForm(arena, result, first_node, &list, environment);
   }
 
   for (size_t i = 0; i < list.count; i++) {
@@ -167,7 +169,7 @@ result_value_ref_t evaluate(arena_t *arena, node_t *syntax_tree,
     break;
   }
   case NODE_TYPE_SYMBOL: {
-    value_t *resolved_value =
+    const value_t *resolved_value =
         environmentResolveSymbol(environment, syntax_tree->value.symbol);
 
     if (!resolved_value) {

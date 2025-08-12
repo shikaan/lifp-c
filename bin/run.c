@@ -131,6 +131,8 @@ int main(int argc, char **argv) {
 
   do {
     memset(line_buffer, 0, (size_t)len);
+    arenaReset(ast_arena);
+    arenaReset(temp_arena);
     readLine(len, line_buffer, file_buffer, &file_offset);
 
     if (strlen(line_buffer) == 0)
