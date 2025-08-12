@@ -52,6 +52,9 @@ typedef enum {
  * @name arena_t
  */
 typedef struct {
+#ifdef DEBUG
+  int id;
+#endif
   size_t size;     // Total size of the arena memory buffer
   size_t offset;   // Current allocation offset within the buffer
   byte_t memory[]; // Flexible array member containing the actual memory buffer

@@ -33,6 +33,10 @@ result_ref_t arenaCreate(size_t size) {
   try(result_ref_t, allocSafe(sizeof(arena_t) + size), arena);
   arena->size = size;
   arena->offset = 0;
+#ifdef DEBUG
+  static int id = 0;
+  arena->id = id++;
+#endif
 
   arenaProfileStart(arena);
 
@@ -44,9 +48,15 @@ result_ref_t arenaAllocate(arena_t *self, size_t size) {
   const size_t aligned_size = (size + 7U) & ~7U;
 
   if (aligned_offset + aligned_size > self->size) {
+#ifdef DEBUG
     throw(result_ref_t, ARENA_ERROR_OUT_OF_SPACE, nullptr,
-          "Arena out of memory. Available %lu, requested %lu",
-          self->size - aligned_offset, aligned_size);
+          "Arena %d out of memory. Available %lu, requested %lu, total %lu",
+          self->id, self->size - aligned_offset, aligned_size, self->size);
+#else
+    throw(result_ref_t, ARENA_ERROR_OUT_OF_SPACE, nullptr,
+          "Arena out of memory. Available %lu, requested %lu, total %lu",
+          self->size - aligned_offset, aligned_size, self->size);
+#endif
   }
 
   byte_t *pointer = &self->memory[aligned_offset];
