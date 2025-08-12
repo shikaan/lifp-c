@@ -2,10 +2,10 @@
 #include "../lib/arena.h"
 #include "../lib/profile.h"
 #include "../lib/result.h"
-#include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
 #include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
+#include "../lifp/virtual_machine.h"
 #include "test.h"
 #include "utils.h"
 

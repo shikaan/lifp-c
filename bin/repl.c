@@ -1,11 +1,11 @@
 #include "../lib/arena.h"
 #include "../lib/profile.h"
-#include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
 #include "../lifp/fmt.h"
 #include "../lifp/node.h"
 #include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
+#include "../lifp/virtual_machine.h"
 #include "../vendor/linenoise/linenoise.h"
 #include <stdio.h>
 #include <string.h>
@@ -55,8 +55,7 @@ int main(void) {
          "unable to allocate transient memory");
 
   environment_t *global_environment = nullptr;
-  tryCLI(environmentCreate(nullptr), global_environment,
-         "unable to allocate virtual machine memory");
+  tryCLI(vmInit(), global_environment, "unable to initialize virtual machine");
 
   linenoiseSetMultiLine(1);
 

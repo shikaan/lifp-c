@@ -1,9 +1,9 @@
 #include "../lifp/evaluate.h"
 #include "../lib/arena.h"
 #include "../lib/list.h"
-#include "../lifp/environment.h"
 #include "../lifp/error.h"
 #include "../lifp/node.h"
+#include "../lifp/virtual_machine.h"
 #include "test.h"
 #include "utils.h"
 #include <assert.h>

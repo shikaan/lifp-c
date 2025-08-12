@@ -1,11 +1,11 @@
 #include "../lib/list.h"
 #include "../lib/map.h"
 #include "../lib/result.h"
-#include "environment.h"
 #include "error.h"
 #include "evaluate.h"
 #include "node.h"
 #include "value.h"
+#include "virtual_machine.h"
 #include <assert.h>
 #include <stddef.h>
 #include <string.h>

@@ -1,7 +1,7 @@
-#include "../lifp/environment.h"
 #include "../lifp/evaluate.h"
 #include "../lifp/parse.h"
 #include "../lifp/tokenize.h"
+#include "../lifp/virtual_machine.h"
 
 #include "../lib/profile.h"
 
@@ -127,8 +127,7 @@ int main(int argc, char **argv) {
          "unable to allocate transient memory");
 
   environment_t *global_environment = nullptr;
-  tryCLI(environmentCreate(nullptr), global_environment,
-         "unable to allocate virtual machine memory");
+  tryCLI(vmInit(), global_environment, "unable to initialize virtual machine");
 
   do {
     memset(line_buffer, 0, (size_t)len);

@@ -1,9 +1,9 @@
 #include "evaluate.h"
 #include "../lib/profile.h"
-#include "environment.h"
 #include "error.h"
 #include "node.h"
 #include "value.h"
+#include "virtual_machine.h"
 
 // NOLINTNEXTLINE
 #include "specials.c"
