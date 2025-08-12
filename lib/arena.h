@@ -40,7 +40,7 @@
 #include "alloc.h"
 
 typedef unsigned char byte_t;
-typedef char message_t[64];
+typedef char message_t[128];
 
 typedef enum {
   ARENA_ERROR_MALLOC_ERROR = 1,

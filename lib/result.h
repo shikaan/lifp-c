@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdio.h>
-typedef char message_t[64];
+typedef char message_t[128];
 
 constexpr int RESULT_OK = 0;
 
